@@ -1,6 +1,6 @@
 %%%
-title = "EPP XML to RPP JSON conversion rules"
-abbrev = "XML to JSON for RPP"
+title = "JSON messages for Restful Provisioning Protocol (RPP)"
+abbrev = "JSON for RPP"
 ipr = "trust200902"
 area = "Internet"
 workgroup = "Network Working Group"
@@ -10,7 +10,7 @@ TocDepth = 4
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-wullink-rpp-json-00"
+value = "draft-wullink-rpp-json-01"
 stream = "IETF"
 status = "standard"
 
