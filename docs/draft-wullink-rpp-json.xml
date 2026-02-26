@@ -3,7 +3,7 @@
 <rfc version="3" ipr="trust200902" docName="draft-wullink-rpp-json-01" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" tocDepth="4">
 
 <front>
-<title abbrev="JSON for RPP">JSON messages for Restful Provisioning Protocol (RPP)</title><seriesInfo value="draft-wullink-rpp-json-01" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
+<title abbrev="JSON for RPP">JSON representation for Restful Provisioning Protocol (RPP)</title><seriesInfo value="draft-wullink-rpp-json-01" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
 <author initials="M." surname="Wullink" fullname="Maarten Wullink"><organization>SIDN Labs</organization><address><postal><street></street>
 </postal><email>maarten.wullink@sidn.nl</email>
 <uri>https://sidn.nl/</uri>
@@ -253,10 +253,13 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="aggregation"><name>Aggregation</name>
 <t>An <tt>Aggregation[Type]</tt> represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.</t>
-<t>Rule 8: <tt>Aggregation[Type]</tt> with cardinality <tt>0+</tt> or <tt>1+</tt> MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field).</t>
-<t>Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning the full host object representation:</t>
+<t>Rule 8: <tt>Aggregation[Type]</tt> with cardinality <tt>0+</tt> or <tt>1+</tt> MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
+<t>Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field <tt>hostName</tt>:</t>
 
-<sourcecode type="json"><![CDATA["nameservers": ["ns1.example.com", "ns2.example.com"]
+<sourcecode type="json"><![CDATA["nameservers": [
+    { "hostName": "ns1.example.com" },
+    { "hostName": "ns2.example.com" }
+]
 ]]>
 </sourcecode>
 </section>
@@ -288,7 +291,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="labelled-aggregation"><name>Labelled Aggregation</name>
 <t>A <tt>LabelledAggregation[Type]</tt> is a relationship between two independent objects where each association carries a string label. Multiple associations with the same label are allowed.</t>
-<t>Rule 9: <tt>LabelledAggregation[Type]</tt> with cardinality <tt>0+</tt> MUST be represented as a JSON array of objects. Each object in the array MUST contain a <tt>label</tt> property (string) alongside the identifier of the referenced object.</t>
+<t>Rule 9: <tt>LabelledAggregation[Type]</tt> with cardinality <tt>0+</tt> MUST be represented as a JSON array of objects. Each object in the array MUST contain a <tt>label</tt> property (string) alongside the identifier of the referenced object. The object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
 <t>Example: domain contacts (LabelledAggregation[Contact Object]):</t>
 
 <sourcecode type="json"><![CDATA["contacts": [
@@ -301,12 +304,12 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="dictionary-aggregation"><name>Dictionary Aggregation</name>
 <t>A <tt>DictionaryAggregation[Type]</tt> is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.</t>
-<t>Rule 10: <tt>DictionaryAggregation[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the identifier of the referenced object.</t>
+<t>Rule 10: <tt>DictionaryAggregation[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
 <t>Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):</t>
 
 <sourcecode type="json"><![CDATA["contacts": {
-    "admin": "ABC-8013",
-    "tech":  "ABC-8014"
+    "admin": { "id": "ABC-8013" },
+    "tech":  { "id": "ABC-8014" }
 }
 ]]>
 </sourcecode>
