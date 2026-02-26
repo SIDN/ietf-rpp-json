@@ -301,8 +301,18 @@ Example: domain contacts (LabelledAggregation[Contact Object]):
 
 ```json
 "contacts": [
-    { "label": "admin", "id": "ABC-8013" },
-    { "label": "tech",  "id": "ABC-8014" }
+    { 
+        "label": "admin",
+        "contact": { 
+            "id": "ABC-8013" 
+        }
+    },
+    { 
+        "label": "tech",
+        "contact": { 
+            "id": "ABC-8014" 
+        }
+     }
 ]
 ```
 
@@ -316,8 +326,16 @@ Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Obj
 
 ```json
 "contacts": {
-    "admin": { "id": "ABC-8013" },
-    "tech":  { "id": "ABC-8014" }
+    "admin": {
+        "contact": {
+            "id": "ABC-8013"
+        }
+    },
+    "tech": {
+        "contact": {
+            "id": "ABC-8014"
+        }
+    }
 }
 ```
 
@@ -333,14 +351,16 @@ Example: contact postal info (LabelledComposition[Postal Info Object]):
 "addresses": [
     {
         "label": "int",
-        "type": "PERSON",
-        "name": "John Doe",
-        "addr": {
-            "street": ["123 Example Dr."],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
+        "postalInfo": {
+            "type": "PERSON",
+            "name": "John Doe",
+            "addr": {
+                "street": ["123 Example Dr."],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
+            }
         }
     }
 ]
@@ -355,16 +375,18 @@ Rule 12: `DictionaryComposition[Type]` MUST be represented as a JSON object wher
 Example: contact postal info (DictionaryComposition[Postal Info Object]):
 
 ```json
-"postalInfo": {
+"addresses": {
     "int": {
-        "type": "PERSON",
-        "name": "John Doe",
-        "addr": {
-            "street": ["123 Example Dr."],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
+        "postalInfo": {
+            "type": "PERSON",
+            "name": "John Doe",
+            "addr": {
+                "street": ["123 Example Dr."],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
+            }
         }
     }
 }
