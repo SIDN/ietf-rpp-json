@@ -1,5 +1,5 @@
 %%%
-title = "JSON messages for Restful Provisioning Protocol (RPP)"
+title = "JSON representation for Restful Provisioning Protocol (RPP)"
 abbrev = "JSON for RPP"
 ipr = "trust200902"
 area = "Internet"
@@ -255,12 +255,15 @@ A Aggregation represents a relationship between two independent objects, where o
 
 An `Aggregation[Type]` represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.
 
-Rule 8: `Aggregation[Type]` with cardinality `0+` or `1+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field).
+Rule 8: `Aggregation[Type]` with cardinality `0+` or `1+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
-Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning the full host object representation:
+Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field `hostName`:
 
 ```json
-"nameservers": ["ns1.example.com", "ns2.example.com"]
+"nameservers": [
+    { "hostName": "ns1.example.com" },
+    { "hostName": "ns2.example.com" }
+]
 ```
 
 ### Composition
@@ -292,7 +295,7 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
 
 A `LabelledAggregation[Type]` is a relationship between two independent objects where each association carries a string label. Multiple associations with the same label are allowed.
 
-Rule 9: `LabelledAggregation[Type]` with cardinality `0+` MUST be represented as a JSON array of objects. Each object in the array MUST contain a `label` property (string) alongside the identifier of the referenced object.
+Rule 9: `LabelledAggregation[Type]` with cardinality `0+` MUST be represented as a JSON array of objects. Each object in the array MUST contain a `label` property (string) alongside the identifier of the referenced object. The object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
 Example: domain contacts (LabelledAggregation[Contact Object]):
 
@@ -307,14 +310,14 @@ Example: domain contacts (LabelledAggregation[Contact Object]):
 
 A `DictionaryAggregation[Type]` is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.
 
-Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the identifier of the referenced object.
+Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
 Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
 
 ```json
 "contacts": {
-    "admin": "ABC-8013",
-    "tech":  "ABC-8014"
+    "admin": { "id": "ABC-8013" },
+    "tech":  { "id": "ABC-8014" }
 }
 ```
 
