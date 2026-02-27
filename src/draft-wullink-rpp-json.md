@@ -444,22 +444,6 @@ Example (Domain Name Data Object):
 }
 ```
 
-The following table lists all RPP objects and their corresponding `@type` values:
-
-| Object Name                      | `@type` Value              |
-|----------------------------------|----------------------------|
-| Domain Name Data Object          | `domainName`               |
-| Contact Data Object              | `contact`                  |
-| Host Data Object                 | `host`                     |
-| Provisioning Metadata Object     | `provisioningMetadata`     |
-| Status Object                    | `status`                   |
-| Period Object                    | `period`                   |
-| DNS Resource Record              | `dnsResourceRecord`        |
-| Authorisation Information Object | `authorisationInformation` |
-| Transfer Data Object             | `transferData`             |
-| Postal Info Object               | `postalInfo`               |
-| Postal Address Object            | `postalAddress`            |
-
 # JSON Schema Definitions
 
 This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
