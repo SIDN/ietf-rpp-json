@@ -327,14 +327,10 @@ Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Obj
 ```json
 "contacts": {
     "admin": {
-        "contact": {
-            "id": "ABC-8013"
-        }
+        "id": "ABC-8013"
     },
     "tech": {
-        "contact": {
-            "id": "ABC-8014"
-        }
+        "id": "ABC-8014"
     }
 }
 ```
@@ -377,16 +373,14 @@ Example: contact postal info (DictionaryComposition[Postal Info Object]):
 ```json
 "addresses": {
     "int": {
-        "postalInfo": {
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
+        "type": "PERSON",
+        "name": "John Doe",
+        "addr": {
+            "street": ["123 Example Dr."],
+            "city": "Dulles",
+            "sp": "VA",
+            "pc": "20166-6503",
+            "cc": "US"
         }
     }
 }
