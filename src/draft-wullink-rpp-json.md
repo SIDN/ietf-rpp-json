@@ -261,11 +261,11 @@ Example: domain nameservers (Aggregation[Host Data Object]) in a read response, 
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "name.example",
     "nameservers": [
-        { "@type": "hostDataObject", "hostName": "ns1.name.example" },
-        { "@type": "hostDataObject", "hostName": "ns2.name.example" }
+        { "@type": "host", "hostName": "ns1.name.example" },
+        { "@type": "host", "hostName": "ns2.name.example" }
     ]
 }
 ```
@@ -276,18 +276,18 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
 
 ```json
 { 
-        "@type": "domainNameDataObject",
+        "@type": "domainName",
         "name": "name.example",
         "nameservers": [
             {
-                "@type": "hostDataObject",
+                "@type": "host",
                 "hostName": "ns1.name.example",
                 "provisioningMetadata": {
-                    "@type": "provisioningMetadataObject",
+                    "@type": "provisioningMetadata",
                     "repositoryId": "NS1EXAMPLE-REP",
                     "sponsoringClientId": "ClientX"
                 },
-                "status": [ { "@type": "statusObject", "label": "ok" } ],
+                "status": [ { "@type": "status", "label": "ok" } ],
                 "dns": [
                     {
                         "@type": "dnsResourceRecord",
@@ -315,14 +315,14 @@ Example: domain contacts (LabelledAggregation[Contact Object]):
     { 
         "label": "admin",
         "object": { 
-            "@type": "contactDataObject",
+            "@type": "contact",
             "id": "ABC-8013" 
         }
     },
     { 
         "label": "tech",
         "object": { 
-            "@type": "contactDataObject",
+            "@type": "contact",
             "id": "ABC-8014" 
         }
      }
@@ -340,11 +340,11 @@ Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Obj
 ```json
 "contacts": {
     "admin": {
-        "@type": "contactDataObject",
+        "@type": "contact",
         "id": "ABC-8013"
     },
     "tech": {
-        "@type": "contactDataObject",
+        "@type": "contact",
         "id": "ABC-8014"
     }
 }
@@ -363,11 +363,11 @@ Example: contact postal info (LabelledComposition[Postal Info Object]):
     {
         "label": "int",
         "postalInfo": {
-            "@type": "postalInfoObject",
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "addr": {
-                "@type": "postalAddressObject",
+                "@type": "postalAddress",
                 "street": ["123 Example Dr."],
                 "city": "Dulles",
                 "sp": "VA",
@@ -390,11 +390,11 @@ Example: contact postal info (DictionaryComposition[Postal Info Object]):
 ```json
 "addresses": {
     "int": {
-        "@type": "postalInfoObject",
+        "@type": "postalInfo",
         "type": "PERSON",
         "name": "John Doe",
         "addr": {
-            "@type": "postalAddressObject",
+            "@type": "postalAddress",
             "street": ["123 Example Dr."],
             "city": "Dulles",
             "sp": "VA",
@@ -439,26 +439,26 @@ Example (Domain Name Data Object):
 
 ```json
 {
-  "@type": "domainNameDataObject",
+  "@type": "domainName",
   "name": "example.com"
 }
 ```
 
 The following table lists all RPP objects and their corresponding `@type` values:
 
-| Object Name                      | Object Type | `@type` Value                  |
-|----------------------------------|-------------|--------------------------------|
-| Domain Name Data Object          | Resource    | `domainNameDataObject`         |
-| Contact Data Object              | Resource    | `contactDataObject`            |
-| Host Data Object                 | Resource    | `hostDataObject`               |
-| Provisioning Metadata Object     | Component   | `provisioningMetadataObject`   |
-| Status Object                    | Component   | `statusObject`                 |
-| Period Object                    | Component   | `periodObject`                 |
-| DNS Resource Record              | Component   | `dnsResourceRecord`            |
-| Authorisation Information Object | Component   | `authorisationInformation`     |
-| Transfer Data Object             | Component   | `transferDataObject`           |
-| Postal Info Object               | Component   | `postalInfoObject`             |
-| Postal Address Object            | Component   | `postalAddressObject`          |
+| Object Name                      | `@type` Value              |
+|----------------------------------|----------------------------|
+| Domain Name Data Object          | `domainName`               |
+| Contact Data Object              | `contact`                  |
+| Host Data Object                 | `host`                     |
+| Provisioning Metadata Object     | `provisioningMetadata`     |
+| Status Object                    | `status`                   |
+| Period Object                    | `period`                   |
+| DNS Resource Record              | `dnsResourceRecord`        |
+| Authorisation Information Object | `authorisationInformation` |
+| Transfer Data Object             | `transferData`             |
+| Postal Info Object               | `postalInfo`               |
+| Postal Address Object            | `postalAddress`            |
 
 # JSON Schema Definitions
 
@@ -476,7 +476,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "period": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "periodObject" },
+        "@type": { "type": "string", "const": "period" },
         "value": {
           "type": "integer",
           "minimum": 1,
@@ -502,7 +502,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "provisioningMetadata": {
       "type": "object",
       "properties": {
-        "@type":              { "type": "string", "const": "provisioningMetadataObject", "readOnly": true },
+        "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
         "repositoryId":       { "type": "string", "readOnly": true },
         "sponsoringClientId": { "type": "string", "readOnly": true },
         "creatingClientId":   { "type": "string", "readOnly": true },
@@ -526,7 +526,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "status": {
       "type": "object",
       "properties": {
-        "@type":  { "type": "string", "const": "statusObject" },
+        "@type":  { "type": "string", "const": "status" },
         "label":  { "type": "string" },
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
@@ -586,7 +586,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "postalAddress": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalAddressObject" },
+        "@type": { "type": "string", "const": "postalAddress" },
         "street": {
           "type": "array",
           "items": { "type": "string" }
@@ -611,7 +611,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "postalInfo": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalInfoObject" },
+        "@type": { "type": "string", "const": "postalInfo" },
         "type": {
           "type": "string",
           "enum": ["PERSON", "ORG"]
@@ -635,7 +635,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "transferData": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "transferDataObject", "readOnly": true },
+        "@type": { "type": "string", "const": "transferData", "readOnly": true },
         "transferStatus": {
           "type": "string",
           "enum": ["pending", "clientApproved", "clientCancelled",
@@ -675,7 +675,7 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "domainNameDataObject" },
+    "@type": { "type": "string", "const": "domainName" },
     "name": { "type": "string" },
     "registrant": { "type": "string" },
     "contacts": {
@@ -695,7 +695,7 @@ Create request schema (create-only and read-write properties):
       "items": {
         "type": "object",
         "properties": {
-          "@type":   { "type": "string", "const": "hostDataObject" },
+          "@type":   { "type": "string", "const": "host" },
           "hostName": { "type": "string" },
           "dns": {
             "type": "array",
@@ -741,7 +741,7 @@ Create request schema (create-only and read-write properties):
     "period": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "periodObject" },
+        "@type": { "type": "string", "const": "period" },
         "value": { "type": "integer", "minimum": 1, "maximum": 99 },
         "unit":  { "type": "string", "enum": ["y", "m"] }
       },
@@ -759,7 +759,7 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "domainNameDataObject", "readOnly": true },
+    "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
     "name":                  { "type": "string", "readOnly": true },
     "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
@@ -782,7 +782,7 @@ Read response schema (read-write and read-only properties):
     },
     "nameservers": {
       "type": "array",
-      "items": { "$ref": "#/$defs/hostObject" }
+      "items": { "$ref": "#/$defs/host" }
     },
     "dns": {
       "type": "array",
@@ -790,7 +790,7 @@ Read response schema (read-write and read-only properties):
     },
     "subordinateHosts": {
       "type": "array",
-      "items": { "$ref": "#/$defs/hostObject" },
+      "items": { "$ref": "#/$defs/host" },
       "readOnly": true
     },
     "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
@@ -799,10 +799,10 @@ Read response schema (read-write and read-only properties):
   "required": ["@type", "name", "provisioningMetadata"],
   "additionalProperties": false,
   "$defs": {
-    "hostObject": {
+    "host": {
       "type": "object",
       "properties": {
-        "@type":              { "type": "string", "const": "hostDataObject", "readOnly": true },
+        "@type":              { "type": "string", "const": "host", "readOnly": true },
         "hostName":            { "type": "string" },
         "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
         "status": {
@@ -831,7 +831,7 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "contactDataObject" },
+    "@type": { "type": "string", "const": "contact" },
     "id": { "type": "string" },
     "postalInfo": {
       "type": "object",
@@ -865,7 +865,7 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "contactDataObject", "readOnly": true },
+    "@type":                 { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
@@ -907,7 +907,7 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":    { "type": "string", "const": "hostDataObject" },
+    "@type":    { "type": "string", "const": "host" },
     "hostName": { "type": "string" },
     "dns": {
       "type": "array",
@@ -926,7 +926,7 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":    { "type": "string", "const": "hostDataObject", "readOnly": true },
+    "@type":    { "type": "string", "const": "host", "readOnly": true },
     "hostName": { "type": "string" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
@@ -956,16 +956,16 @@ Example domain create request:
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "period": {
-        "@type": "periodObject",
+        "@type": "period",
         "value": 2,
         "unit": "y"
     },
     "nameservers": [
-        { "@type": "hostDataObject", "hostName": "ns1.example.net" },
-        { "@type": "hostDataObject", "hostName": "ns2.example.net" }
+        { "@type": "host", "hostName": "ns1.example.net" },
+        { "@type": "host", "hostName": "ns2.example.net" }
     ],
     "registrant": "jd1234",
     "contacts": [
@@ -984,10 +984,10 @@ Example domain create response:
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
@@ -1003,10 +1003,10 @@ Example domain read response:
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
@@ -1016,7 +1016,7 @@ Example domain read response:
         "transferDate": "2000-04-08T09:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "registrant": "jd1234",
     "contacts": [
@@ -1025,14 +1025,14 @@ Example domain read response:
     ],
     "nameservers": [
         {
-            "@type": "hostDataObject",
+            "@type": "host",
             "hostName": "ns1.example.com",
             "provisioningMetadata": {
-                "@type": "provisioningMetadataObject",
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "@type": "statusObject", "label": "ok" } ],
+            "status": [ { "@type": "status", "label": "ok" } ],
             "dns": [
                 {
                     "@type": "dnsResourceRecord",
@@ -1044,36 +1044,36 @@ Example domain read response:
             ]
         },
         {
-            "@type": "hostDataObject",
+            "@type": "host",
             "hostName": "ns1.example.net",
             "provisioningMetadata": {
-                "@type": "provisioningMetadataObject",
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLENET-REP",
                 "sponsoringClientId": "ClientZ"
             },
-            "status": [ { "@type": "statusObject", "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         }
     ],
     "subordinateHosts": [
         {
-            "@type": "hostDataObject",
+            "@type": "host",
             "hostName": "ns1.example.com",
             "provisioningMetadata": {
-                "@type": "provisioningMetadataObject",
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "@type": "statusObject", "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         },
         {
-            "@type": "hostDataObject",
+            "@type": "host",
             "hostName": "ns2.example.com",
             "provisioningMetadata": {
-                "@type": "provisioningMetadataObject",
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS2EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "@type": "statusObject", "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
@@ -1091,7 +1091,7 @@ Example domain update request (read-write properties):
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "registrant": "sh8013",
     "authorisationInformation": {
         "@type": "authorisationInformation",
@@ -1105,10 +1105,10 @@ Example domain update response:
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
@@ -1117,7 +1117,7 @@ Example domain update response:
         "updateDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "registrant": "sh8013"
 }
@@ -1131,10 +1131,10 @@ Example domain delete response (minimal, server may return full representation):
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX"
     }
@@ -1151,7 +1151,7 @@ Example domain renew request:
 {
     "currentExpiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
-        "@type": "periodObject",
+        "@type": "period",
         "value": 5,
         "unit": "y"
     }
@@ -1162,7 +1162,7 @@ Example domain renew response:
 
 ```json
 {
-    "@type": "domainNameDataObject",
+    "@type": "domainName",
     "name": "example.com",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
@@ -1181,7 +1181,7 @@ Example domain transfer request (pull transfer):
         "authdata": "2fooBAR"
     },
     "transferPeriod": {
-        "@type": "periodObject",
+        "@type": "period",
         "value": 1,
         "unit": "y"
     }
@@ -1192,7 +1192,7 @@ Example domain transfer response (Transfer Data Object):
 
 ```json
 {
-    "@type": "transferDataObject",
+    "@type": "transferData",
     "transferStatus": "pending",
     "transferDirection": "pull",
     "requestingClientId": "ClientX",
@@ -1209,7 +1209,7 @@ Example domain transfer query response (Transfer Data Object):
 
 ```json
 {
-    "@type": "transferDataObject",
+    "@type": "transferData",
     "transferStatus": "pending",
     "transferDirection": "pull",
     "requestingClientId": "ClientX",
@@ -1232,16 +1232,16 @@ Example contact create request:
 
 ```json
 {
-    "@type": "contactDataObject",
+    "@type": "contact",
     "id": "jd1234",
     "postalInfo": {
         "int": {
-            "@type": "postalInfoObject",
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddressObject",
+                "@type": "postalAddress",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1268,26 +1268,26 @@ Example contact create response:
 
 ```json
 {
-    "@type": "contactDataObject",
+    "@type": "contact",
     "id": "jd1234",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "JD1234-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "postalInfo": {
         "int": {
-            "@type": "postalInfoObject",
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddressObject",
+                "@type": "postalAddress",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1311,10 +1311,10 @@ Example contact read response:
 
 ```json
 {
-    "@type": "contactDataObject",
+    "@type": "contact",
     "id": "jd1234",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "JD1234-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
@@ -1323,16 +1323,16 @@ Example contact read response:
         "updateDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "postalInfo": {
         "int": {
-            "@type": "postalInfoObject",
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddressObject",
+                "@type": "postalAddress",
                 "street": ["123 Example Dr.", "Suite 100"],
                 "city": "Dulles",
                 "sp": "VA",
@@ -1354,7 +1354,7 @@ Example host create request:
 
 ```json
 {
-    "@type": "hostDataObject",
+    "@type": "host",
     "hostName": "ns1.example.com",
     "dns": [
         {
@@ -1379,17 +1379,17 @@ Example host create response:
 
 ```json
 {
-    "@type": "hostDataObject",
+    "@type": "host",
     "hostName": "ns1.example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "dns": [
         {
@@ -1416,17 +1416,17 @@ Example host read response:
 
 ```json
 {
-    "@type": "hostDataObject",
+    "@type": "host",
     "hostName": "ns1.example.com",
     "provisioningMetadata": {
-        "@type": "provisioningMetadataObject",
+        "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "@type": "statusObject", "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "dns": [
         {
@@ -1446,7 +1446,7 @@ Example host update request:
 
 ```json
 {
-    "@type": "hostDataObject",
+    "@type": "host",
     "hostName": "ns1.example2.com",
     "dns": [
         {
