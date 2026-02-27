@@ -440,7 +440,7 @@ Example (Domain Name Data Object):
 ```json
 {
   "@type": "domainName",
-  "name": "example.com"
+  "name": "example.example"
 }
 ```
 
@@ -941,15 +941,15 @@ Example domain create request:
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "period": {
         "@type": "period",
         "value": 2,
         "unit": "y"
     },
     "nameservers": [
-        { "@type": "host", "hostName": "ns1.example.net" },
-        { "@type": "host", "hostName": "ns2.example.net" }
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
     ],
     "registrant": "jd1234",
     "contacts": [
@@ -969,7 +969,7 @@ Example domain create response:
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -988,7 +988,7 @@ Example domain read response:
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1010,7 +1010,7 @@ Example domain read response:
     "nameservers": [
         {
             "@type": "host",
-            "hostName": "ns1.example.com",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
@@ -1020,7 +1020,7 @@ Example domain read response:
             "dns": [
                 {
                     "@type": "dnsResourceRecord",
-                    "hostNamelabel": "ns1.example.com.",
+                    "hostNamelabel": "ns1.example.example.",
                     "type": "A",
                     "data": "192.0.2.1",
                     "ttl": 3600
@@ -1029,7 +1029,7 @@ Example domain read response:
         },
         {
             "@type": "host",
-            "hostName": "ns1.example.net",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLENET-REP",
@@ -1041,7 +1041,7 @@ Example domain read response:
     "subordinateHosts": [
         {
             "@type": "host",
-            "hostName": "ns1.example.com",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
@@ -1051,7 +1051,7 @@ Example domain read response:
         },
         {
             "@type": "host",
-            "hostName": "ns2.example.com",
+            "hostName": "ns2.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS2EXAMPLE-REP",
@@ -1090,7 +1090,7 @@ Example domain update response:
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1116,7 +1116,7 @@ Example domain delete response (minimal, server may return full representation):
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1147,7 +1147,7 @@ Example domain renew response:
 ```json
 {
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ```
@@ -1239,7 +1239,7 @@ Example contact create request:
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"],
+    "email": ["jdoe@example.example"],
     "authorisationInformation": {
         "@type": "authorisationInformation",
         "method": "authinfo",
@@ -1285,7 +1285,7 @@ Example contact create response:
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ```
 
@@ -1326,7 +1326,7 @@ Example contact read response:
         }
     },
     "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ```
 
@@ -1339,18 +1339,18 @@ Example host create request:
 ```json
 {
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1364,7 +1364,7 @@ Example host create response:
 ```json
 {
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
@@ -1378,14 +1378,14 @@ Example host create response:
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1401,7 +1401,7 @@ Example host read response:
 ```json
 {
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
@@ -1415,7 +1415,7 @@ Example host read response:
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
@@ -1431,11 +1431,11 @@ Example host update request:
 ```json
 {
     "@type": "host",
-    "hostName": "ns1.example2.com",
+    "hostName": "ns1.example2.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example2.com.",
+            "hostNamelabel": "ns1.example2.example.",
             "type": "A",
             "data": "198.51.100.1",
             "ttl": 3600
@@ -1463,6 +1463,12 @@ TODO
 # Acknowledgments
 
 TODO
+
+# Change History
+
+## Version 00 to 01
+
+- Updated all example domain names to use the .example TLD. (Issue #26)
 
 {backmatter}
 
