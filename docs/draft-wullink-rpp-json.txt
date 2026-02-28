@@ -73,18 +73,18 @@ Table of Contents
      4.2.  Cardinality Rules . . . . . . . . . . . . . . . . . . . .   6
      4.3.  Mutability Rules  . . . . . . . . . . . . . . . . . . . .   8
      4.4.  Association Rules . . . . . . . . . . . . . . . . . . . .   8
-       4.4.1.  Aggregation . . . . . . . . . . . . . . . . . . . . .   8
-       4.4.2.  Composition . . . . . . . . . . . . . . . . . . . . .   9
-       4.4.3.  Labelled Aggregation  . . . . . . . . . . . . . . . .  10
-       4.4.4.  Dictionary Aggregation  . . . . . . . . . . . . . . .  11
-       4.4.5.  Labelled Composition  . . . . . . . . . . . . . . . .  12
-       4.4.6.  Dictionary Composition  . . . . . . . . . . . . . . .  12
-     4.5.  Object Identifier Rules . . . . . . . . . . . . . . . . .  13
-     4.6.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  13
-     4.7.  JSON Schema Validation Rules  . . . . . . . . . . . . . .  14
+     4.5.  Labelled associations . . . . . . . . . . . . . . . . . .   8
+       4.5.1.  Aggregation . . . . . . . . . . . . . . . . . . . . .   9
+       4.5.2.  Composition . . . . . . . . . . . . . . . . . . . . .   9
+       4.5.3.  Labelled Aggregation  . . . . . . . . . . . . . . . .  10
+       4.5.4.  Dictionary Aggregation  . . . . . . . . . . . . . . .  11
+       4.5.5.  Labelled Composition  . . . . . . . . . . . . . . . .  12
+       4.5.6.  Dictionary Composition  . . . . . . . . . . . . . . .  12
+     4.6.  Object Identifier Rules . . . . . . . . . . . . . . . . .  13
+     4.7.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  13
        4.7.1.  RPP Profiles and Validation . . . . . . . . . . . . .  14
-   5.  JSON Schema Definitions . . . . . . . . . . . . . . . . . . .  15
-     5.1.  Common Component Schemas  . . . . . . . . . . . . . . . .  15
+   5.  JSON Schema Definitions . . . . . . . . . . . . . . . . . . .  14
+     5.1.  Common Component Schemas  . . . . . . . . . . . . . . . .  14
        5.1.1.  Identifier  . . . . . . . . . . . . . . . . . . . . .  15
        5.1.2.  Client Identifier . . . . . . . . . . . . . . . . . .  15
        5.1.3.  Phone Number  . . . . . . . . . . . . . . . . . . . .  15
@@ -130,9 +130,11 @@ Internet-Draft                JSON for RPP                 February 2026
    8.  Internationalization Considerations . . . . . . . . . . . . .  41
    9.  Security Considerations . . . . . . . . . . . . . . . . . . .  41
    10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  41
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  41
-     11.1.  Normative References . . . . . . . . . . . . . . . . . .  41
-     11.2.  Informative References . . . . . . . . . . . . . . . . .  42
+   11. Change History  . . . . . . . . . . . . . . . . . . . . . . .  41
+     11.1.  Version 00 to 01 . . . . . . . . . . . . . . . . . . . .  41
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  41
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  41
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  42
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  42
 
 1.  Introduction
@@ -155,8 +157,6 @@ Internet-Draft                JSON for RPP                 February 2026
    representation ensures that the protocol's semantic foundation
    remains stable while enabling the adoption of JSON across diverse
    deployment environments.
-
-
 
 
 
@@ -430,7 +430,29 @@ Internet-Draft                JSON for RPP                 February 2026
    represents a parent-child relationship where the child object is
    embedded within the parent object and cannot exist independently.
 
-4.4.1.  Aggregation
+4.5.  Labelled associations
+
+   Some associations between objects carry a string label that provides
+   additional context for the relationship.  The label is not an
+   identifier of the target object, but rather a descriptor of the
+   association itself.  Labelled associations can occur in both
+   aggregations and compositions.  When representing labelled
+   associations in JSON, the property label MUST be included alongside
+   the reference to the target object.  A property with the name object
+   MUST be used to contain the reference to the target object, which can
+   be either limited representation containing at minimum the primary
+   object identifier for aggregations or an embedded object for
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 8]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
+   compositions.
+
+4.5.1.  Aggregation
 
    An Aggregation[Type] represents a relationship between two
    independent objects.  When the cardinality allows more than one
@@ -442,14 +464,6 @@ Internet-Draft                JSON for RPP                 February 2026
    array MUST include the data elements of the referenced object type
    that are relevant to the context (at minimum the primary identifier
    field).  Other data elements of the referenced object type MAY be
-
-
-
-Wullink & Kowalik       Expires 1 September 2026                [Page 8]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
    included as needed to provide additional context for the client, but
    are not required.  The JSON Schema MUST allow for the presence of
    these additional fields.
@@ -467,7 +481,7 @@ Internet-Draft                JSON for RPP                 February 2026
        ]
    }
 
-4.4.2.  Composition
+4.5.2.  Composition
 
    A Composition[Type] represents a parent-child relationship where the
    child's lifecycle is bound to the parent and the child cannot exist
@@ -475,20 +489,6 @@ Internet-Draft                JSON for RPP                 February 2026
    embedded within the parent object.  The JSON representation of a
    composition is the same as that of an aggregation.  The distinction
    between the two is semantic and does not affect the JSON structure.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -532,7 +532,7 @@ Internet-Draft                JSON for RPP                 February 2026
            ]
    }
 
-4.4.3.  Labelled Aggregation
+4.5.3.  Labelled Aggregation
 
    A LabelledAggregation[Type] is a relationship between two independent
    objects where each association carries a string label.  Multiple
@@ -579,7 +579,7 @@ Internet-Draft                JSON for RPP                 February 2026
         }
    ]
 
-4.4.4.  Dictionary Aggregation
+4.5.4.  Dictionary Aggregation
 
    A DictionaryAggregation[Type] is a relationship between two
    independent objects where each association carries a unique string
@@ -618,7 +618,7 @@ Wullink & Kowalik       Expires 1 September 2026               [Page 11]
 Internet-Draft                JSON for RPP                 February 2026
 
 
-4.4.5.  Labelled Composition
+4.5.5.  Labelled Composition
 
    A LabelledComposition[Type] is a parent-child relationship where each
    embedded child carries a string label.  Multiple instances with the
@@ -635,7 +635,7 @@ Internet-Draft                JSON for RPP                 February 2026
    "addresses": [
        {
            "label": "int",
-           "postalInfo": {
+           "object": {
                "@type": "postalInfo",
                "type": "PERSON",
                "name": "John Doe",
@@ -651,7 +651,7 @@ Internet-Draft                JSON for RPP                 February 2026
        }
    ]
 
-4.4.6.  Dictionary Composition
+4.5.6.  Dictionary Composition
 
    A DictionaryComposition[Type] is a parent-child relationship where
    each embedded child carries a unique string label used as a
@@ -690,7 +690,7 @@ Internet-Draft                JSON for RPP                 February 2026
        }
    }
 
-4.5.  Object Identifier Rules
+4.6.  Object Identifier Rules
 
    Rule 13: When a resource or component object is referenced by
    identifier (for example in an aggregation), the identifier MUST be
@@ -701,7 +701,7 @@ Internet-Draft                JSON for RPP                 February 2026
    composition), all data elements of the object MUST be represented as
    properties of a JSON object according to the rules of this section.
 
-4.6.  JSON Schema Definition Rules
+4.7.  JSON Schema Definition Rules
 
    Rule 15: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
@@ -751,17 +751,6 @@ Internet-Draft                JSON for RPP                 February 2026
      "name": "example.example"
    }
 
-4.7.  JSON Schema Validation Rules
-
-   Rule 21: Both clients and servers MUST apply strict validation of all
-   JSON request and response messages against the corresponding JSON
-   Schema definitions for the target object type and operation.  Strict
-   validation means that any JSON message that fails schema validation
-   MUST be rejected.  Unknown properties MUST be treated as a validation
-   error.  Servers MUST reject invalid requests with an appropriate
-   error response.  Clients MUST reject invalid responses received from
-   a server.
-
 4.7.1.  RPP Profiles and Validation
 
    RPP profiles, such as the EPP Compatibility Profile defined in
@@ -777,15 +766,6 @@ Internet-Draft                JSON for RPP                 February 2026
    fully captured in JSON Schema and therefore require additional
    validation logic in implementations.
 
-
-
-
-
-Wullink & Kowalik       Expires 1 September 2026               [Page 14]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
 5.  JSON Schema Definitions
 
    This section provides normative JSON Schema definitions for RPP
@@ -797,6 +777,14 @@ Internet-Draft                JSON for RPP                 February 2026
    This section defines shared data types that are based on the
    primitive data types above and are re-used across multiple data
    object definitions.
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 14]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
 5.1.1.  Identifier
 
@@ -834,6 +822,18 @@ Internet-Draft                JSON for RPP                 February 2026
    followed by a dot (".", ASCII value 0x002E), followed by a sequence
    of digits representing the telephone number.  An optional "x" (ASCII
    value 0x0078) separator with additional digits representing extension
+   information can be appended to the end of the value.
+
+   In JSON, a Phone Number MUST be represented as a string value
+   conforming to the pattern described above.
+
+
+
+
+
+
+
+
 
 
 
@@ -841,11 +841,6 @@ Wullink & Kowalik       Expires 1 September 2026               [Page 15]
 
 Internet-Draft                JSON for RPP                 February 2026
 
-
-   information can be appended to the end of the value.
-
-   In JSON, a Phone Number MUST be represented as a string value
-   conforming to the pattern described above.
 
    {
      "$defs": {
@@ -890,6 +885,11 @@ Internet-Draft                JSON for RPP                 February 2026
    -  transferDate MUST NOT be present if the object has never been
       transferred.
    -  In EPP Compatibility Profile, repositoryId MUST be provided.
+
+
+
+
+
 
 
 
@@ -1211,6 +1211,11 @@ Internet-Draft                JSON for RPP                 February 2026
 
 5.2.  Resource Object Schemas
 
+   Resource objects represent the main entities managed by RPP: domain
+   names, contacts, and hosts.  Each resource object has a corresponding
+   root JSON Schema definition that specifies its properties, required
+   fields, and constraints.
+
 5.2.1.  Domain Name Data Object
 
    The Domain Name Data Object represents a domain name and its
@@ -1218,6 +1223,16 @@ Internet-Draft                JSON for RPP                 February 2026
 
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 22]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    -  name MUST be a fully qualified domain name conforming to the
       syntax described in [RFC1035].  Servers MAY restrict allowable
@@ -1229,7 +1244,48 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik       Expires 1 September 2026               [Page 22]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 23]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1277,52 +1333,18 @@ Internet-Draft                JSON for RPP                 February 2026
        "period":   { "$ref": "#/$defs/period" }
      },
      "required": ["@type", "name"],
-     "additionalProperties": false,
-     "$defs": {
-       "dnsResourceRecord": {
-         "type": "object",
-         "properties": {
-
-
-
-Wullink & Kowalik       Expires 1 September 2026               [Page 23]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
-           "@type":         { "type": "string", "const": "dnsResourceRecord" },
-           "hostNamelabel": { "type": "string", "format": "hostname" },
-           "type":          { "type": "string" },
-           "data":          { "type": "string" },
-           "ttl":           { "type": "integer" }
-         },
-         "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-         "additionalProperties": false
-       },
-       "authorisationInformation": {
-         "type": "object",
-         "properties": {
-           "@type":    { "type": "string", "const": "authorisationInformation" },
-           "method":   { "type": "string" },
-           "authdata": { "type": "string" }
-         },
-         "required": ["@type", "method", "authdata"],
-         "additionalProperties": false
-       },
-       "period": {
-         "type": "object",
-         "properties": {
-           "@type": { "type": "string", "const": "period" },
-           "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-           "unit":  { "type": "string", "enum": ["y", "m"] }
-         },
-         "required": ["@type", "value", "unit"],
-         "additionalProperties": false
-       }
-     }
+     "additionalProperties": false
    }
 
    Read response schema (read-write and read-only properties):
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 24]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1338,14 +1360,6 @@ Internet-Draft                JSON for RPP                 February 2026
        },
        "registrant":  { "type": "string" },
        "contacts": {
-
-
-
-Wullink & Kowalik       Expires 1 September 2026               [Page 24]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
          "type": "array",
          "items": {
            "type": "object",
@@ -1374,26 +1388,12 @@ Internet-Draft                JSON for RPP                 February 2026
        "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
      },
      "required": ["@type", "name", "provisioningMetadata"],
-     "additionalProperties": false,
-     "$defs": {
-       "host": {
-         "type": "object",
-         "properties": {
-           "@type": { "type": "string", "const": "host", "readOnly": true },
-           "hostName": { "type": "string", "format": "hostname" },
-           "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-           "status": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/status" },
-             "readOnly": true
-           },
-           "dns": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/dnsResourceRecord" }
-           }
-         },
-         "required": ["@type", "hostName"],
-         "additionalProperties": false
+     "additionalProperties": false
+   }
+
+
+
+
 
 
 
@@ -1401,10 +1401,6 @@ Wullink & Kowalik       Expires 1 September 2026               [Page 25]
 
 Internet-Draft                JSON for RPP                 February 2026
 
-
-       }
-     }
-   }
 
 5.2.2.  Contact Data Object
 
@@ -1449,6 +1445,10 @@ Internet-Draft                JSON for RPP                 February 2026
    }
 
    Read response schema (read-write and read-only properties):
+
+
+
+
 
 
 
@@ -2258,9 +2258,16 @@ Internet-Draft                JSON for RPP                 February 2026
 
    TODO
 
-11.  References
+11.  Change History
 
-11.1.  Normative References
+11.1.  Version 00 to 01
+
+   -  Updated all example domain names to use the .example TLD.  (Issue
+      #26)
+
+12.  References
+
+12.1.  Normative References
 
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
@@ -2282,6 +2289,15 @@ Internet-Draft                JSON for RPP                 February 2026
               subdivisions - Part 1: Country code", ISO 3166-1:2020,
               2020, <https://www.iso.org/standard/72482.html>.
 
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 41]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    [ITU.E164.2005]
               International Telecommunication Union, "The international
               public telecommunication numbering plan", ITU-T
@@ -2290,13 +2306,6 @@ Internet-Draft                JSON for RPP                 February 2026
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <https://www.rfc-editor.org/info/rfc1035>.
-
-
-
-Wullink & Kowalik       Expires 1 September 2026               [Page 41]
-
-Internet-Draft                JSON for RPP                 February 2026
-
 
    [RFC1738]  Berners-Lee, T., Masinter, L., and M. McCahill, "Uniform
               Resource Locators (URL)", RFC 1738, DOI 10.17487/RFC1738,
@@ -2320,7 +2329,7 @@ Internet-Draft                JSON for RPP                 February 2026
               DOI 10.17487/RFC8259, December 2017,
               <https://www.rfc-editor.org/info/rfc8259>.
 
-11.2.  Informative References
+12.2.  Informative References
 
    [JSON-SCHEMA]
               JSON Schema, "JSON Schema: A Media Type for Describing
@@ -2337,6 +2346,14 @@ Authors' Addresses
 
    Pawel Kowalik
    DENIC
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 42]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    Email: pawel.kowalik@denic.de
    URI:   https://denic.de/
 
@@ -2349,4 +2366,43 @@ Authors' Addresses
 
 
 
-Wullink & Kowalik       Expires 1 September 2026               [Page 42]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 43]

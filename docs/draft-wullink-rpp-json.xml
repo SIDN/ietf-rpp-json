@@ -192,6 +192,10 @@ document are to be interpreted as described in <xref target="RFC2119"></xref>.</
 <section anchor="association-rules"><name>Association Rules</name>
 <t>The RPP data model defines several association types between objects, the following rules specify their JSON representations.
 A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.</t>
+</section>
+
+<section anchor="labelled-associations"><name>Labelled associations</name>
+<t>Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property <tt>label</tt> MUST be included  alongside the reference to the target object. A property with the name <tt>object</tt> MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.</t>
 
 <section anchor="aggregation"><name>Aggregation</name>
 <t>An <tt>Aggregation[Type]</tt> represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.</t>
@@ -294,7 +298,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA["addresses": [
     {
         "label": "int",
-        "postalInfo": {
+        "object": {
             "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
@@ -367,10 +371,6 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-</section>
-
-<section anchor="json-schema-validation-rules"><name>JSON Schema Validation Rules</name>
-<t>Rule 21: Both clients and servers MUST apply strict validation of all JSON request and response messages against the corresponding JSON Schema definitions for the target object type and operation. Strict validation means that any JSON message that fails schema validation MUST be rejected. Unknown properties MUST be treated as a validation error. Servers MUST reject invalid requests with an appropriate error response. Clients MUST reject invalid responses received from a server.</t>
 
 <section anchor="rpp-profiles-and-validation"><name>RPP Profiles and Validation</name>
 <t>RPP profiles, such as the EPP Compatibility Profile defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.</t>
@@ -666,6 +666,7 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="resource-object-schemas"><name>Resource Object Schemas</name>
+<t>Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.</t>
 
 <section anchor="domain-name-data-object"><name>Domain Name Data Object</name>
 <t>The Domain Name Data Object represents a domain name and its associated provisioning data.</t>
@@ -719,41 +720,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false,
-  "$defs": {
-    "dnsResourceRecord": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string", "format": "hostname" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
-      },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
-    },
-    "authorisationInformation": {
-      "type": "object",
-      "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
-        "method":   { "type": "string" },
-        "authdata": { "type": "string" }
-      },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
-    },
-    "period": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "period" },
-        "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-        "unit":  { "type": "string", "enum": ["y", "m"] }
-      },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ]]>
 </sourcecode>
@@ -801,28 +768,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false,
-  "$defs": {
-    "host": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "host", "readOnly": true },
-        "hostName": { "type": "string", "format": "hostname" },
-        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-        "status": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/status" },
-          "readOnly": true
-        },
-        "dns": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/dnsResourceRecord" }
-        }
-      },
-      "required": ["@type", "hostName"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ]]>
 </sourcecode>
@@ -1492,6 +1438,16 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="acknowledgments"><name>Acknowledgments</name>
 <t>TODO</t>
+</section>
+
+<section anchor="change-history"><name>Change History</name>
+
+<section anchor="version-00-to-01"><name>Version 00 to 01</name>
+
+<ul spacing="compact">
+<li>Updated all example domain names to use the .example TLD. (Issue #26)</li>
+</ul>
+</section>
 </section>
 
 </middle>
