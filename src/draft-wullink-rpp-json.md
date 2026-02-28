@@ -488,10 +488,10 @@ This section provides normative JSON Schema definitions for RPP component object
       "properties": {
         "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
         "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "type": "string", "readOnly": true },
-        "creatingClientId":   { "type": "string", "readOnly": true },
+        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "type": "string", "readOnly": true },
+        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
@@ -631,9 +631,9 @@ This section provides normative JSON Schema definitions for RPP component object
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "requestingClientId": { "type": "string", "readOnly": true },
+        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "type": "string", "readOnly": true },
+        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
@@ -824,11 +824,11 @@ Create request schema (create-only and read-write properties):
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
@@ -864,11 +864,11 @@ Read response schema (read-write and read-only properties):
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
