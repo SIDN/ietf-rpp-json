@@ -1315,6 +1315,131 @@ Example contact read response:
 }
 ```
 
+### Update
+
+Example contact update request:
+
+```json
+{
+    "@type": "contact",
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "456 New Street",
+                    "Suite 200"
+                ],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    }
+}
+```
+
+Example contact update response:
+
+```json
+{
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2025-06-01T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["456 New Street", "Suite 200"],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    },
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"]
+}
+```
+
+### Delete
+
+The contact delete operation takes the contact identifier as the resource identifier. No request body is required.
+
+### Transfer Request
+
+Example contact transfer request (pull transfer):
+
+```json
+{
+    "transferDirection": "pull",
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
+        "method": "authinfo",
+        "authdata": "2fooBAR"
+    }
+}
+```
+
+Example contact transfer response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z"
+}
+```
+
+### Transfer Query
+
+Example contact transfer query response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z"
+}
+```
+
+### Transfer Cancel / Reject / Approve
+
+Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+
+Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Data Object, as contacts do not have registration periods.
+
 ## Host
 
 ### Create
