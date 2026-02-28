@@ -105,71 +105,6 @@ RPP primitive types MUST be represented in JSON as follows:
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
-Example Timestamp:
-
-```json
-"creationDate": "1999-04-03T22:00:00.0Z"
-```
-
-Example Date:
-
-```json
-"expiryDate": "2025-10-27"
-```
-
-## Common Data Type Mappings
-
-This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. Each common data type maps to a JSON Schema definition.
-
-### Identifier
-
-Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
-
-<!-- TODO: Add required identifiers -->
-
-### Client Identifier
-
-Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the `clIDType` syntax described in [@!RFC5730].
-
-In JSON, a Client Identifier MUST be represented as a `string` value.
-
-```json
-{
-  "$defs": {
-    "clientIdentifier": {
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 16,
-      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
-    }
-  }
-}
-```
-
-### Phone Number
-
-Telephone number syntax is derived from structures defined in [@!ITU.E164.2005]. Telephone numbers described in this specification are character strings that MUST begin with a plus sign ("+", ASCII value 0x002B), followed by a country code defined in [@!ITU.E164.2005], followed by a dot (".", ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional "x" (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.
-
-In JSON, a Phone Number MUST be represented as a `string` value conforming to the pattern described above.
-
-```json
-{
-  "$defs": {
-    "phoneNumber": {
-      "type": "string",
-      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
-    }
-  }
-}
-```
-
-Example Phone Number values:
-
-```json
-"voice": "+1.7035555555",
-"mobile": "+1.7035555556"
-```
-
 ## Cardinality Rules
 
 The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:
@@ -450,6 +385,10 @@ Example (Domain Name Data Object):
 }
 ```
 
+### RPP Profiles and Validation
+
+RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
+
 # JSON Schema Definitions
 
 This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
@@ -457,6 +396,50 @@ This section provides normative JSON Schema definitions for RPP component object
 <!-- TODO: can we say normative for json schema definitions? -->
 
 ## Common Component Schemas
+
+This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
+
+### Identifier
+
+Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
+
+<!-- TODO: Add required identifiers -->
+
+### Client Identifier
+
+Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the `clIDType` syntax described in [@!RFC5730].
+
+In JSON, a Client Identifier MUST be represented as a `string` value.
+
+```json
+{
+  "$defs": {
+    "clientIdentifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 16,
+      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
+    }
+  }
+}
+```
+
+### Phone Number
+
+Telephone number syntax is derived from structures defined in [@!ITU.E164.2005]. Telephone numbers described in this specification are character strings that MUST begin with a plus sign ("+", ASCII value 0x002B), followed by a country code defined in [@!ITU.E164.2005], followed by a dot (".", ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional "x" (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.
+
+In JSON, a Phone Number MUST be represented as a `string` value conforming to the pattern described above.
+
+```json
+{
+  "$defs": {
+    "phoneNumber": {
+      "type": "string",
+      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
+    }
+  }
+}
+```
 
 ### Period Object
 
@@ -486,6 +469,12 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Provisioning Metadata Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `updatingClientId` and `updateDate` MUST NOT be present if the object has never been modified.
+- `transferDate` MUST NOT be present if the object has never been transferred.
+- In EPP Compatibility Profile, `repositoryId` MUST be provided.
+
 ```json
 {
   "$defs": {
@@ -494,10 +483,10 @@ This section provides normative JSON Schema definitions for RPP component object
       "properties": {
         "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
         "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "type": "string", "readOnly": true },
-        "creatingClientId":   { "type": "string", "readOnly": true },
+        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "type": "string", "readOnly": true },
+        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
@@ -510,6 +499,11 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Status Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `label` MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix "server"; labels set explicitly by a client MUST use the prefix "client"; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.
+- `due`: Servers MAY restrict the ability of clients to set or update this value.
+
 ```json
 {
   "$defs": {
@@ -517,7 +511,7 @@ This section provides normative JSON Schema definitions for RPP component object
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "status" },
-        "label":  { "type": "string" },
+        "label":  { "type": "string", "pattern": "^[a-zA-Z]+$" },
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
@@ -530,6 +524,13 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### DNS Resource Record
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostNamelabel` MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.
+- `type` MUST be a valid string representation of a DNS resource record type as defined in [@!RFC1035]. Allowed values MAY be further constrained by server policy.
+- `data` MUST be a syntactically valid resource record data value for the given `type` in zone file string representation.
+- `ttl` value range MAY be constrained by server policy.
+
 ```json
 {
   "$defs": {
@@ -537,7 +538,7 @@ This section provides normative JSON Schema definitions for RPP component object
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -550,6 +551,11 @@ This section provides normative JSON Schema definitions for RPP component object
 ```
 
 ### Authorisation Information Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `method` MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in [@!I-D.wullink-rpp-core]. In EPP Compatibility Profile, this value MUST be "authinfo" for standard password-based authorisation.
+- The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of `authdata` MAY not be returned in read responses, depending on the method and server policy.
 
 ```json
 {
@@ -570,6 +576,11 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Postal Address Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `cc` MUST be a valid two-character country code from [@!ISO3166-1]. The JSON Schema pattern enforces uppercase alpha-2 format.
+- In EPP Compatibility Profile, `city` and `cc` MUST be provided.
+
 ```json
 {
   "$defs": {
@@ -584,7 +595,7 @@ This section provides normative JSON Schema definitions for RPP component object
         "city":  { "type": "string" },
         "sp":    { "type": "string" },
         "pc":    { "type": "string" },
-        "cc":    { "type": "string", "minLength": 2, "maxLength": 2 }
+        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
       "required": ["@type"],
       "additionalProperties": false
@@ -594,6 +605,12 @@ This section provides normative JSON Schema definitions for RPP component object
 ```
 
 ### Postal Info Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MAY be required by implementations when `type` is "PERSON". In EPP Compatibility Profile, `name` MUST be provided.
+- `org` MAY be required by implementations when `type` is "ORG".
+- In EPP Compatibility Profile, `addr` MUST be provided.
 
 ```json
 {
@@ -637,9 +654,9 @@ This section provides normative JSON Schema definitions for RPP component object
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "requestingClientId": { "type": "string", "readOnly": true },
+        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "type": "string", "readOnly": true },
+        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
@@ -654,9 +671,15 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ## Resource Object Schemas
 
+Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
+
 ### Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MUST be a fully qualified domain name conforming to the syntax described in [@!RFC1035]. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.
 
 Create request schema (create-only and read-write properties):
 
@@ -686,7 +709,7 @@ Create request schema (create-only and read-write properties):
         "type": "object",
         "properties": {
           "@type":   { "type": "string", "const": "host" },
-          "hostName": { "type": "string" },
+          "hostName": { "type": "string", "format": "hostname" },
           "dns": {
             "type": "array",
             "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -704,41 +727,7 @@ Create request schema (create-only and read-write properties):
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false,
-  "$defs": {
-    "dnsResourceRecord": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
-      },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
-    },
-    "authorisationInformation": {
-      "type": "object",
-      "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
-        "method":   { "type": "string" },
-        "authdata": { "type": "string" }
-      },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
-    },
-    "period": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "period" },
-        "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-        "unit":  { "type": "string", "enum": ["y", "m"] }
-      },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ```
 
@@ -787,32 +776,15 @@ Read response schema (read-write and read-only properties):
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false,
-  "$defs": {
-    "host": {
-      "type": "object",
-      "properties": {
-        "@type":              { "type": "string", "const": "host", "readOnly": true },
-        "hostName":            { "type": "string" },
-        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-        "status": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/status" },
-          "readOnly": true
-        },
-        "dns": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/dnsResourceRecord" }
-        }
-      },
-      "required": ["@type", "hostName"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ```
 
 ### Contact Data Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `postalInfo` keys MUST be either "int" (internationalised, all-ASCII) or "loc" (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.
 
 Create request schema (create-only and read-write properties):
 
@@ -826,15 +798,16 @@ Create request schema (create-only and read-write properties):
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
@@ -855,7 +828,7 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "contact", "readOnly": true },
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
@@ -866,15 +839,16 @@ Read response schema (read-write and read-only properties):
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
@@ -890,6 +864,11 @@ Read response schema (read-write and read-only properties):
 
 ### Host Data Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostName` MUST be a syntactically valid fully qualified host name.
+- If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -898,7 +877,7 @@ Create request schema (create-only and read-write properties):
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -917,7 +896,7 @@ Read response schema (read-write and read-only properties):
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
@@ -1437,11 +1416,11 @@ Example host update request:
 ```json
 {
     "@type": "host",
-    "hostName": "ns1.example2.example",
+    "hostName": "ns1.example.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example2.example.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "198.51.100.1",
             "ttl": 3600
@@ -1497,4 +1476,15 @@ TODO
     <date year="2005" month="02"/>
   </front>
   <seriesInfo name="ITU-T Recommendation" value="E.164"/>
+</reference>
+
+<reference anchor="ISO3166-1" target="https://www.iso.org/standard/72482.html">
+  <front>
+    <title>Codes for the representation of names of countries and their subdivisions - Part 1: Country code</title>
+    <author>
+      <organization>International Organization for Standardization</organization>
+    </author>
+    <date year="2020"/>
+  </front>
+  <seriesInfo name="ISO" value="3166-1:2020"/>
 </reference>

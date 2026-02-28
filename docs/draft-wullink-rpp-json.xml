@@ -118,65 +118,7 @@ document are to be interpreted as described in <xref target="RFC2119"></xref>.</
 <td>Base64-encoded binary data</td>
 </tr>
 </tbody>
-</table><t>Example Timestamp:</t>
-
-<sourcecode type="json"><![CDATA["creationDate": "1999-04-03T22:00:00.0Z"
-]]>
-</sourcecode>
-<t>Example Date:</t>
-
-<sourcecode type="json"><![CDATA["expiryDate": "2025-10-27"
-]]>
-</sourcecode>
-</section>
-
-<section anchor="common-data-type-mappings"><name>Common Data Type Mappings</name>
-<t>This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. Each common data type maps to a JSON Schema definition.</t>
-
-<section anchor="identifier"><name>Identifier</name>
-<t>Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in <xref target="RFC5730" sectionFormat="of" section="2.8"></xref>. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.</t>
-</section>
-
-<section anchor="client-identifier"><name>Client Identifier</name>
-<t>Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the <tt>clIDType</tt> syntax described in <xref target="RFC5730"></xref>.</t>
-<t>In JSON, a Client Identifier MUST be represented as a <tt>string</tt> value.</t>
-
-<sourcecode type="json"><![CDATA[{
-  "$defs": {
-    "clientIdentifier": {
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 16,
-      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
-    }
-  }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="phone-number"><name>Phone Number</name>
-<t>Telephone number syntax is derived from structures defined in <xref target="ITU.E164.2005"></xref>. Telephone numbers described in this specification are character strings that MUST begin with a plus sign (&quot;+&quot;, ASCII value 0x002B), followed by a country code defined in <xref target="ITU.E164.2005"></xref>, followed by a dot (&quot;.&quot;, ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional &quot;x&quot; (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.</t>
-<t>In JSON, a Phone Number MUST be represented as a <tt>string</tt> value conforming to the pattern described above.</t>
-
-<sourcecode type="json"><![CDATA[{
-  "$defs": {
-    "phoneNumber": {
-      "type": "string",
-      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
-    }
-  }
-}
-]]>
-</sourcecode>
-<t>Example Phone Number values:</t>
-
-<sourcecode type="json"><![CDATA["voice": "+1.7035555555",
-"mobile": "+1.7035555556"
-]]>
-</sourcecode>
-</section>
-</section>
+</table></section>
 
 <section anchor="cardinality-rules"><name>Cardinality Rules</name>
 <t>The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:</t>
@@ -250,6 +192,10 @@ document are to be interpreted as described in <xref target="RFC2119"></xref>.</
 <section anchor="association-rules"><name>Association Rules</name>
 <t>The RPP data model defines several association types between objects, the following rules specify their JSON representations.
 A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.</t>
+</section>
+
+<section anchor="labelled-associations"><name>Labelled associations</name>
+<t>Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property <tt>label</tt> MUST be included  alongside the reference to the target object. A property with the name <tt>object</tt> MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.</t>
 
 <section anchor="aggregation"><name>Aggregation</name>
 <t>An <tt>Aggregation[Type]</tt> represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.</t>
@@ -352,7 +298,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA["addresses": [
     {
         "label": "int",
-        "postalInfo": {
+        "object": {
             "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
@@ -425,6 +371,10 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
+
+<section anchor="rpp-profiles-and-validation"><name>RPP Profiles and Validation</name>
+<t>RPP profiles, such as the EPP Compatibility Profile defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.</t>
+</section>
 </section>
 </section>
 
@@ -432,6 +382,45 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 <xref target="JSON-SCHEMA"></xref>.</t>
 
 <section anchor="common-component-schemas"><name>Common Component Schemas</name>
+<t>This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions.</t>
+
+<section anchor="identifier"><name>Identifier</name>
+<t>Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in <xref target="RFC5730" sectionFormat="of" section="2.8"></xref>. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.</t>
+</section>
+
+<section anchor="client-identifier"><name>Client Identifier</name>
+<t>Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the <tt>clIDType</tt> syntax described in <xref target="RFC5730"></xref>.</t>
+<t>In JSON, a Client Identifier MUST be represented as a <tt>string</tt> value.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "clientIdentifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 16,
+      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="phone-number"><name>Phone Number</name>
+<t>Telephone number syntax is derived from structures defined in <xref target="ITU.E164.2005"></xref>. Telephone numbers described in this specification are character strings that MUST begin with a plus sign (&quot;+&quot;, ASCII value 0x002B), followed by a country code defined in <xref target="ITU.E164.2005"></xref>, followed by a dot (&quot;.&quot;, ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional &quot;x&quot; (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.</t>
+<t>In JSON, a Phone Number MUST be represented as a <tt>string</tt> value conforming to the pattern described above.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "phoneNumber": {
+      "type": "string",
+      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
 
 <section anchor="period-object"><name>Period Object</name>
 
@@ -461,6 +450,13 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="provisioning-metadata-object"><name>Provisioning Metadata Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>updatingClientId</tt> and <tt>updateDate</tt> MUST NOT be present if the object has never been modified.</li>
+<li><tt>transferDate</tt> MUST NOT be present if the object has never been transferred.</li>
+<li>In EPP Compatibility Profile, <tt>repositoryId</tt> MUST be provided.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -469,10 +465,10 @@ A Aggregation represents a relationship between two independent objects, where o
       "properties": {
         "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
         "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "type": "string", "readOnly": true },
-        "creatingClientId":   { "type": "string", "readOnly": true },
+        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "type": "string", "readOnly": true },
+        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
@@ -486,6 +482,12 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="status-object"><name>Status Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>label</tt> MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix &quot;server&quot;; labels set explicitly by a client MUST use the prefix &quot;client&quot;; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.</li>
+<li><tt>due</tt>: Servers MAY restrict the ability of clients to set or update this value.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -493,7 +495,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "status" },
-        "label":  { "type": "string" },
+        "label":  { "type": "string", "pattern": "^[a-zA-Z]+$" },
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
@@ -507,6 +509,14 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="dns-resource-record"><name>DNS Resource Record</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>hostNamelabel</tt> MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.</li>
+<li><tt>type</tt> MUST be a valid string representation of a DNS resource record type as defined in <xref target="RFC1035"></xref>. Allowed values MAY be further constrained by server policy.</li>
+<li><tt>data</tt> MUST be a syntactically valid resource record data value for the given <tt>type</tt> in zone file string representation.</li>
+<li><tt>ttl</tt> value range MAY be constrained by server policy.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -514,7 +524,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -529,6 +539,12 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="authorisation-information-object"><name>Authorisation Information Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>method</tt> MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in <xref target="I-D.wullink-rpp-core"></xref>. In EPP Compatibility Profile, this value MUST be &quot;authinfo&quot; for standard password-based authorisation.</li>
+<li>The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of <tt>authdata</tt> MAY not be returned in read responses, depending on the method and server policy.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -549,6 +565,12 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="postal-address-object"><name>Postal Address Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>cc</tt> MUST be a valid two-character country code from <xref target="ISO3166-1"></xref>. The JSON Schema pattern enforces uppercase alpha-2 format.</li>
+<li>In EPP Compatibility Profile, <tt>city</tt> and <tt>cc</tt> MUST be provided.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -563,7 +585,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "city":  { "type": "string" },
         "sp":    { "type": "string" },
         "pc":    { "type": "string" },
-        "cc":    { "type": "string", "minLength": 2, "maxLength": 2 }
+        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
       "required": ["@type"],
       "additionalProperties": false
@@ -575,6 +597,13 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="postal-info-object"><name>Postal Info Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>name</tt> MAY be required by implementations when <tt>type</tt> is &quot;PERSON&quot;. In EPP Compatibility Profile, <tt>name</tt> MUST be provided.</li>
+<li><tt>org</tt> MAY be required by implementations when <tt>type</tt> is &quot;ORG&quot;.</li>
+<li>In EPP Compatibility Profile, <tt>addr</tt> MUST be provided.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
@@ -618,9 +647,9 @@ A Aggregation represents a relationship between two independent objects, where o
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "requestingClientId": { "type": "string", "readOnly": true },
+        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "type": "string", "readOnly": true },
+        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
@@ -637,9 +666,15 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="resource-object-schemas"><name>Resource Object Schemas</name>
+<t>Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.</t>
 
 <section anchor="domain-name-data-object"><name>Domain Name Data Object</name>
 <t>The Domain Name Data Object represents a domain name and its associated provisioning data.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>name</tt> MUST be a fully qualified domain name conforming to the syntax described in <xref target="RFC1035"></xref>. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.</li>
+</ul>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -667,7 +702,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "type": "object",
         "properties": {
           "@type":   { "type": "string", "const": "host" },
-          "hostName": { "type": "string" },
+          "hostName": { "type": "string", "format": "hostname" },
           "dns": {
             "type": "array",
             "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -685,41 +720,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false,
-  "$defs": {
-    "dnsResourceRecord": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
-      },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
-    },
-    "authorisationInformation": {
-      "type": "object",
-      "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
-        "method":   { "type": "string" },
-        "authdata": { "type": "string" }
-      },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
-    },
-    "period": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "period" },
-        "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-        "unit":  { "type": "string", "enum": ["y", "m"] }
-      },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ]]>
 </sourcecode>
@@ -767,34 +768,18 @@ A Aggregation represents a relationship between two independent objects, where o
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false,
-  "$defs": {
-    "host": {
-      "type": "object",
-      "properties": {
-        "@type":              { "type": "string", "const": "host", "readOnly": true },
-        "hostName":            { "type": "string" },
-        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-        "status": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/status" },
-          "readOnly": true
-        },
-        "dns": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/dnsResourceRecord" }
-        }
-      },
-      "required": ["@type", "hostName"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ]]>
 </sourcecode>
 </section>
 
 <section anchor="contact-data-object"><name>Contact Data Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>postalInfo</tt> keys MUST be either &quot;int&quot; (internationalised, all-ASCII) or &quot;loc&quot; (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.</li>
+</ul>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -806,15 +791,16 @@ A Aggregation represents a relationship between two independent objects, where o
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
@@ -834,7 +820,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "contact", "readOnly": true },
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
@@ -845,15 +831,16 @@ A Aggregation represents a relationship between two independent objects, where o
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
@@ -870,6 +857,12 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="host-data-object"><name>Host Data Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>hostName</tt> MUST be a syntactically valid fully qualified host name.</li>
+<li>If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.</li>
+</ul>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -877,7 +870,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -895,7 +888,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
@@ -1410,11 +1403,11 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
-    "hostName": "ns1.example2.example",
+    "hostName": "ns1.example.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example2.example.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "198.51.100.1",
             "ttl": 3600
@@ -1463,6 +1456,17 @@ A Aggregation represents a relationship between two independent objects, where o
 <references><name>References</name>
 <references><name>Normative References</name>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.kowalik-rpp-data-objects.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.wullink-rpp-core.xml"/>
+<reference anchor="ISO3166-1" target="https://www.iso.org/standard/72482.html">
+  <front>
+    <title>Codes for the representation of names of countries and their subdivisions - Part 1: Country code</title>
+    <author>
+      <organization>International Organization for Standardization</organization>
+    </author>
+    <date year="2020"></date>
+  </front>
+  <seriesInfo name="ISO" value="3166-1:2020"></seriesInfo>
+</reference>
 <reference anchor="ITU.E164.2005" target="">
   <front>
     <title>The international public telecommunication numbering plan</title>
@@ -1473,6 +1477,7 @@ A Aggregation represents a relationship between two independent objects, where o
   </front>
   <seriesInfo name="ITU-T Recommendation" value="E.164"></seriesInfo>
 </reference>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.1738.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.3339.xml"/>
