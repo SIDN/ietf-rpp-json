@@ -663,6 +663,79 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]>
 </sourcecode>
 </section>
+
+<section anchor="restore-data-object"><name>Restore Data Object</name>
+<t>The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>requestDate</tt> MUST NOT be present if no restore request has been submitted yet.</li>
+<li><tt>reportDate</tt> MUST NOT be present if no restore report has been accepted yet.</li>
+<li><tt>reportDueDate</tt> MUST NOT be present when <tt>restoreStatus</tt> is not <tt>&quot;pendingRestore&quot;</tt>.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "restoreData": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"],
+      "additionalProperties": false
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-report-object"><name>Restore Report Object</name>
+<t>The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process (<xref target="RFC3915"></xref>).</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li>At least one and at most two <tt>statements</tt> MUST be provided.</li>
+<li><tt>restoreTime</tt> MAY be omitted when the restore report is submitted inline within the restore request in a single-step process.</li>
+<li>In EPP Compatibility Profile, <tt>restoreTime</tt> MUST be present as defined in <xref target="RFC3915"></xref>.</li>
+<li>In EPP Compatibility Profile, exactly two <tt>statements</tt> MUST be present as defined in <xref target="RFC3915"></xref>.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "restoreReport": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "preData":       { "type": "string" },
+        "postData":      { "type": "string" },
+        "deleteTime":    { "type": "string", "format": "date-time" },
+        "restoreTime":   { "type": "string", "format": "date-time" },
+        "restoreReason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "other": { "type": "string" }
+      },
+      "required": ["@type", "statements"],
+      "additionalProperties": false
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
 </section>
 
 <section anchor="resource-object-schemas"><name>Resource Object Schemas</name>
@@ -1181,6 +1254,100 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="transfer-cancel-reject-approve"><name>Transfer Cancel / Reject / Approve</name>
 <t>Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The <tt>transferStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
 </section>
+
+<section anchor="restore-request"><name>Restore Request</name>
+<t>Example domain restore request (with inline restore report, single-step atomically processed):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "restoreRequest": {
+        "@type": "restoreRequest",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain restore request response (Restore Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-report"><name>Restore Report</name>
+<t>Example domain restore report request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain restore report response (Restore Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-query"><name>Restore Query</name>
+<t>Example domain restore query request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "restoreQuery": {
+        "@type": "restoreQuery"
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain restore query response (Restore Data Object, object in <tt>pendingRestore</tt> state):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreQuery",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example domain restore query response (Restore Data Object, object restored):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
 </section>
 
 <section anchor="contact"><name>Contact</name>
@@ -1481,6 +1648,15 @@ A Aggregation represents a relationship between two independent objects, where o
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.1738.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.3339.xml"/>
+<reference anchor="RFC3915" target="https://www.rfc-editor.org/rfc/rfc3915">
+  <front>
+    <title>Domain Registry Grace Period Mapping for the Extensible Provisioning Protocol (EPP)</title>
+    <author fullname="Scott Hollenbeck" initials="S." surname="Hollenbeck"></author>
+    <date year="2004" month="09"></date>
+  </front>
+  <seriesInfo name="RFC" value="3915"></seriesInfo>
+  <seriesInfo name="DOI" value="10.17487/RFC3915"></seriesInfo>
+</reference>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5730.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml"/>
 </references>

@@ -669,6 +669,77 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
+### Restore Data Object
+
+The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* `requestDate` MUST NOT be present if no restore request has been submitted yet.
+* `reportDate` MUST NOT be present if no restore report has been accepted yet.
+* `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
+
+```json
+{
+  "$defs": {
+    "restoreData": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+### Restore Report Object
+
+The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process ([@!RFC3915]).
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* At least one and at most two `statements` MUST be provided.
+* `restoreTime` MAY be omitted when the restore report is submitted inline within the restore request in a single-step process.
+* In EPP Compatibility Profile, `restoreTime` MUST be present as defined in [@!RFC3915].
+* In EPP Compatibility Profile, exactly two `statements` MUST be present as defined in [@!RFC3915].
+
+```json
+{
+  "$defs": {
+    "restoreReport": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "preData":       { "type": "string" },
+        "postData":      { "type": "string" },
+        "deleteTime":    { "type": "string", "format": "date-time" },
+        "restoreTime":   { "type": "string", "format": "date-time" },
+        "restoreReason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "other": { "type": "string" }
+      },
+      "required": ["@type", "statements"],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
 ## Resource Object Schemas
 
 Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
@@ -1193,6 +1264,104 @@ Example domain transfer query response (Transfer Data Object):
 
 Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
+### Restore Request
+
+Example domain restore request (with inline restore report, single-step atomically processed):
+
+```json
+{
+    "restoreRequest": {
+        "@type": "restoreRequest",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore request response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example domain restore report request:
+
+```json
+{
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+Example domain restore query request:
+
+```json
+{
+    "restoreQuery": {
+        "@type": "restoreQuery"
+    }
+}
+```
+
+Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreQuery",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
 ## Contact
 
 ### Create
@@ -1487,4 +1656,14 @@ TODO
     <date year="2020"/>
   </front>
   <seriesInfo name="ISO" value="3166-1:2020"/>
+</reference>
+
+<reference anchor="RFC3915" target="https://www.rfc-editor.org/rfc/rfc3915">
+  <front>
+    <title>Domain Registry Grace Period Mapping for the Extensible Provisioning Protocol (EPP)</title>
+    <author initials="S." surname="Hollenbeck" fullname="Scott Hollenbeck"/>
+    <date year="2004" month="09"/>
+  </front>
+  <seriesInfo name="RFC" value="3915"/>
+  <seriesInfo name="DOI" value="10.17487/RFC3915"/>
 </reference>
