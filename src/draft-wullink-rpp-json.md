@@ -669,6 +669,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ## Resource Object Schemas
 
+Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
+
 ### Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
@@ -723,41 +725,7 @@ Create request schema (create-only and read-write properties):
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false,
-  "$defs": {
-    "dnsResourceRecord": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string", "format": "hostname" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
-      },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
-    },
-    "authorisationInformation": {
-      "type": "object",
-      "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
-        "method":   { "type": "string" },
-        "authdata": { "type": "string" }
-      },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
-    },
-    "period": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "period" },
-        "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-        "unit":  { "type": "string", "enum": ["y", "m"] }
-      },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ```
 
@@ -806,28 +774,7 @@ Read response schema (read-write and read-only properties):
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false,
-  "$defs": {
-    "host": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "host", "readOnly": true },
-        "hostName": { "type": "string", "format": "hostname" },
-        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-        "status": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/status" },
-          "readOnly": true
-        },
-        "dns": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/dnsResourceRecord" }
-        }
-      },
-      "required": ["@type", "hostName"],
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }
 ```
 

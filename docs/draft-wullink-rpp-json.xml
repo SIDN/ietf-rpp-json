@@ -363,7 +363,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
   "@type": "domainName",
-  "name": "example.com"
+  "name": "example.example"
 }
 ]]>
 </sourcecode>
@@ -371,6 +371,10 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="json-schema-validation-rules"><name>JSON Schema Validation Rules</name>
 <t>Rule 21: Both clients and servers MUST apply strict validation of all JSON request and response messages against the corresponding JSON Schema definitions for the target object type and operation. Strict validation means that any JSON message that fails schema validation MUST be rejected. Unknown properties MUST be treated as a validation error. Servers MUST reject invalid requests with an appropriate error response. Clients MUST reject invalid responses received from a server.</t>
+
+<section anchor="rpp-profiles-and-validation"><name>RPP Profiles and Validation</name>
+<t>RPP profiles, such as the EPP Compatibility Profile defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.</t>
+</section>
 </section>
 </section>
 
@@ -520,7 +524,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -697,7 +701,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "type": "object",
         "properties": {
           "@type":   { "type": "string", "const": "host" },
-          "hostName": { "type": "string" },
+          "hostName": { "type": "string", "format": "hostname" },
           "dns": {
             "type": "array",
             "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -721,7 +725,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -803,7 +807,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "host", "readOnly": true },
-        "hostName": { "type": "string" },
+        "hostName": { "type": "string", "format": "hostname" },
         "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
         "status": {
           "type": "array",
@@ -920,7 +924,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -938,7 +942,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
@@ -969,15 +973,15 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "period": {
         "@type": "period",
         "value": 2,
         "unit": "y"
     },
     "nameservers": [
-        { "@type": "host", "hostName": "ns1.example.net" },
-        { "@type": "host", "hostName": "ns2.example.net" }
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
     ],
     "registrant": "jd1234",
     "contacts": [
@@ -996,7 +1000,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1015,7 +1019,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1037,7 +1041,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "nameservers": [
         {
             "@type": "host",
-            "hostName": "ns1.example.com",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
@@ -1047,7 +1051,7 @@ A Aggregation represents a relationship between two independent objects, where o
             "dns": [
                 {
                     "@type": "dnsResourceRecord",
-                    "hostNamelabel": "ns1.example.com.",
+                    "hostNamelabel": "ns1.example.example.",
                     "type": "A",
                     "data": "192.0.2.1",
                     "ttl": 3600
@@ -1056,7 +1060,7 @@ A Aggregation represents a relationship between two independent objects, where o
         },
         {
             "@type": "host",
-            "hostName": "ns1.example.net",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLENET-REP",
@@ -1068,7 +1072,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "subordinateHosts": [
         {
             "@type": "host",
-            "hostName": "ns1.example.com",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
@@ -1078,7 +1082,7 @@ A Aggregation represents a relationship between two independent objects, where o
         },
         {
             "@type": "host",
-            "hostName": "ns2.example.com",
+            "hostName": "ns2.example.example",
             "provisioningMetadata": {
                 "@type": "provisioningMetadata",
                 "repositoryId": "NS2EXAMPLE-REP",
@@ -1116,7 +1120,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1141,7 +1145,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
@@ -1170,7 +1174,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
-    "name": "example.com",
+    "name": "example.example",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ]]>
@@ -1262,7 +1266,7 @@ A Aggregation represents a relationship between two independent objects, where o
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"],
+    "email": ["jdoe@example.example"],
     "authorisationInformation": {
         "@type": "authorisationInformation",
         "method": "authinfo",
@@ -1307,7 +1311,7 @@ A Aggregation represents a relationship between two independent objects, where o
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ]]>
 </sourcecode>
@@ -1348,7 +1352,7 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     },
     "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ]]>
 </sourcecode>
@@ -1362,18 +1366,18 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1386,7 +1390,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
@@ -1400,14 +1404,14 @@ A Aggregation represents a relationship between two independent objects, where o
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1423,7 +1427,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
-    "hostName": "ns1.example.com",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
         "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
@@ -1437,7 +1441,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
@@ -1453,11 +1457,11 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
-    "hostName": "ns1.example2.com",
+    "hostName": "ns1.example.example",
     "dns": [
         {
             "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example2.com.",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "198.51.100.1",
             "ttl": 3600
