@@ -503,6 +503,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 - `label` MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix "server"; labels set explicitly by a client MUST use the prefix "client"; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.
 - `due`: Servers MAY restrict the ability of clients to set or update this value.
+- When the RGP feature is supported, the following additional status labels MAY appear on objects that support RGP: `addPeriod`, `autoRenewPeriod`, `renewPeriod`, `transferPeriod`, `redemptionPeriod`, `pendingRestore`, `rgpPendingDelete`. The labels `redemptionPeriod`, `pendingRestore`, and `rgpPendingDelete` MUST only appear alongside the standard `pendingDelete` status.
 
 ```json
 {
@@ -1266,12 +1267,29 @@ Transfer cancel, reject, and approve responses return the Transfer Data Object. 
 
 ### Restore Request
 
-Example domain restore request (with inline restore report, single-step atomically processed):
+Example domain restore request (without inline report; object transitions to `pendingRestore` state awaiting a subsequent Restore Report operation):
+
+```json
+{}
+```
+
+Example domain restore request response (Restore Data Object, server requires a report):
 
 ```json
 {
-    "restoreRequest": {
-        "@type": "restoreRequest",
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "restoreReport": {
+        "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
         "postData": "Domain example.example is being restored with the same registration data.",
         "deleteTime": "2025-01-10T12:00:00.0Z",
@@ -1285,14 +1303,14 @@ Example domain restore request (with inline restore report, single-step atomical
 }
 ```
 
-Example domain restore request response (Restore Data Object):
+Example domain restore request with inline report response (Restore Data Object, immediately restored):
 
 ```json
 {
     "@type": "restoreData",
-    "restoreStatus": "pendingRestore",
+    "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
-    "reportDueDate": "2025-01-27T15:30:00.0Z"
+    "reportDate": "2025-01-20T15:30:00.0Z"
 }
 ```
 
@@ -1330,21 +1348,13 @@ Example domain restore report response (Restore Data Object):
 
 ### Restore Query
 
-Example domain restore query request:
-
-```json
-{
-    "restoreQuery": {
-        "@type": "restoreQuery"
-    }
-}
-```
+The Restore Query operation takes no request body (Parameters: None).
 
 Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
 
 ```json
 {
-    "@type": "restoreQuery",
+    "@type": "restoreData",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
