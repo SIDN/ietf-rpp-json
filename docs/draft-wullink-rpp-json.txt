@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 30 August 2026                                            DENIC
-                                                        26 February 2026
+Expires: 1 September 2026                                          DENIC
+                                                        28 February 2026
 
 
       JSON representation for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 30 August 2026.
+   This Internet-Draft will expire on 1 September 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                 [Page 1]
+Wullink & Kowalik       Expires 1 September 2026                [Page 1]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -65,74 +65,73 @@ Internet-Draft                JSON for RPP                 February 2026
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
-     1.1.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   4
+     1.1.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Conventions Used in This Document . . . . . . . . . . . . . .   5
    4.  JSON Representation Rules . . . . . . . . . . . . . . . . . .   5
      4.1.  Primitive Type Mappings . . . . . . . . . . . . . . . . .   5
-     4.2.  Common Data Type Mappings . . . . . . . . . . . . . . . .   6
-       4.2.1.  Identifier  . . . . . . . . . . . . . . . . . . . . .   6
-       4.2.2.  Client Identifier . . . . . . . . . . . . . . . . . .   7
-       4.2.3.  Phone Number  . . . . . . . . . . . . . . . . . . . .   7
-     4.3.  Cardinality Rules . . . . . . . . . . . . . . . . . . . .   8
-     4.4.  Mutability Rules  . . . . . . . . . . . . . . . . . . . .   9
-     4.5.  Association Rules . . . . . . . . . . . . . . . . . . . .  10
-       4.5.1.  Aggregation . . . . . . . . . . . . . . . . . . . . .  10
-       4.5.2.  Composition . . . . . . . . . . . . . . . . . . . . .  10
-       4.5.3.  Labelled Aggregation  . . . . . . . . . . . . . . . .  11
-       4.5.4.  Dictionary Aggregation  . . . . . . . . . . . . . . .  11
-       4.5.5.  Labelled Composition  . . . . . . . . . . . . . . . .  12
-       4.5.6.  Dictionary Composition  . . . . . . . . . . . . . . .  13
-     4.6.  Object Identifier Rules . . . . . . . . . . . . . . . . .  13
-     4.7.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  13
+     4.2.  Cardinality Rules . . . . . . . . . . . . . . . . . . . .   6
+     4.3.  Mutability Rules  . . . . . . . . . . . . . . . . . . . .   8
+     4.4.  Association Rules . . . . . . . . . . . . . . . . . . . .   8
+       4.4.1.  Aggregation . . . . . . . . . . . . . . . . . . . . .   9
+       4.4.2.  Composition . . . . . . . . . . . . . . . . . . . . .   9
+       4.4.3.  Labelled Aggregation  . . . . . . . . . . . . . . . .  10
+       4.4.4.  Dictionary Aggregation  . . . . . . . . . . . . . . .  11
+       4.4.5.  Labelled Composition  . . . . . . . . . . . . . . . .  12
+       4.4.6.  Dictionary Composition  . . . . . . . . . . . . . . .  12
+     4.5.  Object Identifier Rules . . . . . . . . . . . . . . . . .  13
+     4.6.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  13
    5.  JSON Schema Definitions . . . . . . . . . . . . . . . . . . .  14
      5.1.  Common Component Schemas  . . . . . . . . . . . . . . . .  14
-       5.1.1.  Period Object . . . . . . . . . . . . . . . . . . . .  14
-       5.1.2.  Provisioning Metadata Object  . . . . . . . . . . . .  14
-       5.1.3.  Status Object . . . . . . . . . . . . . . . . . . . .  15
-       5.1.4.  DNS Resource Record . . . . . . . . . . . . . . . . .  15
-       5.1.5.  Authorisation Information Object  . . . . . . . . . .  16
-       5.1.6.  Postal Address Object . . . . . . . . . . . . . . . .  16
-       5.1.7.  Postal Info Object  . . . . . . . . . . . . . . . . .  17
-       5.1.8.  Transfer Data Object  . . . . . . . . . . . . . . . .  17
-     5.2.  Resource Object Schemas . . . . . . . . . . . . . . . . .  18
-       5.2.1.  Domain Name Data Object . . . . . . . . . . . . . . .  18
-       5.2.2.  Contact Data Object . . . . . . . . . . . . . . . . .  21
-       5.2.3.  Host Data Object  . . . . . . . . . . . . . . . . . .  23
-   6.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     6.1.  Domain Name . . . . . . . . . . . . . . . . . . . . . . .  25
-       6.1.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  25
-       6.1.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  25
-       6.1.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  27
-       6.1.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  28
-       6.1.5.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  28
+       5.1.1.  Identifier  . . . . . . . . . . . . . . . . . . . . .  14
+       5.1.2.  Client Identifier . . . . . . . . . . . . . . . . . .  14
+       5.1.3.  Phone Number  . . . . . . . . . . . . . . . . . . . .  15
+       5.1.4.  Period Object . . . . . . . . . . . . . . . . . . . .  15
+       5.1.5.  Provisioning Metadata Object  . . . . . . . . . . . .  16
+       5.1.6.  Status Object . . . . . . . . . . . . . . . . . . . .  16
+       5.1.7.  DNS Resource Record . . . . . . . . . . . . . . . . .  17
+       5.1.8.  Authorisation Information Object  . . . . . . . . . .  17
+       5.1.9.  Postal Address Object . . . . . . . . . . . . . . . .  18
+       5.1.10. Postal Info Object  . . . . . . . . . . . . . . . . .  18
+       5.1.11. Transfer Data Object  . . . . . . . . . . . . . . . .  19
+     5.2.  Resource Object Schemas . . . . . . . . . . . . . . . . .  20
+       5.2.1.  Domain Name Data Object . . . . . . . . . . . . . . .  20
+       5.2.2.  Contact Data Object . . . . . . . . . . . . . . . . .  23
+       5.2.3.  Host Data Object  . . . . . . . . . . . . . . . . . .  25
+   6.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  26
+     6.1.  Domain Name . . . . . . . . . . . . . . . . . . . . . . .  27
+       6.1.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  27
+       6.1.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  28
+       6.1.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  29
+       6.1.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  30
+       6.1.5.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  31
+       6.1.6.  Transfer Request  . . . . . . . . . . . . . . . . . .  31
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                 [Page 2]
+Wullink & Kowalik       Expires 1 September 2026                [Page 2]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
-       6.1.6.  Transfer Request  . . . . . . . . . . . . . . . . . .  29
-       6.1.7.  Transfer Query  . . . . . . . . . . . . . . . . . . .  29
-       6.1.8.  Transfer Cancel / Reject / Approve  . . . . . . . . .  30
-     6.2.  Contact . . . . . . . . . . . . . . . . . . . . . . . . .  30
-       6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  30
-       6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  31
-     6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  32
-       6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  32
-       6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  34
-       6.3.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  34
-       6.3.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  34
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  35
-   8.  Internationalization Considerations . . . . . . . . . . . . .  35
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  35
-   10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  35
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  35
-     11.1.  Normative References . . . . . . . . . . . . . . . . . .  35
-     11.2.  Informative References . . . . . . . . . . . . . . . . .  36
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  36
+       6.1.7.  Transfer Query  . . . . . . . . . . . . . . . . . . .  32
+       6.1.8.  Transfer Cancel / Reject / Approve  . . . . . . . . .  32
+     6.2.  Contact . . . . . . . . . . . . . . . . . . . . . . . . .  32
+       6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  32
+       6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  34
+     6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  35
+       6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  35
+       6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  37
+       6.3.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  38
+       6.3.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  38
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  39
+   8.  Internationalization Considerations . . . . . . . . . . . . .  39
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  39
+   10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  39
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  39
+     11.1.  Normative References . . . . . . . . . . . . . . . . . .  39
+     11.2.  Informative References . . . . . . . . . . . . . . . . .  40
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  40
 
 1.  Introduction
 
@@ -155,21 +154,6 @@ Internet-Draft                JSON for RPP                 February 2026
    remains stable while enabling the adoption of JSON across diverse
    deployment environments.
 
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 3]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
 1.1.  Motivation
 
    The RESTful Provisioning Protocol (RPP) introduces a new provisioning
@@ -178,6 +162,14 @@ Internet-Draft                JSON for RPP                 February 2026
    protocols do not mandate a specific media type for resource
    description, the widespread adoption of JSON in web services has
    established it as the de facto standard for modern APIs.  The
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 3]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    increasing availability of tools, software libraries, and a skilled
    workforce has led several registries to adopt JSON for data exchange
    within their API ecosystems.  Registries supporting JSON can offer a
@@ -219,19 +211,20 @@ Internet-Draft                JSON for RPP                 February 2026
    RESTful Provisioning Protocol - A RESTful protocol for provisioning
    heterogeneous database objects.
 
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 4]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
    JSON Schema - A vocabulary that allows annotation and validation of
    JSON documents, as described in [JSON-SCHEMA].
 
    EPP Compatibility Profile - A set of additional constraints defined
    in [I-D.kowalik-rpp-data-objects] that a server MUST adhere to when
    supporting both RPP and EPP concurrently.
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 4]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
 3.  Conventions Used in This Document
 
@@ -277,7 +270,14 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                 [Page 5]
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 5]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -316,85 +316,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
    "expiryDate": "2025-10-27"
 
-4.2.  Common Data Type Mappings
-
-   This section defines shared data types that are based on the
-   primitive data types above and are re-used across multiple data
-   object definitions.  Each common data type maps to a JSON Schema
-   definition.
-
-4.2.1.  Identifier
-
-   Identifiers are character strings with a specified minimum length, a
-   specified maximum length, and a specified format outlined in
-   Section 2.8 of [RFC5730].  Identifiers for certain object types MAY
-   have additional constraints imposed either by server policy, object-
-   specific specifications, or both.
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 6]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
-4.2.2.  Client Identifier
-
-   Client identifiers are character strings with a specified minimum
-   length, a specified maximum length, and a specified format.  Client
-   identifiers use the clIDType syntax described in [RFC5730].
-
-   In JSON, a Client Identifier MUST be represented as a string value.
-
-   {
-     "$defs": {
-       "clientIdentifier": {
-         "type": "string",
-         "minLength": 3,
-         "maxLength": 16,
-         "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
-       }
-     }
-   }
-
-4.2.3.  Phone Number
-
-   Telephone number syntax is derived from structures defined in
-   [ITU.E164.2005].  Telephone numbers described in this specification
-   are character strings that MUST begin with a plus sign ("+", ASCII
-   value 0x002B), followed by a country code defined in [ITU.E164.2005],
-   followed by a dot (".", ASCII value 0x002E), followed by a sequence
-   of digits representing the telephone number.  An optional "x" (ASCII
-   value 0x0078) separator with additional digits representing extension
-   information can be appended to the end of the value.
-
-   In JSON, a Phone Number MUST be represented as a string value
-   conforming to the pattern described above.
-
-   {
-     "$defs": {
-       "phoneNumber": {
-         "type": "string",
-         "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
-       }
-     }
-   }
-
-   Example Phone Number values:
-
-   "voice": "+1.7035555555",
-   "mobile": "+1.7035555556"
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 7]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
-4.3.  Cardinality Rules
+4.2.  Cardinality Rules
 
    The cardinality of each data element in the RPP data model MUST be
    represented as follows in JSON:
@@ -403,6 +325,18 @@ Internet-Draft                JSON for RPP                 February 2026
    represented as a JSON property and MUST be present in the containing
    JSON object.  The element MUST be listed under required in the
    corresponding JSON Schema.
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 6]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    {
      "type": "object",
@@ -434,40 +368,45 @@ Internet-Draft                JSON for RPP                 February 2026
      "properties": {
        "status": {
          "type": "array",
-         "items": { "$ref": "#/$defs/statusObject" }
+         "items": { "$ref": "#/$defs/status" }
        }
      }
    }
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 8]
-
-Internet-Draft                JSON for RPP                 February 2026
-
 
    Rule 4: A data element with cardinality 1+ (one or more) MUST be
    represented as a required JSON array with "minItems": 1 and the
    element MUST be listed under required in the corresponding JSON
    Schema.
 
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 7]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
      "type": "object",
      "properties": {
        "postalInfo": {
          "type": "array",
-         "items": { "$ref": "#/$defs/postalInfoObject" },
+         "items": { "$ref": "#/$defs/postalInfo" },
          "minItems": 1
        }
      },
      "required": ["postalInfo"]
    }
 
-4.4.  Mutability Rules
+4.3.  Mutability Rules
 
    Data elements in the RPP data model carry a mutability attribute:
    create-only, read-only, or read-write.  These MUST be represented in
@@ -494,19 +433,7 @@ Internet-Draft                JSON for RPP                 February 2026
    Rule 7: Data elements with mutability read-write have no additional
    annotation.  They MAY appear in both request and response bodies.
 
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                 [Page 9]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
-4.5.  Association Rules
+4.4.  Association Rules
 
    The RPP data model defines several association types between objects,
    the following rules specify their JSON representations.  A
@@ -515,7 +442,15 @@ Internet-Draft                JSON for RPP                 February 2026
    represents a parent-child relationship where the child object is
    embedded within the parent object and cannot exist independently.
 
-4.5.1.  Aggregation
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 8]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
+4.4.1.  Aggregation
 
    An Aggregation[Type] represents a relationship between two
    independent objects.  When the cardinality allows more than one
@@ -535,12 +470,16 @@ Internet-Draft                JSON for RPP                 February 2026
    response, returning a limited object representation, only cvontaining
    the primary identifier field hostName:
 
-   "nameservers": [
-       { "hostName": "ns1.example.com" },
-       { "hostName": "ns2.example.com" }
-   ]
+   {
+       "@type": "domainName",
+       "name": "name.example",
+       "nameservers": [
+           { "@type": "host", "hostName": "ns1.name.example" },
+           { "@type": "host", "hostName": "ns2.name.example" }
+       ]
+   }
 
-4.5.2.  Composition
+4.4.2.  Composition
 
    A Composition[Type] represents a parent-child relationship where the
    child's lifecycle is bound to the parent and the child cannot exist
@@ -557,31 +496,43 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 10]
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026                [Page 9]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
-   "nameservers": [
-       {
-           "hostName": "ns1.example.com",
-           "provisioningMetadata": {
-               "repositoryId": "NS1EXAMPLE-REP",
-               "sponsoringClientId": "ClientX"
-           },
-           "status": [ { "label": "ok" } ],
-           "dns": [
+   {
+           "@type": "domainName",
+           "name": "name.example",
+           "nameservers": [
                {
-                   "hostNamelabel": "ns1.example.com.",
-                   "type": "A",
-                   "data": "192.0.2.1",
-                   "ttl": 3600
+                   "@type": "host",
+                   "hostName": "ns1.name.example",
+                   "provisioningMetadata": {
+                       "@type": "provisioningMetadata",
+                       "repositoryId": "NS1EXAMPLE-REP",
+                       "sponsoringClientId": "ClientX"
+                   },
+                   "status": [ { "@type": "status", "label": "ok" } ],
+                   "dns": [
+                       {
+                           "@type": "dnsResourceRecord",
+                           "hostNamelabel": "ns1.name.example",
+                           "type": "A",
+                           "data": "192.0.2.1",
+                           "ttl": 3600
+                       }
+                   ]
                }
            ]
-       }
-   ]
+   }
 
-4.5.3.  Labelled Aggregation
+4.4.3.  Labelled Aggregation
 
    A LabelledAggregation[Type] is a relationship between two independent
    objects where each association carries a string label.  Multiple
@@ -598,25 +549,41 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example: domain contacts (LabelledAggregation[Contact Object]):
 
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 10]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    "contacts": [
-       { "label": "admin", "id": "ABC-8013" },
-       { "label": "tech",  "id": "ABC-8014" }
+       {
+           "label": "admin",
+           "object": {
+               "@type": "contact",
+               "id": "ABC-8013"
+           }
+       },
+       {
+           "label": "tech",
+           "object": {
+               "@type": "contact",
+               "id": "ABC-8014"
+           }
+        }
    ]
 
-4.5.4.  Dictionary Aggregation
+4.4.4.  Dictionary Aggregation
 
    A DictionaryAggregation[Type] is a relationship between two
    independent objects where each association carries a unique string
    label that serves as a dictionary key.
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 11]
-
-Internet-Draft                JSON for RPP                 February 2026
-
 
    Rule 10: DictionaryAggregation[Type] MUST be represented as a JSON
    object where each key is the unique label and the corresponding value
@@ -630,11 +597,28 @@ Internet-Draft                JSON for RPP                 February 2026
    (DictionaryAggregation[Contact Object]):
 
    "contacts": {
-       "admin": { "id": "ABC-8013" },
-       "tech":  { "id": "ABC-8014" }
+       "admin": {
+           "@type": "contact",
+           "id": "ABC-8013"
+       },
+       "tech": {
+           "@type": "contact",
+           "id": "ABC-8014"
+       }
    }
 
-4.5.5.  Labelled Composition
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 11]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
+4.4.5.  Labelled Composition
 
    A LabelledComposition[Type] is a parent-child relationship where each
    embedded child carries a string label.  Multiple instances with the
@@ -651,30 +635,23 @@ Internet-Draft                JSON for RPP                 February 2026
    "addresses": [
        {
            "label": "int",
-           "type": "PERSON",
-           "name": "John Doe",
-           "addr": {
-               "street": ["123 Example Dr."],
-               "city": "Dulles",
-               "sp": "VA",
-               "pc": "20166-6503",
-               "cc": "US"
+           "postalInfo": {
+               "@type": "postalInfo",
+               "type": "PERSON",
+               "name": "John Doe",
+               "addr": {
+                   "@type": "postalAddress",
+                   "street": ["123 Example Dr."],
+                   "city": "Dulles",
+                   "sp": "VA",
+                   "pc": "20166-6503",
+                   "cc": "US"
+               }
            }
        }
    ]
 
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 12]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
-4.5.6.  Dictionary Composition
+4.4.6.  Dictionary Composition
 
    A DictionaryComposition[Type] is a parent-child relationship where
    each embedded child carries a unique string label used as a
@@ -687,11 +664,23 @@ Internet-Draft                JSON for RPP                 February 2026
    Example: contact postal info (DictionaryComposition[Postal Info
    Object]):
 
-   "postalInfo": {
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 12]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
+   "addresses": {
        "int": {
+           "@type": "postalInfo",
            "type": "PERSON",
            "name": "John Doe",
            "addr": {
+               "@type": "postalAddress",
                "street": ["123 Example Dr."],
                "city": "Dulles",
                "sp": "VA",
@@ -701,7 +690,7 @@ Internet-Draft                JSON for RPP                 February 2026
        }
    }
 
-4.6.  Object Identifier Rules
+4.5.  Object Identifier Rules
 
    Rule 13: When a resource or component object is referenced by
    identifier (for example in an aggregation), the identifier MUST be
@@ -712,7 +701,7 @@ Internet-Draft                JSON for RPP                 February 2026
    composition), all data elements of the object MUST be represented as
    properties of a JSON object according to the rules of this section.
 
-4.7.  JSON Schema Definition Rules
+4.6.  JSON Schema Definition Rules
 
    Rule 15: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
@@ -722,13 +711,6 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Rule 17: Enumeration constraints on string fields MUST be expressed
    using the "enum" keyword in JSON Schema.
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 13]
-
-Internet-Draft                JSON for RPP                 February 2026
-
 
    Example (Transfer Status enum):
 
@@ -741,9 +723,33 @@ Internet-Draft                JSON for RPP                 February 2026
    Rule 18: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 13]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    Rule 19: JSON Schema definitions for RPP objects MUST use
    "additionalProperties": false by default to prevent unrecognised
    properties.
+
+   Rule 20: Every RPP object representation MUST include a "@type"
+   property whose value is the object's identifier as registered in the
+   IANA RPP Data Object Registry.  This property enables identification
+   and allows clients and servers to unambiguously determine the type of
+   an object.  The "@type" property MUST be included in the JSON Schema
+   "properties" object for each RPP object definition with a "const"
+   constraint fixing the value to the object's registered identifier.
+   The "@type" property MUST be listed in the "required" array of the
+   corresponding JSON Schema definition.
+
+   Example (Domain Name Data Object):
+
+   {
+     "@type": "domainName",
+     "name": "example.com"
+   }
 
 5.  JSON Schema Definitions
 
@@ -753,13 +759,95 @@ Internet-Draft                JSON for RPP                 February 2026
 
 5.1.  Common Component Schemas
 
-5.1.1.  Period Object
+   This section defines shared data types that are based on the
+   primitive data types above and are re-used across multiple data
+   object definitions.
+
+5.1.1.  Identifier
+
+   Identifiers are character strings with a specified minimum length, a
+   specified maximum length, and a specified format outlined in
+   Section 2.8 of [RFC5730].  Identifiers for certain object types MAY
+   have additional constraints imposed either by server policy, object-
+   specific specifications, or both.
+
+5.1.2.  Client Identifier
+
+   Client identifiers are character strings with a specified minimum
+   length, a specified maximum length, and a specified format.  Client
+   identifiers use the clIDType syntax described in [RFC5730].
+
+   In JSON, a Client Identifier MUST be represented as a string value.
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 14]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    {
      "$defs": {
-       "periodObject": {
+       "clientIdentifier": {
+         "type": "string",
+         "minLength": 3,
+         "maxLength": 16,
+         "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
+       }
+     }
+   }
+
+5.1.3.  Phone Number
+
+   Telephone number syntax is derived from structures defined in
+   [ITU.E164.2005].  Telephone numbers described in this specification
+   are character strings that MUST begin with a plus sign ("+", ASCII
+   value 0x002B), followed by a country code defined in [ITU.E164.2005],
+   followed by a dot (".", ASCII value 0x002E), followed by a sequence
+   of digits representing the telephone number.  An optional "x" (ASCII
+   value 0x0078) separator with additional digits representing extension
+   information can be appended to the end of the value.
+
+   In JSON, a Phone Number MUST be represented as a string value
+   conforming to the pattern described above.
+
+   {
+     "$defs": {
+       "phoneNumber": {
+         "type": "string",
+         "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
+       }
+     }
+   }
+
+5.1.4.  Period Object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 15]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
+   {
+     "$defs": {
+       "period": {
          "type": "object",
          "properties": {
+           "@type": { "type": "string", "const": "period" },
            "value": {
              "type": "integer",
              "minimum": 1,
@@ -770,111 +858,82 @@ Internet-Draft                JSON for RPP                 February 2026
              "enum": ["y", "m"]
            }
          },
-         "required": ["value", "unit"],
+         "required": ["@type", "value", "unit"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.2.  Provisioning Metadata Object
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 14]
-
-Internet-Draft                JSON for RPP                 February 2026
-
+5.1.5.  Provisioning Metadata Object
 
    {
      "$defs": {
        "provisioningMetadata": {
          "type": "object",
          "properties": {
+           "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
            "repositoryId":       { "type": "string", "readOnly": true },
-           "sponsoringClientId": { "type": "string", "readOnly": true },
-           "creatingClientId":   { "type": "string", "readOnly": true },
+           "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+           "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
            "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-           "updatingClientId":   { "type": "string", "readOnly": true },
+           "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
            "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
            "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
          },
-         "required": ["sponsoringClientId"],
+         "required": ["@type", "sponsoringClientId"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.3.  Status Object
+5.1.6.  Status Object
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 16]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    {
      "$defs": {
-       "statusObject": {
+       "status": {
          "type": "object",
          "properties": {
+           "@type":  { "type": "string", "const": "status" },
            "label":  { "type": "string" },
            "reason": { "type": "string" },
            "due":    { "type": "string", "format": "date-time" }
          },
-         "required": ["label"],
+         "required": ["@type", "label"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.4.  DNS Resource Record
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 15]
-
-Internet-Draft                JSON for RPP                 February 2026
-
+5.1.7.  DNS Resource Record
 
    {
      "$defs": {
        "dnsResourceRecord": {
          "type": "object",
          "properties": {
+           "@type":         { "type": "string", "const": "dnsResourceRecord" },
            "hostNamelabel": { "type": "string" },
            "type":          { "type": "string" },
            "data":          { "type": "string" },
            "ttl":           { "type": "integer" }
          },
-         "required": ["hostNamelabel", "type", "data", "ttl"],
+         "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.5.  Authorisation Information Object
-
-   {
-     "$defs": {
-       "authInfo": {
-         "type": "object",
-         "properties": {
-           "method":   { "type": "string" },
-           "authdata": { "type": "string" }
-         },
-         "required": ["method", "authdata"],
-         "additionalProperties": false
-       }
-     }
-   }
-
-5.1.6.  Postal Address Object
+5.1.8.  Authorisation Information Object
 
 
 
@@ -890,19 +949,34 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 16]
+Wullink & Kowalik       Expires 1 September 2026               [Page 17]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
    {
      "$defs": {
+       "authorisationInformation": {
+         "type": "object",
+         "properties": {
+           "@type":    { "type": "string", "const": "authorisationInformation" },
+           "method":   { "type": "string" },
+           "authdata": { "type": "string" }
+         },
+         "required": ["@type", "method", "authdata"],
+         "additionalProperties": false
+       }
+     }
+   }
+
+5.1.9.  Postal Address Object
+
+   {
+     "$defs": {
        "postalAddress": {
          "type": "object",
          "properties": {
+           "@type": { "type": "string", "const": "postalAddress" },
            "street": {
              "type": "array",
              "items": { "type": "string" }
@@ -912,18 +986,36 @@ Internet-Draft                JSON for RPP                 February 2026
            "pc":    { "type": "string" },
            "cc":    { "type": "string", "minLength": 2, "maxLength": 2 }
          },
+         "required": ["@type"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.7.  Postal Info Object
+5.1.10.  Postal Info Object
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 18]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
    {
      "$defs": {
        "postalInfo": {
          "type": "object",
          "properties": {
+           "@type": { "type": "string", "const": "postalInfo" },
            "type": {
              "type": "string",
              "enum": ["PERSON", "ORG"]
@@ -932,12 +1024,13 @@ Internet-Draft                JSON for RPP                 February 2026
            "org":  { "type": "string" },
            "addr": { "$ref": "#/$defs/postalAddress" }
          },
+         "required": ["@type"],
          "additionalProperties": false
        }
      }
    }
 
-5.1.8.  Transfer Data Object
+5.1.11.  Transfer Data Object
 
 
 
@@ -949,7 +1042,26 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 17]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 19]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -959,6 +1071,7 @@ Internet-Draft                JSON for RPP                 February 2026
        "transferData": {
          "type": "object",
          "properties": {
+           "@type": { "type": "string", "const": "transferData", "readOnly": true },
            "transferStatus": {
              "type": "string",
              "enum": ["pending", "clientApproved", "clientCancelled",
@@ -970,13 +1083,13 @@ Internet-Draft                JSON for RPP                 February 2026
              "enum": ["pull", "push"],
              "readOnly": true
            },
-           "requestingClientId": { "type": "string", "readOnly": true },
+           "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
            "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-           "actingClientId":     { "type": "string", "readOnly": true },
+           "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
            "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
          },
          "required": [
-           "transferStatus", "transferDirection", "requestingClientId",
+           "@type", "transferStatus", "transferDirection", "requestingClientId",
            "requestDate", "actingClientId", "actionDate"
          ],
          "additionalProperties": false
@@ -997,19 +1110,20 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type": { "type": "string", "const": "domainName" },
        "name": { "type": "string" },
        "registrant": { "type": "string" },
        "contacts": {
-         "type": "array",
-         "items": {
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 18]
+Wullink & Kowalik       Expires 1 September 2026               [Page 20]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
+         "type": "array",
+         "items": {
            "type": "object",
            "properties": {
              "label": { "type": "string" },
@@ -1024,13 +1138,14 @@ Internet-Draft                JSON for RPP                 February 2026
          "items": {
            "type": "object",
            "properties": {
+             "@type":   { "type": "string", "const": "host" },
              "hostName": { "type": "string" },
              "dns": {
                "type": "array",
                "items": { "$ref": "#/$defs/dnsResourceRecord" }
              }
            },
-           "required": ["hostName"],
+           "required": ["@type", "hostName"],
            "additionalProperties": false
          }
        },
@@ -1038,47 +1153,50 @@ Internet-Draft                JSON for RPP                 February 2026
          "type": "array",
          "items": { "$ref": "#/$defs/dnsResourceRecord" }
        },
-       "authInfo": { "$ref": "#/$defs/authInfo" },
-       "period":   { "$ref": "#/$defs/periodObject" }
+       "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+       "period":   { "$ref": "#/$defs/period" }
      },
-     "required": ["name"],
+     "required": ["@type", "name"],
      "additionalProperties": false,
      "$defs": {
        "dnsResourceRecord": {
          "type": "object",
          "properties": {
+           "@type":         { "type": "string", "const": "dnsResourceRecord" },
            "hostNamelabel": { "type": "string" },
            "type":          { "type": "string" },
            "data":          { "type": "string" },
            "ttl":           { "type": "integer" }
          },
-         "required": ["hostNamelabel", "type", "data", "ttl"],
+         "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
          "additionalProperties": false
-       },
-       "authInfo": {
-         "type": "object",
-         "properties": {
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 19]
+Wullink & Kowalik       Expires 1 September 2026               [Page 21]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
+       },
+       "authorisationInformation": {
+         "type": "object",
+         "properties": {
+           "@type":    { "type": "string", "const": "authorisationInformation" },
            "method":   { "type": "string" },
            "authdata": { "type": "string" }
          },
-         "required": ["method", "authdata"],
+         "required": ["@type", "method", "authdata"],
          "additionalProperties": false
        },
-       "periodObject": {
+       "period": {
          "type": "object",
          "properties": {
+           "@type": { "type": "string", "const": "period" },
            "value": { "type": "integer", "minimum": 1, "maximum": 99 },
            "unit":  { "type": "string", "enum": ["y", "m"] }
          },
-         "required": ["value", "unit"],
+         "required": ["@type", "value", "unit"],
          "additionalProperties": false
        }
      }
@@ -1090,11 +1208,12 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
        "name":                  { "type": "string", "readOnly": true },
        "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
        "status": {
          "type": "array",
-         "items": { "$ref": "#/$defs/statusObject" },
+         "items": { "$ref": "#/$defs/status" },
          "readOnly": true
        },
        "registrant":  { "type": "string" },
@@ -1107,44 +1226,45 @@ Internet-Draft                JSON for RPP                 February 2026
              "id":    { "type": "string" }
            },
            "required": ["label", "id"],
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 22]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
            "additionalProperties": false
          }
        },
        "nameservers": {
          "type": "array",
-         "items": { "$ref": "#/$defs/hostObject" }
+         "items": { "$ref": "#/$defs/host" }
        },
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 20]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
        "dns": {
          "type": "array",
          "items": { "$ref": "#/$defs/dnsResourceRecord" }
        },
        "subordinateHosts": {
          "type": "array",
-         "items": { "$ref": "#/$defs/hostObject" },
+         "items": { "$ref": "#/$defs/host" },
          "readOnly": true
        },
        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-       "authInfo":   { "$ref": "#/$defs/authInfo" }
+       "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
      },
-     "required": ["name", "provisioningMetadata"],
+     "required": ["@type", "name", "provisioningMetadata"],
      "additionalProperties": false,
      "$defs": {
-       "hostObject": {
+       "host": {
          "type": "object",
          "properties": {
-           "hostName":            { "type": "string" },
+           "@type": { "type": "string", "const": "host", "readOnly": true },
+           "hostName": { "type": "string" },
            "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
            "status": {
              "type": "array",
-             "items": { "$ref": "#/$defs/statusObject" },
+             "items": { "$ref": "#/$defs/status" },
              "readOnly": true
            },
            "dns": {
@@ -1152,7 +1272,7 @@ Internet-Draft                JSON for RPP                 February 2026
              "items": { "$ref": "#/$defs/dnsResourceRecord" }
            }
          },
-         "required": ["hostName"],
+         "required": ["@type", "hostName"],
          "additionalProperties": false
        }
      }
@@ -1165,15 +1285,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 21]
+Wullink & Kowalik       Expires 1 September 2026               [Page 23]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1182,6 +1294,7 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type": { "type": "string", "const": "contact" },
        "id": { "type": "string" },
        "postalInfo": {
          "type": "object",
@@ -1190,20 +1303,20 @@ Internet-Draft                JSON for RPP                 February 2026
        },
        "voice": {
          "type": "array",
-         "items": { "type": "string" }
+         "items": { "$ref": "#/$defs/phoneNumber" }
        },
        "fax": {
          "type": "array",
-         "items": { "type": "string" }
+         "items": { "$ref": "#/$defs/phoneNumber" }
        },
        "email": {
          "type": "array",
          "items": { "type": "string", "format": "email" }
        },
-       "authInfo": { "$ref": "#/$defs/authInfo" },
+       "authorisationInformation": { "$ref": "#/$defs/authInfo" },
        "disclose":  { "type": "object" }
      },
-     "required": ["id", "postalInfo"],
+     "required": ["@type", "id", "postalInfo"],
      "additionalProperties": false
    }
 
@@ -1228,8 +1341,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 22]
+Wullink & Kowalik       Expires 1 September 2026               [Page 24]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1238,11 +1350,12 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type": { "type": "string", "const": "contact", "readOnly": true },
        "id": { "type": "string", "readOnly": true },
        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
        "status": {
          "type": "array",
-         "items": { "$ref": "#/$defs/statusObject" },
+         "items": { "$ref": "#/$defs/status" },
          "readOnly": true
        },
        "postalInfo": {
@@ -1252,20 +1365,20 @@ Internet-Draft                JSON for RPP                 February 2026
        },
        "voice": {
          "type": "array",
-         "items": { "type": "string" }
+         "items": { "$ref": "#/$defs/phoneNumber" }
        },
        "fax": {
          "type": "array",
-         "items": { "type": "string" }
+         "items": { "$ref": "#/$defs/phoneNumber" }
        },
        "email": {
          "type": "array",
          "items": { "type": "string", "format": "email" }
        },
-       "authInfo": { "$ref": "#/$defs/authInfo" },
+       "authorisationInformation": { "$ref": "#/$defs/authInfo" },
        "disclose":  { "type": "object" }
      },
-     "required": ["id", "provisioningMetadata", "postalInfo"],
+     "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
      "additionalProperties": false
    }
 
@@ -1284,8 +1397,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 23]
+Wullink & Kowalik       Expires 1 September 2026               [Page 25]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1294,13 +1406,14 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type":    { "type": "string", "const": "host" },
        "hostName": { "type": "string" },
        "dns": {
          "type": "array",
          "items": { "$ref": "#/$defs/dnsResourceRecord" }
        }
      },
-     "required": ["hostName"],
+     "required": ["@type", "hostName"],
      "additionalProperties": false
    }
 
@@ -1310,11 +1423,12 @@ Internet-Draft                JSON for RPP                 February 2026
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "type": "object",
      "properties": {
+       "@type":    { "type": "string", "const": "host", "readOnly": true },
        "hostName": { "type": "string" },
        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
        "status": {
          "type": "array",
-         "items": { "$ref": "#/$defs/statusObject" },
+         "items": { "$ref": "#/$defs/status" },
          "readOnly": true
        },
        "dns": {
@@ -1322,7 +1436,7 @@ Internet-Draft                JSON for RPP                 February 2026
          "items": { "$ref": "#/$defs/dnsResourceRecord" }
        }
      },
-     "required": ["hostName", "provisioningMetadata"],
+     "required": ["@type", "hostName", "provisioningMetadata"],
      "additionalProperties": false
    }
 
@@ -1339,9 +1453,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 24]
+Wullink & Kowalik       Expires 1 September 2026               [Page 26]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1353,21 +1465,24 @@ Internet-Draft                JSON for RPP                 February 2026
    Example domain create request:
 
    {
+       "@type": "domainName",
        "name": "example.com",
        "period": {
+           "@type": "period",
            "value": 2,
            "unit": "y"
        },
        "nameservers": [
-           { "hostName": "ns1.example.net" },
-           { "hostName": "ns2.example.net" }
+           { "@type": "host", "hostName": "ns1.example.net" },
+           { "@type": "host", "hostName": "ns2.example.net" }
        ],
        "registrant": "jd1234",
        "contacts": [
            { "label": "admin", "id": "sh8013" },
            { "label": "tech",  "id": "sh8013" }
        ],
-       "authInfo": {
+       "authorisationInformation": {
+           "@type": "authorisationInformation",
            "method": "authinfo",
            "authdata": "2fooBAR"
        }
@@ -1376,8 +1491,10 @@ Internet-Draft                JSON for RPP                 February 2026
    Example domain create response:
 
    {
+       "@type": "domainName",
        "name": "example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "EXAMPLE1-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientX",
@@ -1386,25 +1503,26 @@ Internet-Draft                JSON for RPP                 February 2026
        "expiryDate": "2001-04-03T22:00:00.0Z"
    }
 
-6.1.2.  Read
-
-   Example domain read response:
 
 
 
 
 
 
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 25]
+Wullink & Kowalik       Expires 1 September 2026               [Page 27]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
+6.1.2.  Read
+
+   Example domain read response:
+
    {
+       "@type": "domainName",
        "name": "example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "EXAMPLE1-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientY",
@@ -1414,7 +1532,7 @@ Internet-Draft                JSON for RPP                 February 2026
            "transferDate": "2000-04-08T09:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "registrant": "jd1234",
        "contacts": [
@@ -1423,14 +1541,17 @@ Internet-Draft                JSON for RPP                 February 2026
        ],
        "nameservers": [
            {
+               "@type": "host",
                "hostName": "ns1.example.com",
                "provisioningMetadata": {
+                   "@type": "provisioningMetadata",
                    "repositoryId": "NS1EXAMPLE-REP",
                    "sponsoringClientId": "ClientX"
                },
-               "status": [ { "label": "ok" } ],
+               "status": [ { "@type": "status", "label": "ok" } ],
                "dns": [
                    {
+                       "@type": "dnsResourceRecord",
                        "hostNamelabel": "ns1.example.com.",
                        "type": "A",
                        "data": "192.0.2.1",
@@ -1439,42 +1560,49 @@ Internet-Draft                JSON for RPP                 February 2026
                ]
            },
            {
+               "@type": "host",
                "hostName": "ns1.example.net",
-               "provisioningMetadata": {
-                   "repositoryId": "NS1EXAMPLENET-REP",
-                   "sponsoringClientId": "ClientZ"
-               },
-               "status": [ { "label": "ok" } ]
-           }
-       ],
-       "subordinateHosts": [
-           {
-               "hostName": "ns1.example.com",
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 26]
+Wullink & Kowalik       Expires 1 September 2026               [Page 28]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
                "provisioningMetadata": {
+                   "@type": "provisioningMetadata",
+                   "repositoryId": "NS1EXAMPLENET-REP",
+                   "sponsoringClientId": "ClientZ"
+               },
+               "status": [ { "@type": "status", "label": "ok" } ]
+           }
+       ],
+       "subordinateHosts": [
+           {
+               "@type": "host",
+               "hostName": "ns1.example.com",
+               "provisioningMetadata": {
+                   "@type": "provisioningMetadata",
                    "repositoryId": "NS1EXAMPLE-REP",
                    "sponsoringClientId": "ClientX"
                },
-               "status": [ { "label": "ok" } ]
+               "status": [ { "@type": "status", "label": "ok" } ]
            },
            {
+               "@type": "host",
                "hostName": "ns2.example.com",
                "provisioningMetadata": {
+                   "@type": "provisioningMetadata",
                    "repositoryId": "NS2EXAMPLE-REP",
                    "sponsoringClientId": "ClientX"
                },
-               "status": [ { "label": "ok" } ]
+               "status": [ { "@type": "status", "label": "ok" } ]
            }
        ],
        "expiryDate": "2005-04-03T22:00:00.0Z",
-       "authInfo": {
+       "authorisationInformation": {
+           "@type": "authorisationInformation",
            "method": "authinfo",
            "authdata": "2fooBAR"
        }
@@ -1484,9 +1612,25 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example domain update request (read-write properties):
 
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 29]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
+       "@type": "domainName",
        "registrant": "sh8013",
-       "authInfo": {
+       "authorisationInformation": {
+           "@type": "authorisationInformation",
            "method": "authinfo",
            "authdata": "2BARfoo"
        }
@@ -1494,29 +1638,11 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example domain update response:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 27]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
    {
+       "@type": "domainName",
        "name": "example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "EXAMPLE1-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientY",
@@ -1525,7 +1651,7 @@ Internet-Draft                JSON for RPP                 February 2026
            "updateDate": "2000-01-15T09:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "registrant": "sh8013"
    }
@@ -1539,12 +1665,22 @@ Internet-Draft                JSON for RPP                 February 2026
    representation):
 
    {
+       "@type": "domainName",
        "name": "example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "EXAMPLE1-REP",
            "sponsoringClientId": "ClientX"
        }
    }
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 30]
+
+Internet-Draft                JSON for RPP                 February 2026
+
 
 6.1.5.  Renew
 
@@ -1556,6 +1692,7 @@ Internet-Draft                JSON for RPP                 February 2026
    {
        "currentExpiryDate": "2005-04-03T22:00:00.0Z",
        "renewalPeriod": {
+           "@type": "period",
            "value": 5,
            "unit": "y"
        }
@@ -1563,14 +1700,8 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example domain renew response:
 
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 28]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
    {
+       "@type": "domainName",
        "name": "example.com",
        "expiryDate": "2010-04-03T22:00:00.0Z"
    }
@@ -1581,11 +1712,13 @@ Internet-Draft                JSON for RPP                 February 2026
 
    {
        "transferDirection": "pull",
-       "authInfo": {
+       "authorisationInformation": {
+           "@type": "authorisationInformation",
            "method": "authinfo",
            "authdata": "2fooBAR"
        },
        "transferPeriod": {
+           "@type": "period",
            "value": 1,
            "unit": "y"
        }
@@ -1593,7 +1726,20 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example domain transfer response (Transfer Data Object):
 
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 31]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
+       "@type": "transferData",
        "transferStatus": "pending",
        "transferDirection": "pull",
        "requestingClientId": "ClientX",
@@ -1608,6 +1754,7 @@ Internet-Draft                JSON for RPP                 February 2026
    Example domain transfer query response (Transfer Data Object):
 
    {
+       "@type": "transferData",
        "transferStatus": "pending",
        "transferDirection": "pull",
        "requestingClientId": "ClientX",
@@ -1616,15 +1763,6 @@ Internet-Draft                JSON for RPP                 February 2026
        "actionDate": "2000-06-11T22:00:00.0Z",
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
-
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 29]
-
-Internet-Draft                JSON for RPP                 February 2026
-
 
 6.1.8.  Transfer Cancel / Reject / Approve
 
@@ -1640,14 +1778,33 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example contact create request:
 
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 32]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
+       "@type": "contact",
        "id": "jd1234",
        "postalInfo": {
            "int": {
+               "@type": "postalInfo",
                "type": "PERSON",
                "name": "John Doe",
                "org": "Example Inc.",
                "addr": {
+                   "@type": "postalAddress",
                    "street": [
                        "123 Example Dr.",
                        "Suite 100"
@@ -1662,7 +1819,8 @@ Internet-Draft                JSON for RPP                 February 2026
        "voice": ["+1.7035555555"],
        "fax": ["+1.7035555556"],
        "email": ["jdoe@example.com"],
-       "authInfo": {
+       "authorisationInformation": {
+           "@type": "authorisationInformation",
            "method": "authinfo",
            "authdata": "2fooBAR"
        }
@@ -1677,28 +1835,42 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 30]
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 33]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
    {
+       "@type": "contact",
        "id": "jd1234",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "JD1234-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientX",
            "creationDate": "1999-04-03T22:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "postalInfo": {
            "int": {
+               "@type": "postalInfo",
                "type": "PERSON",
                "name": "John Doe",
                "org": "Example Inc.",
                "addr": {
+                   "@type": "postalAddress",
                    "street": [
                        "123 Example Dr.",
                        "Suite 100"
@@ -1729,18 +1901,16 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 31]
+Wullink & Kowalik       Expires 1 September 2026               [Page 34]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
    {
+       "@type": "contact",
        "id": "jd1234",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "JD1234-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientX",
@@ -1749,14 +1919,16 @@ Internet-Draft                JSON for RPP                 February 2026
            "updateDate": "2000-01-15T09:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "postalInfo": {
            "int": {
+               "@type": "postalInfo",
                "type": "PERSON",
                "name": "John Doe",
                "org": "Example Inc.",
                "addr": {
+                   "@type": "postalAddress",
                    "street": ["123 Example Dr.", "Suite 100"],
                    "city": "Dulles",
                    "sp": "VA",
@@ -1785,25 +1957,24 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 32]
+Wullink & Kowalik       Expires 1 September 2026               [Page 35]
 
 Internet-Draft                JSON for RPP                 February 2026
 
 
    {
+       "@type": "host",
        "hostName": "ns1.example.com",
        "dns": [
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example.com.",
                "type": "A",
                "data": "192.0.2.1",
                "ttl": 3600
            },
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example.com.",
                "type": "AAAA",
                "data": "2001:db8::1",
@@ -1814,25 +1985,62 @@ Internet-Draft                JSON for RPP                 February 2026
 
    Example host create response:
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 36]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
+       "@type": "host",
        "hostName": "ns1.example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "NS1EXAMPLE-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientX",
            "creationDate": "1999-04-03T22:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "dns": [
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example.com.",
                "type": "A",
                "data": "192.0.2.1",
                "ttl": 3600
            },
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example.com.",
                "type": "AAAA",
                "data": "2001:db8::1",
@@ -1841,32 +2049,47 @@ Internet-Draft                JSON for RPP                 February 2026
        ]
    }
 
-
-
-
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 33]
-
-Internet-Draft                JSON for RPP                 February 2026
-
-
 6.3.2.  Read
 
    Example host read response:
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 1 September 2026               [Page 37]
+
+Internet-Draft                JSON for RPP                 February 2026
+
+
    {
+       "@type": "host",
        "hostName": "ns1.example.com",
        "provisioningMetadata": {
+           "@type": "provisioningMetadata",
            "repositoryId": "NS1EXAMPLE-REP",
            "sponsoringClientId": "ClientX",
            "creatingClientId": "ClientY",
            "creationDate": "1999-04-03T22:00:00.0Z"
        },
        "status": [
-           { "label": "ok" }
+           { "@type": "status", "label": "ok" }
        ],
        "dns": [
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example.com.",
                "type": "A",
                "data": "192.0.2.1",
@@ -1880,9 +2103,11 @@ Internet-Draft                JSON for RPP                 February 2026
    Example host update request:
 
    {
+       "@type": "host",
        "hostName": "ns1.example2.com",
        "dns": [
            {
+               "@type": "dnsResourceRecord",
                "hostNamelabel": "ns1.example2.com.",
                "type": "A",
                "data": "198.51.100.1",
@@ -1900,8 +2125,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-
-Wullink & Kowalik        Expires 30 August 2026                [Page 34]
+Wullink & Kowalik       Expires 1 September 2026               [Page 38]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -1957,7 +2181,7 @@ Internet-Draft                JSON for RPP                 February 2026
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 35]
+Wullink & Kowalik       Expires 1 September 2026               [Page 39]
 
 Internet-Draft                JSON for RPP                 February 2026
 
@@ -2013,4 +2237,4 @@ Authors' Addresses
 
 
 
-Wullink & Kowalik        Expires 30 August 2026                [Page 36]
+Wullink & Kowalik       Expires 1 September 2026               [Page 40]

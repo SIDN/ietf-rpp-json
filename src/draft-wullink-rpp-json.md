@@ -117,59 +117,6 @@ Example Date:
 "expiryDate": "2025-10-27"
 ```
 
-## Common Data Type Mappings
-
-This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. Each common data type maps to a JSON Schema definition.
-
-### Identifier
-
-Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
-
-<!-- TODO: Add required identifiers -->
-
-### Client Identifier
-
-Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the `clIDType` syntax described in [@!RFC5730].
-
-In JSON, a Client Identifier MUST be represented as a `string` value.
-
-```json
-{
-  "$defs": {
-    "clientIdentifier": {
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 16,
-      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
-    }
-  }
-}
-```
-
-### Phone Number
-
-Telephone number syntax is derived from structures defined in [@!ITU.E164.2005]. Telephone numbers described in this specification are character strings that MUST begin with a plus sign ("+", ASCII value 0x002B), followed by a country code defined in [@!ITU.E164.2005], followed by a dot (".", ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional "x" (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.
-
-In JSON, a Phone Number MUST be represented as a `string` value conforming to the pattern described above.
-
-```json
-{
-  "$defs": {
-    "phoneNumber": {
-      "type": "string",
-      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
-    }
-  }
-}
-```
-
-Example Phone Number values:
-
-```json
-"voice": "+1.7035555555",
-"mobile": "+1.7035555556"
-```
-
 ## Cardinality Rules
 
 The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:
@@ -451,6 +398,50 @@ This section provides normative JSON Schema definitions for RPP component object
 <!-- TODO: can we say normative for json schema definitions? -->
 
 ## Common Component Schemas
+
+This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
+
+### Identifier
+
+Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
+
+<!-- TODO: Add required identifiers -->
+
+### Client Identifier
+
+Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the `clIDType` syntax described in [@!RFC5730].
+
+In JSON, a Client Identifier MUST be represented as a `string` value.
+
+```json
+{
+  "$defs": {
+    "clientIdentifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 16,
+      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
+    }
+  }
+}
+```
+
+### Phone Number
+
+Telephone number syntax is derived from structures defined in [@!ITU.E164.2005]. Telephone numbers described in this specification are character strings that MUST begin with a plus sign ("+", ASCII value 0x002B), followed by a country code defined in [@!ITU.E164.2005], followed by a dot (".", ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional "x" (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.
+
+In JSON, a Phone Number MUST be represented as a `string` value conforming to the pattern described above.
+
+```json
+{
+  "$defs": {
+    "phoneNumber": {
+      "type": "string",
+      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
+    }
+  }
+}
+```
 
 ### Period Object
 
@@ -786,8 +777,8 @@ Read response schema (read-write and read-only properties):
     "host": {
       "type": "object",
       "properties": {
-        "@type":              { "type": "string", "const": "host", "readOnly": true },
-        "hostName":            { "type": "string" },
+        "@type": { "type": "string", "const": "host", "readOnly": true },
+        "hostName": { "type": "string" },
         "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
         "status": {
           "type": "array",
@@ -849,7 +840,7 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "contact", "readOnly": true },
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
