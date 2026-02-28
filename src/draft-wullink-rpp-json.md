@@ -1433,6 +1433,113 @@ Example host update request:
 
 The host delete operation takes the host name as the resource identifier. No request body is required. The server SHOULD reject the request if the host object is associated with any domain name objects.
 
+### Restore Request
+
+Example host restore request (without inline report; object transitions to `pendingRestore` state):
+
+```json
+{}
+```
+
+Example host restore request response (Restore Data Object, server requires a report):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore request with inline report response (Restore Data Object, immediately restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example host restore report request:
+
+```json
+{
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+The Restore Query operation takes no request body (Parameters: None).
+
+Example host restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
 # IANA Considerations
 
 TODO
