@@ -536,7 +536,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -705,7 +705,7 @@ Create request schema (create-only and read-write properties):
         "type": "object",
         "properties": {
           "@type":   { "type": "string", "const": "host" },
-          "hostName": { "type": "string" },
+          "hostName": { "type": "string", "format": "hostname" },
           "dns": {
             "type": "array",
             "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -729,7 +729,7 @@ Create request schema (create-only and read-write properties):
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
@@ -812,7 +812,7 @@ Read response schema (read-write and read-only properties):
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "host", "readOnly": true },
-        "hostName": { "type": "string" },
+        "hostName": { "type": "string", "format": "hostname" },
         "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
         "status": {
           "type": "array",
@@ -928,7 +928,7 @@ Create request schema (create-only and read-write properties):
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
@@ -947,7 +947,7 @@ Read response schema (read-write and read-only properties):
   "type": "object",
   "properties": {
     "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string" },
+    "hostName": { "type": "string", "format": "hostname" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
