@@ -460,8 +460,7 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
           "enum": ["y", "m"]
         }
       },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
+      "required": ["@type", "value", "unit"]
     }
   }
 }
@@ -490,8 +489,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
-      "required": ["@type", "sponsoringClientId"],
-      "additionalProperties": false
+      "required": ["@type", "sponsoringClientId"]
     }
   }
 }
@@ -515,8 +513,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
-      "required": ["@type", "label"],
-      "additionalProperties": false
+      "required": ["@type", "label"]
     }
   }
 }
@@ -543,8 +540,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
       },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
+      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
     }
   }
 }
@@ -567,8 +563,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "method":   { "type": "string" },
         "authdata": { "type": "string" }
       },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
+      "required": ["@type", "method", "authdata"]
     }
   }
 }
@@ -597,8 +592,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "pc":    { "type": "string" },
         "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
-      "required": ["@type"],
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -627,8 +621,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "org":  { "type": "string" },
         "addr": { "$ref": "#/$defs/postalAddress" }
       },
-      "required": ["@type"],
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -662,8 +655,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
       "required": [
         "@type", "transferStatus", "transferDirection", "requestingClientId",
         "requestDate", "actingClientId", "actionDate"
-      ],
-      "additionalProperties": false
+      ]
     }
   }
 }
@@ -727,7 +719,7 @@ Create request schema (create-only and read-write properties):
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -776,7 +768,7 @@ Read response schema (read-write and read-only properties):
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -817,7 +809,7 @@ Create request schema (create-only and read-write properties):
     "disclose":  { "type": "object" }
   },
   "required": ["@type", "id", "postalInfo"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -858,7 +850,7 @@ Read response schema (read-write and read-only properties):
     "disclose":  { "type": "object" }
   },
   "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -884,7 +876,7 @@ Create request schema (create-only and read-write properties):
     }
   },
   "required": ["@type", "hostName"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -909,7 +901,7 @@ Read response schema (read-write and read-only properties):
     }
   },
   "required": ["@type", "hostName", "provisioningMetadata"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
