@@ -105,18 +105,6 @@ RPP primitive types MUST be represented in JSON as follows:
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
-Example Timestamp:
-
-```json
-"creationDate": "1999-04-03T22:00:00.0Z"
-```
-
-Example Date:
-
-```json
-"expiryDate": "2025-10-27"
-```
-
 ## Cardinality Rules
 
 The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:
@@ -390,6 +378,10 @@ Example (Domain Name Data Object):
   "name": "example.com"
 }
 ```
+
+## JSON Schema Validation Rules
+
+Rule 21: Both clients and servers MUST apply strict validation of all JSON request and response messages against the corresponding JSON Schema definitions for the target object type and operation. Strict validation means that any JSON message that fails schema validation MUST be rejected. Unknown properties MUST be treated as a validation error. Servers MUST reject invalid requests with an appropriate error response. Clients MUST reject invalid responses received from a server.
 
 # JSON Schema Definitions
 
