@@ -471,6 +471,12 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 
 ### Provisioning Metadata Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `updatingClientId` and `updateDate` MUST NOT be present if the object has never been modified.
+- `transferDate` MUST NOT be present if the object has never been transferred.
+- In EPP Compatibility Profile, `repositoryId` MUST be provided.
+
 ```json
 {
   "$defs": {
@@ -495,6 +501,11 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 
 ### Status Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `label` MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix "server"; labels set explicitly by a client MUST use the prefix "client"; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.
+- `due`: Servers MAY restrict the ability of clients to set or update this value.
+
 ```json
 {
   "$defs": {
@@ -502,7 +513,7 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "status" },
-        "label":  { "type": "string" },
+        "label":  { "type": "string", "pattern": "^[a-zA-Z]+$" },
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
@@ -514,6 +525,13 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 ```
 
 ### DNS Resource Record
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostNamelabel` MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.
+- `type` MUST be a valid string representation of a DNS resource record type as defined in [@!RFC1035]. Allowed values MAY be further constrained by server policy.
+- `data` MUST be a syntactically valid resource record data value for the given `type` in zone file string representation.
+- `ttl` value range MAY be constrained by server policy.
 
 ```json
 {
@@ -536,6 +554,11 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 
 ### Authorisation Information Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `method` MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in [@!I-D.wullink-rpp-core]. In EPP Compatibility Profile, this value MUST be "authinfo" for standard password-based authorisation.
+- The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of `authdata` MAY not be returned in read responses, depending on the method and server policy.
+
 ```json
 {
   "$defs": {
@@ -555,6 +578,11 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 
 ### Postal Address Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `cc` MUST be a valid two-character country code from [@!ISO3166-1]. The JSON Schema pattern enforces uppercase alpha-2 format.
+- In EPP Compatibility Profile, `city` and `cc` MUST be provided.
+
 ```json
 {
   "$defs": {
@@ -569,7 +597,7 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
         "city":  { "type": "string" },
         "sp":    { "type": "string" },
         "pc":    { "type": "string" },
-        "cc":    { "type": "string", "minLength": 2, "maxLength": 2 }
+        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
       "required": ["@type"],
       "additionalProperties": false
@@ -579,6 +607,12 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 ```
 
 ### Postal Info Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MAY be required by implementations when `type` is "PERSON". In EPP Compatibility Profile, `name` MUST be provided.
+- `org` MAY be required by implementations when `type` is "ORG".
+- In EPP Compatibility Profile, `addr` MUST be provided.
 
 ```json
 {
@@ -642,6 +676,10 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 ### Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MUST be a fully qualified domain name conforming to the syntax described in [@!RFC1035]. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.
 
 Create request schema (create-only and read-write properties):
 
@@ -799,6 +837,10 @@ Read response schema (read-write and read-only properties):
 
 ### Contact Data Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `postalInfo` keys MUST be either "int" (internationalised, all-ASCII) or "loc" (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -811,7 +853,8 @@ Create request schema (create-only and read-write properties):
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
@@ -851,7 +894,8 @@ Read response schema (read-write and read-only properties):
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
@@ -874,6 +918,11 @@ Read response schema (read-write and read-only properties):
 ```
 
 ### Host Data Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostName` MUST be a syntactically valid fully qualified host name.
+- If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.
 
 Create request schema (create-only and read-write properties):
 
