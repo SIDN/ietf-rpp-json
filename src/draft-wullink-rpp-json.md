@@ -379,10 +379,6 @@ Example (Domain Name Data Object):
 }
 ```
 
-## JSON Schema Validation Rules
-
-Rule 21: Both clients and servers MUST apply strict validation of all JSON request and response messages against the corresponding JSON Schema definitions for the target object type and operation. Strict validation means that any JSON message that fails schema validation MUST be rejected. Unknown properties MUST be treated as a validation error. Servers MUST reject invalid requests with an appropriate error response. Clients MUST reject invalid responses received from a server.
-
 ### RPP Profiles and Validation
 
 RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
