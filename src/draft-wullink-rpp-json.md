@@ -385,6 +385,8 @@ Example (Domain Name Data Object):
 }
 ```
 
+Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authorisationInformation` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authorisationInformation` object in the JSON body with an appropriate error response.
+
 ### RPP Profiles and Validation
 
 RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
@@ -1139,16 +1141,13 @@ Example domain renew response:
 
 ### Transfer Request
 
-Example domain transfer request (pull transfer):
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example domain transfer request (pull transfer)
 
 ```json
 {
     "transferDirection": "pull",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
-        "method": "authinfo",
-        "authdata": "2fooBAR"
-    },
     "transferPeriod": {
         "@type": "period",
         "value": 1,
@@ -1391,16 +1390,13 @@ The contact delete operation takes the contact identifier as the resource identi
 
 ### Transfer Request
 
-Example contact transfer request (pull transfer):
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example contact transfer request (pull transfer)
 
 ```json
 {
-    "transferDirection": "pull",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
-        "method": "authinfo",
-        "authdata": "2fooBAR"
-    }
+    "transferDirection": "pull"
 }
 ```
 
