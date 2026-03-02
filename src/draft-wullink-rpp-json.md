@@ -1021,7 +1021,7 @@ Example domain create request:
 }
 ```
 
-Example domain create response:
+Example domain create response from a server with RGP support:
 
 ```json
 {
@@ -1034,6 +1034,10 @@ Example domain create response:
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
+    "status": [
+        { "@type": "status", "label": "ok" },
+        { "@type": "status", "label": "addPeriod" }
+    ],
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
 ```
