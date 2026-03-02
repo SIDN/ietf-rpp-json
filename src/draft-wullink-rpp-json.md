@@ -1,5 +1,5 @@
 %%%
-title = "JSON representation for Restful Provisioning Protocol (RPP)"
+title = "JSON for Restful Provisioning Protocol (RPP)"
 abbrev = "JSON for RPP"
 ipr = "trust200902"
 area = "Internet"
@@ -1839,6 +1839,9 @@ TODO
 
 ## Version 00 to 01
 
+- Updated all examples and schemas to be based on RPP Data Object and no longer on EPP XML schemas. (Issue #15)
+- Updated labelled and dictionary aggregation rules (Issue #17)
+- Added required "@type" property to all JSON Schema definitions. (Issue #20)
 - Updated all example domain names to use the .example TLD. (Issue #26)
 
 {backmatter}
