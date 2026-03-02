@@ -1316,6 +1316,9 @@ Example contact read response:
 
 ### Update
 
+TBD
+
+<!--
 Example contact update request:
 
 ```json
@@ -1383,6 +1386,7 @@ Example contact update response:
     "email": ["jdoe-new@example.example"]
 }
 ```
+-->
 
 ### Delete
 
