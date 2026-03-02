@@ -372,7 +372,7 @@ Example (Transfer Status enum):
 
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
-Rule 19: JSON Schema definitions for RPP objects MUST use `"additionalProperties": false` by default to prevent unrecognised properties.
+Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false`, to prevent problems when combining schemas. However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -691,8 +691,7 @@ Create request schema (create-only and read-write properties):
           "label": { "type": "string" },
           "id":    { "type": "string" }
         },
-        "required": ["label", "id"],
-        "additionalProperties": false
+        "required": ["label", "id"]
       }
     },
     "nameservers": {
@@ -707,8 +706,7 @@ Create request schema (create-only and read-write properties):
             "items": { "$ref": "#/$defs/dnsResourceRecord" }
           }
         },
-        "required": ["@type", "hostName"],
-        "additionalProperties": false
+        "required": ["@type", "hostName"]
       }
     },
     "dns": {
@@ -747,8 +745,7 @@ Read response schema (read-write and read-only properties):
           "label": { "type": "string" },
           "id":    { "type": "string" }
         },
-        "required": ["label", "id"],
-        "additionalProperties": false
+        "required": ["label", "id"]
       }
     },
     "nameservers": {
