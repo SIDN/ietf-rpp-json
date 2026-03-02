@@ -105,21 +105,302 @@ RPP primitive types MUST be represented in JSON as follows:
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
-Example Timestamp:
+## Cardinality Rules
+
+The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:
+
+Rule 1: A data element with cardinality `1` (exactly one) MUST be represented as a JSON property and MUST be present in the containing JSON object. The element MUST be listed under `required` in the corresponding JSON Schema.
 
 ```json
-"creationDate": "1999-04-03T22:00:00.0Z"
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" }
+  },
+  "required": ["name"]
+}
 ```
 
-Example Date:
+Rule 2: A data element with cardinality `0-1` (zero or one) MUST be represented as an optional JSON property. The element MUST NOT be listed under `required` in the corresponding JSON Schema. When absent, the element MUST be omitted from the JSON object (not represented as `null`).
 
 ```json
-"expiryDate": "2025-10-27"
+{
+  "type": "object",
+  "properties": {
+    "expiryDate": { "type": "string", "format": "date-time" }
+  }
+}
 ```
 
-## Common Data Type Mappings
+Rule 3: A data element with cardinality `0+` (zero or more) MUST be represented as an optional JSON array. When no values are present, the property MUST be omitted or represented as an empty array.
 
-This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. Each common data type maps to a JSON Schema definition.
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" }
+    }
+  }
+}
+```
+
+Rule 4: A data element with cardinality `1+` (one or more) MUST be represented as a required JSON array with `"minItems": 1` and the element MUST be listed under `required` in the corresponding JSON Schema.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "postalInfo": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/postalInfo" },
+      "minItems": 1
+    }
+  },
+  "required": ["postalInfo"]
+}
+```
+
+## Mutability Rules
+
+Data elements in the RPP data model carry a mutability attribute: `create-only`, `read-only`, or `read-write`. These MUST be represented in JSON Schema as follows:
+
+Rule 5: Data elements with mutability `read-only` MUST be annotated with `"readOnly": true` in the JSON Schema. Clients MUST NOT include read-only properties in create or update request bodies. Servers MUST ignore any read-only properties provided by a client in a request.
+
+```json
+{
+  "repositoryId": {
+    "type": "string",
+    "readOnly": true
+  }
+}
+```
+
+Rule 6: Data elements with mutability `create-only` MUST be annotated with `"writeOnly": true` in the JSON Schema for request schemas, and excluded from update request schemas. Servers MUST reject requests that attempt to modify a `create-only` element after object creation.
+
+Rule 7: Data elements with mutability `read-write` have no additional annotation. They MAY appear in both request and response bodies.
+
+## Association Rules
+
+The RPP data model defines several association types between objects, the following rules specify their JSON representations.
+A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.
+
+## Labelled associations
+
+Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included  alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
+
+<!-- TODO: update text to clarify what data objects attribute must be used for unique object identifier in aggregation examples -->
+
+### Aggregation
+
+An `Aggregation[Type]` represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.
+
+Rule 8: `Aggregation[Type]` with cardinality `0+` or `1+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
+
+Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field `hostName`:
+
+```json
+{
+    "@type": "domainName",
+    "name": "name.example",
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.name.example" },
+        { "@type": "host", "hostName": "ns2.name.example" }
+    ]
+}
+```
+
+### Composition
+
+A `Composition[Type]` represents a parent-child relationship where the child's lifecycle is bound to the parent and the child cannot exist independently of the parent. In JSON, the child object MUST be fully embedded within the parent object. The JSON representation of a composition is the same as that of an aggregation. The distinction between the two is semantic and does not affect the JSON structure.
+
+```json
+{ 
+        "@type": "domainName",
+        "name": "name.example",
+        "nameservers": [
+            {
+                "@type": "host",
+                "hostName": "ns1.name.example",
+                "provisioningMetadata": {
+                    "@type": "provisioningMetadata",
+                    "repositoryId": "NS1EXAMPLE-REP",
+                    "sponsoringClientId": "ClientX"
+                },
+                "status": [ { "@type": "status", "label": "ok" } ],
+                "dns": [
+                    {
+                        "@type": "dnsResourceRecord",
+                        "hostNamelabel": "ns1.name.example",
+                        "type": "A",
+                        "data": "192.0.2.1",
+                        "ttl": 3600
+                    }
+                ]
+            }
+        ]
+}
+```
+
+### Labelled Aggregation
+
+A `LabelledAggregation[Type]` is a relationship between two independent objects where each association carries a string label. Multiple associations with the same label are allowed.
+
+Rule 9: `LabelledAggregation[Type]` with cardinality `0+` MUST be represented as a JSON array of objects. Each object in the array MUST contain a `label` property (string) alongside the identifier of the referenced object. The object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
+
+Example: domain contacts (LabelledAggregation[Contact Object]):
+
+```json
+"contacts": [
+    { 
+        "label": "admin",
+        "object": { 
+            "@type": "contact",
+            "id": "ABC-8013" 
+        }
+    },
+    { 
+        "label": "tech",
+        "object": { 
+            "@type": "contact",
+            "id": "ABC-8014" 
+        }
+     }
+]
+```
+
+### Dictionary Aggregation
+
+A `DictionaryAggregation[Type]` is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.
+
+Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
+
+Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
+
+```json
+"contacts": {
+    "admin": {
+        "@type": "contact",
+        "id": "ABC-8013"
+    },
+    "tech": {
+        "@type": "contact",
+        "id": "ABC-8014"
+    }
+}
+```
+
+### Labelled Composition
+
+A `LabelledComposition[Type]` is a parent-child relationship where each embedded child carries a string label. Multiple instances with the same label are allowed.
+
+Rule 11: `LabelledComposition[Type]` with cardinality `0+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a `label` property alongside the data elements of the composed type.
+
+Example: contact postal info (LabelledComposition[Postal Info Object]):
+
+```json
+"addresses": [
+    {
+        "label": "int",
+        "object": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["123 Example Dr."],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
+            }
+        }
+    }
+]
+```
+
+### Dictionary Composition
+
+A `DictionaryComposition[Type]` is a parent-child relationship where each embedded child carries a unique string label used as a dictionary key.
+
+Rule 12: `DictionaryComposition[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the fully embedded child object.
+
+Example: contact postal info (DictionaryComposition[Postal Info Object]):
+
+```json
+"addresses": {
+    "int": {
+        "@type": "postalInfo",
+        "type": "PERSON",
+        "name": "John Doe",
+        "addr": {
+            "@type": "postalAddress",
+            "street": ["123 Example Dr."],
+            "city": "Dulles",
+            "sp": "VA",
+            "pc": "20166-6503",
+            "cc": "US"
+        }
+    }
+}
+```
+
+## Object Identifier Rules
+
+Rule 13: When a resource or component object is referenced by identifier (for example in an aggregation), the identifier MUST be represented as a JSON string using the value of the object's primary identifier data element.
+
+Rule 14: When a resource or component object is embedded (as in a composition), all data elements of the object MUST be represented as properties of a JSON object according to the rules of this section.
+
+## JSON Schema Definition Rules
+
+Rule 15: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the `$defs` keyword of the JSON Schema document.
+
+Rule 16: Identifier fields MUST use `"type": "string"` in JSON Schema.
+
+Rule 17: Enumeration constraints on string fields MUST be expressed using the `"enum"` keyword in JSON Schema.
+
+Example (Transfer Status enum):
+
+```json
+"transferStatus": {
+    "type": "string",
+    "enum": ["pending", "clientApproved", "clientCancelled",
+             "clientRejected", "serverApproved", "serverCancelled"]
+}
+```
+
+Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
+
+
+Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
+
+Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
+
+Example (Domain Name Data Object):
+
+```json
+{
+  "@type": "domainName",
+  "name": "example.example"
+}
+```
+
+Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authorisationInformation` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authorisationInformation` object in the JSON body with an appropriate error response.
+
+### RPP Profiles and Validation
+
+RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
+
+# JSON Schema Definitions
+
+This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
+
+<!-- TODO: can we say normative for json schema definitions? -->
+
+## Common Component Schemas
+
+This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
 
 ### Identifier
 
@@ -163,273 +444,15 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 }
 ```
 
-Example Phone Number values:
-
-```json
-"voice": "+1.7035555555",
-"mobile": "+1.7035555556"
-```
-
-## Cardinality Rules
-
-The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:
-
-Rule 1: A data element with cardinality `1` (exactly one) MUST be represented as a JSON property and MUST be present in the containing JSON object. The element MUST be listed under `required` in the corresponding JSON Schema.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" }
-  },
-  "required": ["name"]
-}
-```
-
-Rule 2: A data element with cardinality `0-1` (zero or one) MUST be represented as an optional JSON property. The element MUST NOT be listed under `required` in the corresponding JSON Schema. When absent, the element MUST be omitted from the JSON object (not represented as `null`).
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "expiryDate": { "type": "string", "format": "date-time" }
-  }
-}
-```
-
-Rule 3: A data element with cardinality `0+` (zero or more) MUST be represented as an optional JSON array. When no values are present, the property MUST be omitted or represented as an empty array.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/statusObject" }
-    }
-  }
-}
-```
-
-Rule 4: A data element with cardinality `1+` (one or more) MUST be represented as a required JSON array with `"minItems": 1` and the element MUST be listed under `required` in the corresponding JSON Schema.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "postalInfo": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/postalInfoObject" },
-      "minItems": 1
-    }
-  },
-  "required": ["postalInfo"]
-}
-```
-
-## Mutability Rules
-
-Data elements in the RPP data model carry a mutability attribute: `create-only`, `read-only`, or `read-write`. These MUST be represented in JSON Schema as follows:
-
-Rule 5: Data elements with mutability `read-only` MUST be annotated with `"readOnly": true` in the JSON Schema. Clients MUST NOT include read-only properties in create or update request bodies. Servers MUST ignore any read-only properties provided by a client in a request.
-
-```json
-{
-  "repositoryId": {
-    "type": "string",
-    "readOnly": true
-  }
-}
-```
-
-Rule 6: Data elements with mutability `create-only` MUST be annotated with `"writeOnly": true` in the JSON Schema for request schemas, and excluded from update request schemas. Servers MUST reject requests that attempt to modify a `create-only` element after object creation.
-
-Rule 7: Data elements with mutability `read-write` have no additional annotation. They MAY appear in both request and response bodies.
-
-## Association Rules
-
-The RPP data model defines several association types between objects, the following rules specify their JSON representations.
-A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.
-
-### Aggregation
-
-An `Aggregation[Type]` represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.
-
-Rule 8: `Aggregation[Type]` with cardinality `0+` or `1+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
-
-Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field `hostName`:
-
-```json
-"nameservers": [
-    { "hostName": "ns1.example.com" },
-    { "hostName": "ns2.example.com" }
-]
-```
-
-### Composition
-
-A `Composition[Type]` represents a parent-child relationship where the child's lifecycle is bound to the parent and the child cannot exist independently of the parent. In JSON, the child object MUST be fully embedded within the parent object. The JSON representation of a composition is the same as that of an aggregation. The distinction between the two is semantic and does not affect the JSON structure.
-
-```json
-"nameservers": [
-    {
-        "hostName": "ns1.example.com",
-        "provisioningMetadata": {
-            "repositoryId": "NS1EXAMPLE-REP",
-            "sponsoringClientId": "ClientX"
-        },
-        "status": [ { "label": "ok" } ],
-        "dns": [
-            {
-                "hostNamelabel": "ns1.example.com.",
-                "type": "A",
-                "data": "192.0.2.1",
-                "ttl": 3600
-            }
-        ]
-    }
-]
-```
-
-### Labelled Aggregation
-
-A `LabelledAggregation[Type]` is a relationship between two independent objects where each association carries a string label. Multiple associations with the same label are allowed.
-
-Rule 9: `LabelledAggregation[Type]` with cardinality `0+` MUST be represented as a JSON array of objects. Each object in the array MUST contain a `label` property (string) alongside the identifier of the referenced object. The object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
-
-Example: domain contacts (LabelledAggregation[Contact Object]):
-
-```json
-"contacts": [
-    { 
-        "label": "admin",
-        "contact": { 
-            "id": "ABC-8013" 
-        }
-    },
-    { 
-        "label": "tech",
-        "contact": { 
-            "id": "ABC-8014" 
-        }
-     }
-]
-```
-
-### Dictionary Aggregation
-
-A `DictionaryAggregation[Type]` is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.
-
-Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
-
-Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
-
-```json
-"contacts": {
-    "admin": {
-        "id": "ABC-8013"
-    },
-    "tech": {
-        "id": "ABC-8014"
-    }
-}
-```
-
-### Labelled Composition
-
-A `LabelledComposition[Type]` is a parent-child relationship where each embedded child carries a string label. Multiple instances with the same label are allowed.
-
-Rule 11: `LabelledComposition[Type]` with cardinality `0+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a `label` property alongside the data elements of the composed type.
-
-Example: contact postal info (LabelledComposition[Postal Info Object]):
-
-```json
-"addresses": [
-    {
-        "label": "int",
-        "postalInfo": {
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
-        }
-    }
-]
-```
-
-### Dictionary Composition
-
-A `DictionaryComposition[Type]` is a parent-child relationship where each embedded child carries a unique string label used as a dictionary key.
-
-Rule 12: `DictionaryComposition[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the fully embedded child object.
-
-Example: contact postal info (DictionaryComposition[Postal Info Object]):
-
-```json
-"addresses": {
-    "int": {
-        "type": "PERSON",
-        "name": "John Doe",
-        "addr": {
-            "street": ["123 Example Dr."],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
-        }
-    }
-}
-```
-
-## Object Identifier Rules
-
-Rule 13: When a resource or component object is referenced by identifier (for example in an aggregation), the identifier MUST be represented as a JSON string using the value of the object's primary identifier data element.
-
-Rule 14: When a resource or component object is embedded (as in a composition), all data elements of the object MUST be represented as properties of a JSON object according to the rules of this section.
-
-## JSON Schema Definition Rules
-
-Rule 15: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the `$defs` keyword of the JSON Schema document.
-
-Rule 16: Identifier fields MUST use `"type": "string"` in JSON Schema.
-
-Rule 17: Enumeration constraints on string fields MUST be expressed using the `"enum"` keyword in JSON Schema.
-
-Example (Transfer Status enum):
-
-```json
-"transferStatus": {
-    "type": "string",
-    "enum": ["pending", "clientApproved", "clientCancelled",
-             "clientRejected", "serverApproved", "serverCancelled"]
-}
-```
-
-Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
-
-Rule 19: JSON Schema definitions for RPP objects MUST use `"additionalProperties": false` by default to prevent unrecognised properties.
-
-# JSON Schema Definitions
-
-This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
-
-<!-- TODO: can we say normative for json schema definitions? -->
-
-## Common Component Schemas
-
 ### Period Object
 
 ```json
 {
   "$defs": {
-    "periodObject": {
+    "period": {
       "type": "object",
       "properties": {
+        "@type": { "type": "string", "const": "period" },
         "value": {
           "type": "integer",
           "minimum": 1,
@@ -440,8 +463,7 @@ This section provides normative JSON Schema definitions for RPP component object
           "enum": ["y", "m"]
         }
       },
-      "required": ["value", "unit"],
-      "additionalProperties": false
+      "required": ["@type", "value", "unit"]
     }
   }
 }
@@ -449,22 +471,28 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Provisioning Metadata Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `updatingClientId` and `updateDate` MUST NOT be present if the object has never been modified.
+- `transferDate` MUST NOT be present if the object has never been transferred.
+- In EPP Compatibility Profile, `repositoryId` MUST be provided.
+
 ```json
 {
   "$defs": {
     "provisioningMetadata": {
       "type": "object",
       "properties": {
+        "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
         "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "type": "string", "readOnly": true },
-        "creatingClientId":   { "type": "string", "readOnly": true },
+        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "type": "string", "readOnly": true },
+        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
-      "required": ["sponsoringClientId"],
-      "additionalProperties": false
+      "required": ["@type", "sponsoringClientId"]
     }
   }
 }
@@ -472,18 +500,24 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Status Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `label` MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix "server"; labels set explicitly by a client MUST use the prefix "client"; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.
+- `due`: Servers MAY restrict the ability of clients to set or update this value.
+- When the RGP feature is supported, the following additional status labels MAY appear on objects that support RGP: `addPeriod`, `autoRenewPeriod`, `renewPeriod`, `transferPeriod`, `redemptionPeriod`, `pendingRestore`, `rgpPendingDelete`. The labels `redemptionPeriod`, `pendingRestore`, and `rgpPendingDelete` MUST only appear alongside the standard `pendingDelete` status.
+
 ```json
 {
   "$defs": {
-    "statusObject": {
+    "status": {
       "type": "object",
       "properties": {
-        "label":  { "type": "string" },
+        "@type":  { "type": "string", "const": "status" },
+        "label":  { "type": "string", "pattern": "^[a-zA-Z]+$" },
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
-      "required": ["label"],
-      "additionalProperties": false
+      "required": ["@type", "label"]
     }
   }
 }
@@ -491,19 +525,26 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### DNS Resource Record
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostNamelabel` MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.
+- `type` MUST be a valid string representation of a DNS resource record type as defined in [@!RFC1035]. Allowed values MAY be further constrained by server policy.
+- `data` MUST be a syntactically valid resource record data value for the given `type` in zone file string representation.
+- `ttl` value range MAY be constrained by server policy.
+
 ```json
 {
   "$defs": {
     "dnsResourceRecord": {
       "type": "object",
       "properties": {
-        "hostNamelabel": { "type": "string" },
+        "@type":         { "type": "string", "const": "dnsResourceRecord" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
         "type":          { "type": "string" },
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
       },
-      "required": ["hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
+      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
     }
   }
 }
@@ -511,17 +552,22 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Authorisation Information Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `method` MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in [@!I-D.wullink-rpp-core]. In EPP Compatibility Profile, this value MUST be "authinfo" for standard password-based authorisation.
+- The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of `authdata` MAY not be returned in read responses, depending on the method and server policy.
+
 ```json
 {
   "$defs": {
-    "authInfo": {
+    "authorisationInformation": {
       "type": "object",
       "properties": {
+        "@type":    { "type": "string", "const": "authorisationInformation" },
         "method":   { "type": "string" },
         "authdata": { "type": "string" }
       },
-      "required": ["method", "authdata"],
-      "additionalProperties": false
+      "required": ["@type", "method", "authdata"]
     }
   }
 }
@@ -529,12 +575,18 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Postal Address Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `cc` MUST be a valid two-character country code from [@!ISO3166-1]. The JSON Schema pattern enforces uppercase alpha-2 format.
+- In EPP Compatibility Profile, `city` and `cc` MUST be provided.
+
 ```json
 {
   "$defs": {
     "postalAddress": {
       "type": "object",
       "properties": {
+        "@type": { "type": "string", "const": "postalAddress" },
         "street": {
           "type": "array",
           "items": { "type": "string" }
@@ -542,9 +594,9 @@ This section provides normative JSON Schema definitions for RPP component object
         "city":  { "type": "string" },
         "sp":    { "type": "string" },
         "pc":    { "type": "string" },
-        "cc":    { "type": "string", "minLength": 2, "maxLength": 2 }
+        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -552,12 +604,19 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ### Postal Info Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MAY be required by implementations when `type` is "PERSON". In EPP Compatibility Profile, `name` MUST be provided.
+- `org` MAY be required by implementations when `type` is "ORG".
+- In EPP Compatibility Profile, `addr` MUST be provided.
+
 ```json
 {
   "$defs": {
     "postalInfo": {
       "type": "object",
       "properties": {
+        "@type": { "type": "string", "const": "postalInfo" },
         "type": {
           "type": "string",
           "enum": ["PERSON", "ORG"]
@@ -566,7 +625,7 @@ This section provides normative JSON Schema definitions for RPP component object
         "org":  { "type": "string" },
         "addr": { "$ref": "#/$defs/postalAddress" }
       },
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -580,6 +639,7 @@ This section provides normative JSON Schema definitions for RPP component object
     "transferData": {
       "type": "object",
       "properties": {
+        "@type": { "type": "string", "const": "transferData", "readOnly": true },
         "transferStatus": {
           "type": "string",
           "enum": ["pending", "clientApproved", "clientCancelled",
@@ -591,16 +651,84 @@ This section provides normative JSON Schema definitions for RPP component object
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "requestingClientId": { "type": "string", "readOnly": true },
+        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "type": "string", "readOnly": true },
+        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
-        "transferStatus", "transferDirection", "requestingClientId",
+        "@type", "transferStatus", "transferDirection", "requestingClientId",
         "requestDate", "actingClientId", "actionDate"
-      ],
-      "additionalProperties": false
+      ]
+    }
+  }
+}
+```
+
+### Restore Data Object
+
+The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* `requestDate` MUST NOT be present if no restore request has been submitted yet.
+* `reportDate` MUST NOT be present if no restore report has been accepted yet.
+* `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
+
+```json
+{
+  "$defs": {
+    "restoreData": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"]
+    }
+  }
+}
+```
+
+### Restore Report Object
+
+The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process ([@!RFC3915]).
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* At least one and at most two `statements` MUST be provided.
+* `restoreTime` MAY be omitted when the restore report is submitted inline within the restore request in a single-step process.
+* In EPP Compatibility Profile, `restoreTime` MUST be present as defined in [@!RFC3915].
+* In EPP Compatibility Profile, exactly two `statements` MUST be present as defined in [@!RFC3915].
+
+```json
+{
+  "$defs": {
+    "restoreReport": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "preData":       { "type": "string" },
+        "postData":      { "type": "string" },
+        "deleteTime":    { "type": "string", "format": "date-time" },
+        "restoreTime":   { "type": "string", "format": "date-time" },
+        "restoreReason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "other": { "type": "string" }
+      },
+      "required": ["@type", "statements"]
     }
   }
 }
@@ -608,9 +736,15 @@ This section provides normative JSON Schema definitions for RPP component object
 
 ## Resource Object Schemas
 
+Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
+
 ### Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `name` MUST be a fully qualified domain name conforming to the syntax described in [@!RFC1035]. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.
 
 Create request schema (create-only and read-write properties):
 
@@ -619,75 +753,26 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "@type": { "type": "string", "const": "domainName" },
     "name": { "type": "string" },
     "registrant": { "type": "string" },
     "contacts": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "id":    { "type": "string" }
-        },
-        "required": ["label", "id"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/contact" }
     },
     "nameservers": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "hostName": { "type": "string" },
-          "dns": {
-            "type": "array",
-            "items": { "$ref": "#/$defs/dnsResourceRecord" }
-          }
-        },
-        "required": ["hostName"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/host" }
     },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
     },
-    "authInfo": { "$ref": "#/$defs/authInfo" },
-    "period":   { "$ref": "#/$defs/periodObject" }
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "period":   { "$ref": "#/$defs/period" }
   },
-  "required": ["name"],
-  "additionalProperties": false,
-  "$defs": {
-    "dnsResourceRecord": {
-      "type": "object",
-      "properties": {
-        "hostNamelabel": { "type": "string" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
-      },
-      "required": ["hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
-    },
-    "authInfo": {
-      "type": "object",
-      "properties": {
-        "method":   { "type": "string" },
-        "authdata": { "type": "string" }
-      },
-      "required": ["method", "authdata"],
-      "additionalProperties": false
-    },
-    "periodObject": {
-      "type": "object",
-      "properties": {
-        "value": { "type": "integer", "minimum": 1, "maximum": 99 },
-        "unit":  { "type": "string", "enum": ["y", "m"] }
-      },
-      "required": ["value", "unit"],
-      "additionalProperties": false
-    }
-  }
+  "required": ["@type", "name"],
+  "unevaluatedProperties": false
 }
 ```
 
@@ -698,29 +783,22 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
     "name":                  { "type": "string", "readOnly": true },
     "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
-      "items": { "$ref": "#/$defs/statusObject" },
+      "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
     "registrant":  { "type": "string" },
     "contacts": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "id":    { "type": "string" }
-        },
-        "required": ["label", "id"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/contact" }
     },
     "nameservers": {
       "type": "array",
-      "items": { "$ref": "#/$defs/hostObject" }
+      "items": { "$ref": "#/$defs/host" }
     },
     "dns": {
       "type": "array",
@@ -728,39 +806,23 @@ Read response schema (read-write and read-only properties):
     },
     "subordinateHosts": {
       "type": "array",
-      "items": { "$ref": "#/$defs/hostObject" },
+      "items": { "$ref": "#/$defs/host" },
       "readOnly": true
     },
     "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-    "authInfo":   { "$ref": "#/$defs/authInfo" }
+    "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["name", "provisioningMetadata"],
-  "additionalProperties": false,
-  "$defs": {
-    "hostObject": {
-      "type": "object",
-      "properties": {
-        "hostName":            { "type": "string" },
-        "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-        "status": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/statusObject" },
-          "readOnly": true
-        },
-        "dns": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/dnsResourceRecord" }
-        }
-      },
-      "required": ["hostName"],
-      "additionalProperties": false
-    }
-  }
+  "required": ["@type", "name", "provisioningMetadata"],
+  "unevaluatedProperties": false
 }
 ```
 
 ### Contact Data Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `postalInfo` keys MUST be either "int" (internationalised, all-ASCII) or "loc" (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -768,29 +830,31 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "@type": { "type": "string", "const": "contact" },
     "id": { "type": "string" },
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
       "items": { "type": "string", "format": "email" }
     },
-    "authInfo": { "$ref": "#/$defs/authInfo" },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
     "disclose":  { "type": "object" }
   },
-  "required": ["id", "postalInfo"],
-  "additionalProperties": false
+  "required": ["@type", "id", "postalInfo"],
+  "unevaluatedProperties": false
 }
 ```
 
@@ -801,40 +865,47 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
-      "items": { "$ref": "#/$defs/statusObject" },
+      "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
     "postalInfo": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1
+      "minProperties": 1,
+      "maxProperties": 2
     },
     "voice": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "fax": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "#/$defs/phoneNumber" }
     },
     "email": {
       "type": "array",
       "items": { "type": "string", "format": "email" }
     },
-    "authInfo": { "$ref": "#/$defs/authInfo" },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
     "disclose":  { "type": "object" }
   },
-  "required": ["id", "provisioningMetadata", "postalInfo"],
-  "additionalProperties": false
+  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "unevaluatedProperties": false
 }
 ```
 
 ### Host Data Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `hostName` MUST be a syntactically valid fully qualified host name.
+- If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -842,14 +913,15 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "hostName": { "type": "string" },
+    "@type":    { "type": "string", "const": "host" },
+    "hostName": { "type": "string", "format": "hostname" },
     "dns": {
       "type": "array",
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
     }
   },
-  "required": ["hostName"],
-  "additionalProperties": false
+  "required": ["@type", "hostName"],
+  "unevaluatedProperties": false
 }
 ```
 
@@ -860,11 +932,12 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "hostName": { "type": "string" },
+    "@type":    { "type": "string", "const": "host", "readOnly": true },
+    "hostName": { "type": "string", "format": "hostname" },
     "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
     "status": {
       "type": "array",
-      "items": { "$ref": "#/$defs/statusObject" },
+      "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
     "dns": {
@@ -872,8 +945,8 @@ Read response schema (read-write and read-only properties):
       "items": { "$ref": "#/$defs/dnsResourceRecord" }
     }
   },
-  "required": ["hostName", "provisioningMetadata"],
-  "additionalProperties": false
+  "required": ["@type", "hostName", "provisioningMetadata"],
+  "unevaluatedProperties": false
 }
 ```
 
@@ -889,38 +962,47 @@ Example domain create request:
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "period": {
+        "@type": "period",
         "value": 2,
         "unit": "y"
     },
     "nameservers": [
-        { "hostName": "ns1.example.net" },
-        { "hostName": "ns2.example.net" }
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
     ],
     "registrant": "jd1234",
     "contacts": [
         { "label": "admin", "id": "sh8013" },
         { "label": "tech",  "id": "sh8013" }
     ],
-    "authInfo": {
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
 }
 ```
 
-Example domain create response:
+Example domain create response from a server with RGP support:
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
+    "status": [
+        { "@type": "status", "label": "ok" },
+        { "@type": "status", "label": "addPeriod" }
+    ],
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
 ```
@@ -931,8 +1013,10 @@ Example domain read response:
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
@@ -942,7 +1026,7 @@ Example domain read response:
         "transferDate": "2000-04-08T09:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "registrant": "jd1234",
     "contacts": [
@@ -951,15 +1035,18 @@ Example domain read response:
     ],
     "nameservers": [
         {
-            "hostName": "ns1.example.com",
+            "@type": "host",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "label": "ok" } ],
+            "status": [ { "@type": "status", "label": "ok" } ],
             "dns": [
                 {
-                    "hostNamelabel": "ns1.example.com.",
+                    "@type": "dnsResourceRecord",
+                    "hostNamelabel": "ns1.example.example.",
                     "type": "A",
                     "data": "192.0.2.1",
                     "ttl": 3600
@@ -967,34 +1054,41 @@ Example domain read response:
             ]
         },
         {
-            "hostName": "ns1.example.net",
+            "@type": "host",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLENET-REP",
                 "sponsoringClientId": "ClientZ"
             },
-            "status": [ { "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         }
     ],
     "subordinateHosts": [
         {
-            "hostName": "ns1.example.com",
+            "@type": "host",
+            "hostName": "ns1.example.example",
             "provisioningMetadata": {
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         },
         {
-            "hostName": "ns2.example.com",
+            "@type": "host",
+            "hostName": "ns2.example.example",
             "provisioningMetadata": {
+                "@type": "provisioningMetadata",
                 "repositoryId": "NS2EXAMPLE-REP",
                 "sponsoringClientId": "ClientX"
             },
-            "status": [ { "label": "ok" } ]
+            "status": [ { "@type": "status", "label": "ok" } ]
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
-    "authInfo": {
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1007,8 +1101,10 @@ Example domain update request (read-write properties):
 
 ```json
 {
+    "@type": "domainName",
     "registrant": "sh8013",
-    "authInfo": {
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
         "method": "authinfo",
         "authdata": "2BARfoo"
     }
@@ -1019,8 +1115,10 @@ Example domain update response:
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
@@ -1029,7 +1127,7 @@ Example domain update response:
         "updateDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "registrant": "sh8013"
 }
@@ -1043,8 +1141,10 @@ Example domain delete response (minimal, server may return full representation):
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "EXAMPLE1-REP",
         "sponsoringClientId": "ClientX"
     }
@@ -1061,6 +1161,7 @@ Example domain renew request:
 {
     "currentExpiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
+        "@type": "period",
         "value": 5,
         "unit": "y"
     }
@@ -1071,23 +1172,23 @@ Example domain renew response:
 
 ```json
 {
-    "name": "example.com",
+    "@type": "domainName",
+    "name": "example.example",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ```
 
 ### Transfer Request
 
-Example domain transfer request (pull transfer):
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example domain transfer request (pull transfer)
 
 ```json
 {
     "transferDirection": "pull",
-    "authInfo": {
-        "method": "authinfo",
-        "authdata": "2fooBAR"
-    },
     "transferPeriod": {
+        "@type": "period",
         "value": 1,
         "unit": "y"
     }
@@ -1098,6 +1199,7 @@ Example domain transfer response (Transfer Data Object):
 
 ```json
 {
+    "@type": "transferData",
     "transferStatus": "pending",
     "transferDirection": "pull",
     "requestingClientId": "ClientX",
@@ -1114,6 +1216,7 @@ Example domain transfer query response (Transfer Data Object):
 
 ```json
 {
+    "@type": "transferData",
     "transferStatus": "pending",
     "transferDirection": "pull",
     "requestingClientId": "ClientX",
@@ -1128,6 +1231,119 @@ Example domain transfer query response (Transfer Data Object):
 
 Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
+### Restore Request
+
+Example domain restore request (without inline report; object transitions to `pendingRestore` state):
+
+```json
+{}
+```
+
+Example domain restore response (Restore Data Object, server requires a report):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore response with inline report (Restore Data Object, immediately restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example domain restore report request:
+
+```json
+{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+The Restore Query operation takes no request body (Parameters: None).
+
+```json
+{}
+```
+
+Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
 ## Contact
 
 ### Create
@@ -1136,13 +1352,16 @@ Example contact create request:
 
 ```json
 {
+    "@type": "contact",
     "id": "jd1234",
     "postalInfo": {
         "int": {
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
+                "@type": "postalAddress",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1156,8 +1375,9 @@ Example contact create request:
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"],
-    "authInfo": {
+    "email": ["jdoe@example.example"],
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1168,22 +1388,26 @@ Example contact create response:
 
 ```json
 {
+    "@type": "contact",
     "id": "jd1234",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "JD1234-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "postalInfo": {
         "int": {
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
+                "@type": "postalAddress",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1197,7 +1421,7 @@ Example contact create response:
     },
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ```
 
@@ -1207,8 +1431,10 @@ Example contact read response:
 
 ```json
 {
+    "@type": "contact",
     "id": "jd1234",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "JD1234-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
@@ -1217,14 +1443,16 @@ Example contact read response:
         "updateDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "postalInfo": {
         "int": {
+            "@type": "postalInfo",
             "type": "PERSON",
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
+                "@type": "postalAddress",
                 "street": ["123 Example Dr.", "Suite 100"],
                 "city": "Dulles",
                 "sp": "VA",
@@ -1234,9 +1462,135 @@ Example contact read response:
         }
     },
     "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.com"]
+    "email": ["jdoe@example.example"]
 }
 ```
+
+### Update
+
+TBD
+
+<!--
+Example contact update request:
+
+```json
+{
+    "@type": "contact",
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "456 New Street",
+                    "Suite 200"
+                ],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    }
+}
+```
+
+Example contact update response:
+
+```json
+{
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2025-06-01T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["456 New Street", "Suite 200"],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    },
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"]
+}
+```
+-->
+
+### Delete
+
+The contact delete operation takes the contact identifier as the resource identifier. No request body is required.
+
+### Transfer Request
+
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example contact transfer request (pull transfer)
+
+```json
+{
+    "transferDirection": "pull"
+}
+```
+
+Example contact transfer response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z"
+}
+```
+
+### Transfer Query
+
+Example contact transfer query response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z"
+}
+```
+
+### Transfer Cancel / Reject / Approve
+
+Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+
+Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Data Object, as contacts do not have registration periods.
 
 ## Host
 
@@ -1246,16 +1600,19 @@ Example host create request:
 
 ```json
 {
-    "hostName": "ns1.example.com",
+    "@type": "host",
+    "hostName": "ns1.example.example",
     "dns": [
         {
-            "hostNamelabel": "ns1.example.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
-            "hostNamelabel": "ns1.example.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1268,25 +1625,29 @@ Example host create response:
 
 ```json
 {
-    "hostName": "ns1.example.com",
+    "@type": "host",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "dns": [
         {
-            "hostNamelabel": "ns1.example.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
         },
         {
-            "hostNamelabel": "ns1.example.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "AAAA",
             "data": "2001:db8::1",
             "ttl": 3600
@@ -1301,19 +1662,22 @@ Example host read response:
 
 ```json
 {
-    "hostName": "ns1.example.com",
+    "@type": "host",
+    "hostName": "ns1.example.example",
     "provisioningMetadata": {
+        "@type": "provisioningMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
         "sponsoringClientId": "ClientX",
         "creatingClientId": "ClientY",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
-        { "label": "ok" }
+        { "@type": "status", "label": "ok" }
     ],
     "dns": [
         {
-            "hostNamelabel": "ns1.example.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "192.0.2.1",
             "ttl": 3600
@@ -1328,10 +1692,12 @@ Example host update request:
 
 ```json
 {
-    "hostName": "ns1.example2.com",
+    "@type": "host",
+    "hostName": "ns1.example.example",
     "dns": [
         {
-            "hostNamelabel": "ns1.example2.com.",
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
             "type": "A",
             "data": "198.51.100.1",
             "ttl": 3600
@@ -1343,6 +1709,115 @@ Example host update request:
 ### Delete
 
 The host delete operation takes the host name as the resource identifier. No request body is required. The server SHOULD reject the request if the host object is associated with any domain name objects.
+
+### Restore Request
+
+Example host restore request (without inline report; object transitions to `pendingRestore` state):
+
+```json
+{}
+```
+
+Example host restore request response (Restore Data Object, server requires a report):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore response with inline report (Restore Data Object, immediately restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example host restore report request:
+
+```json
+{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+The Restore Query operation takes no request body (Parameters: None).
+
+Example host restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
 
 # IANA Considerations
 
@@ -1364,9 +1839,10 @@ TODO
 
 ## Version 00 to 01
 
-- Added required "@type" property to all JSON Schema definitions. (Issue #20)
-- Updated labelled and dictionary aggregation rules (Issue #17)
 - Updated all examples and schemas to be based on RPP Data Object and no longer on EPP XML schemas. (Issue #15)
+- Updated labelled and dictionary aggregation rules (Issue #17)
+- Added required "@type" property to all JSON Schema definitions. (Issue #20)
+- Updated all example domain names to use the .example TLD. (Issue #26)
 
 {backmatter}
 
@@ -1389,4 +1865,25 @@ TODO
     <date year="2005" month="02"/>
   </front>
   <seriesInfo name="ITU-T Recommendation" value="E.164"/>
+</reference>
+
+<reference anchor="ISO3166-1" target="https://www.iso.org/standard/72482.html">
+  <front>
+    <title>Codes for the representation of names of countries and their subdivisions - Part 1: Country code</title>
+    <author>
+      <organization>International Organization for Standardization</organization>
+    </author>
+    <date year="2020"/>
+  </front>
+  <seriesInfo name="ISO" value="3166-1:2020"/>
+</reference>
+
+<reference anchor="RFC3915" target="https://www.rfc-editor.org/rfc/rfc3915">
+  <front>
+    <title>Domain Registry Grace Period Mapping for the Extensible Provisioning Protocol (EPP)</title>
+    <author initials="S." surname="Hollenbeck" fullname="Scott Hollenbeck"/>
+    <date year="2004" month="09"/>
+  </front>
+  <seriesInfo name="RFC" value="3915"/>
+  <seriesInfo name="DOI" value="10.17487/RFC3915"/>
 </reference>
