@@ -372,11 +372,8 @@ Example (Transfer Status enum):
 
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
-<<<<<<< mwul/issue-32
+
 Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
-=======
-Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false`, to prevent problems when combining schemas. However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
->>>>>>> work-rpp-json-01
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -1236,13 +1233,13 @@ Transfer cancel, reject, and approve responses return the Transfer Data Object. 
 
 ### Restore Request
 
-Example domain restore request (without inline report; object transitions to `pendingRestore` state awaiting a subsequent Restore Report operation):
+Example domain restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
 {}
 ```
 
-Example domain restore request response (Restore Data Object, server requires a report):
+Example domain restore response (Restore Data Object, server requires a report):
 
 ```json
 {
@@ -1257,6 +1254,7 @@ Example domain restore request with inline restore report (single-step; object r
 
 ```json
 {
+    "@type": "domainName",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1272,7 +1270,7 @@ Example domain restore request with inline restore report (single-step; object r
 }
 ```
 
-Example domain restore request with inline report response (Restore Data Object, immediately restored):
+Example domain restore response with inline report (Restore Data Object, immediately restored):
 
 ```json
 {
@@ -1289,6 +1287,7 @@ Example domain restore report request:
 
 ```json
 {
+    "@type": "domainName",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1318,6 +1317,10 @@ Example domain restore report response (Restore Data Object):
 ### Restore Query
 
 The Restore Query operation takes no request body (Parameters: None).
+
+```json
+{}
+```
 
 Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
 
@@ -1706,6 +1709,115 @@ Example host update request:
 ### Delete
 
 The host delete operation takes the host name as the resource identifier. No request body is required. The server SHOULD reject the request if the host object is associated with any domain name objects.
+
+### Restore Request
+
+Example host restore request (without inline report; object transitions to `pendingRestore` state):
+
+```json
+{}
+```
+
+Example host restore request response (Restore Data Object, server requires a report):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore response with inline report (Restore Data Object, immediately restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example host restore report request:
+
+```json
+{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+```
+
+Example host restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+The Restore Query operation takes no request body (Parameters: None).
+
+Example host restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example host restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
 
 # IANA Considerations
 
