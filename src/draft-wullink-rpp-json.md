@@ -1193,6 +1193,119 @@ Example domain transfer query response (Transfer Data Object):
 
 Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
+### Restore Request
+
+Example domain restore request (without inline report; object transitions to `pendingRestore` state):
+
+```json
+{}
+```
+
+Example domain restore response (Restore Data Object, server requires a report):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore request with inline restore report (single-step; object restored immediately):
+
+```json
+{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore response with inline report (Restore Data Object, immediately restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+```
+
+### Restore Report
+
+Example domain restore report request:
+
+```json
+{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+```
+
+Example domain restore report response (Restore Data Object):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
+### Restore Query
+
+The Restore Query operation takes no request body (Parameters: None).
+
+```json
+{}
+```
+
+Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+```
+
+Example domain restore query response (Restore Data Object, object restored):
+
+```json
+{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+```
+
 ## Contact
 
 ### Create
@@ -1456,6 +1569,7 @@ Example host restore request with inline restore report (single-step; object res
 
 ```json
 {
+    "@type": "host",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
@@ -1471,7 +1585,7 @@ Example host restore request with inline restore report (single-step; object res
 }
 ```
 
-Example host restore request with inline report response (Restore Data Object, immediately restored):
+Example host restore response with inline report (Restore Data Object, immediately restored):
 
 ```json
 {
@@ -1488,6 +1602,7 @@ Example host restore report request:
 
 ```json
 {
+    "@type": "host",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
