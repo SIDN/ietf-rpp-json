@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- name="GENERATOR" content="github.com/mmarkdown/mmark Mmark Markdown Processor - mmark.miek.nl" -->
-<rfc version="3" ipr="trust200902" docName="draft-wullink-rpp-json-00" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" tocDepth="4">
+<rfc version="3" ipr="trust200902" docName="draft-wullink-rpp-json-01" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" tocDepth="4">
 
 <front>
-<title abbrev="XML to JSON for RPP">EPP XML to RPP JSON conversion rules</title><seriesInfo value="draft-wullink-rpp-json-00" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
+<title abbrev="JSON for RPP">JSON for Restful Provisioning Protocol (RPP)</title><seriesInfo value="draft-wullink-rpp-json-01" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
 <author initials="M." surname="Wullink" fullname="Maarten Wullink"><organization>SIDN Labs</organization><address><postal><street></street>
 </postal><email>maarten.wullink@sidn.nl</email>
 <uri>https://sidn.nl/</uri>
@@ -15,7 +15,7 @@
 <workgroup>Network Working Group</workgroup>
 
 <abstract>
-<t>This document describes the rules for converting The Extensible Provisioning Protocol (EPP) <xref target="RFC5730"></xref> XML based messages to a JSON <xref target="RFC8259"></xref> for use with the RESTful Provisioning Protocol (RPP).</t>
+<t>This document defines the rules for representing the RESTful Provisioning Protocol (RPP) data objects, as defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, using the JavaScript Object Notation (JSON) Data Interchange Format <xref target="RFC8259"></xref>. It specifies how RPP primitive types, common data types, component objects, resource objects, and associations are mapped to JSON and JSON Schema, and provides normative JSON Schema definitions and worked examples for domain name, contact, and host data objects.</t>
 </abstract>
 
 </front>
@@ -23,129 +23,633 @@
 <middle>
 
 <section anchor="introduction"><name>Introduction</name>
-<t>EPP <xref target="RFC5730"></xref> employs XML to define its protocol interactions, with XML Schema Definitions (XSD) serving as the formal schema language to outline the structure and validate the conformance of EPP XML messages. These XSDs, integral to the EPP RFCs, ensure that EPP messages adhere to the expected syntax and semantic rules. This document describes the rules and methodologies for converting these XSDs, to JSON Schema, which serves a similar purpose for JSON formatted data. JSON Schema provides a robust framework for describing and validating the structure of JSON data, offering a parallel method for enforcing syntactical correctness and logical consistency in JSON formatted EPP messages.</t>
-<t>As the domain registration industry evolves towards adopting RESTful APIs and other JSON-based interactions, there's a need for analogous schema definitions to ensure consistency, validation, and interoperability of JSON representations of EPP messages. This document aims to bridge this gap by providing a standardized approach to translating the rigorously defined XSDs of EPP into JSON Schema, facilitating the use of JSON in the RESTful Provisioning Protocol and potential future EPP-related protocols and transports.</t>
-<t>This approach eventually allows for converting valid EPP XML messages to the JavaScript Object Notation (JSON) Data Interchange Format <xref target="RFC8259"></xref>, for use with EPP.</t>
+<t>The RESTful Provisioning Protocol (RPP) defines a set of data objects for managing foundational registry resources including domain names, contacts, and hosts. The data model is defined in <xref target="I-D.kowalik-rpp-data-objects"></xref> independently of any particular representation format. This document defines the JSON <xref target="RFC8259"></xref> representation of those data objects.</t>
+<t>JSON has emerged as the de facto standard data format for modern RESTful APIs. Its widespread adoption across tools, libraries, and developer communities makes it well suited as the primary representation format for RPP. This document provides the normative rules and JSON Schema definitions required for implementations to produce and consume RPP messages in JSON.</t>
+<t>The separation between the abstract data model and its concrete JSON representation ensures that the protocol's semantic foundation remains stable while enabling the adoption of JSON across diverse deployment environments.</t>
 
 <section anchor="motivation"><name>Motivation</name>
-<t>The RESTful Provisioning Protocol (RPP) introduces a new provisiong mechanism that aligns more closely with modern cloud infrastructure, enhancing the scalability of server deployments. While RESTful protocols do not mandate a specific media type for resource description, the widespread adoption of JSON in web services has established it as the de facto standard for modern APIs. The increasing availability of tools, software libraries, and a skilled workforce, coupled with the declining popularity of XML, has led several registries to adopt JSON for data exchange within their API ecosystems. Registries supporting JSON, can offer a unified API ecosystem that extends beyond domain name and IP address provisioning, maintaining a consistent technology stack, data formats, and developer experience.</t>
-<t>JSON's syntax, known for its straightforwardness and minimal verbosity compared to XML, significantly eases the tasks of writing, reading, and maintaining code. This simplicity is especially advantageous for the rapid comprehension and integration of provisioning APIs.</t>
-<t>The lightweight nature of JSON can result in faster processing and data transfers, a critical aspect in high-volume transaction environments such as domain registration. Enhanced API response times can lead to more efficient domain lookups, registrations, and updates. Moreover, JSON parsing is typically faster and more straightforward than XML parsing, contributing to improved system performance amid frequent interactions between RPP clients and servers.</t>
-<t>However, the absence of a standardized JSON format for domain provisioning has led to the emergence of TLD-specific implementations that lack interoperability, increasing the development effort required for integration. Similarly, at the registrar level, the absence of standards has resulted in numerous incompatible API implementations provided to clients and resellers. Standardizing a JSON format for domain provisioning within the RPP framework could mitigate these challenges, reducing fragmentation and simplifying integration efforts across the domain registration industry.</t>
+<t>The RESTful Provisioning Protocol (RPP) introduces a new provisioning mechanism that aligns more closely with modern cloud infrastructure, enhancing the scalability of server deployments. While RESTful protocols do not mandate a specific media type for resource description, the widespread adoption of JSON in web services has established it as the de facto standard for modern APIs. The increasing availability of tools, software libraries, and a skilled workforce has led several registries to adopt JSON for data exchange within their API ecosystems. Registries supporting JSON can offer a unified API ecosystem that extends beyond domain name and IP address provisioning, maintaining a consistent technology stack, data formats, and developer experience.</t>
+<t>JSON's syntax, known for its straightforwardness and minimal verbosity, significantly eases the tasks of writing, reading, and maintaining code. This simplicity is especially advantageous for the rapid comprehension and integration of provisioning APIs.</t>
+<t>The lightweight nature of JSON can result in faster processing and data transfers, a critical aspect in high-volume transaction environments such as domain registration. Enhanced API response times can lead to more efficient domain lookups, registrations, and updates. JSON parsing is typically fast and well-supported by standard libraries, contributing to improved system performance amid frequent interactions between RPP clients and servers.</t>
+<t>However, the absence of a standardised JSON format for domain provisioning has led to the emergence of TLD-specific implementations that lack interoperability, increasing the development effort required for integration. Similarly, at the registrar level, the absence of standards has resulted in numerous incompatible API implementations provided to clients and resellers. Standardising a JSON format for domain provisioning within the RPP framework could mitigate these challenges, reducing fragmentation and simplifying integration efforts across the domain registration industry.</t>
 </section>
 </section>
 
 <section anchor="terminology"><name>Terminology</name>
 <t>In this document the following terminology is used.</t>
-<t>EPP RFCs - This is a reference to the EPP version 1.0
-specifications <xref target="RFC5730"></xref>, <xref target="RFC5731"></xref>, <xref target="RFC5732"></xref> and <xref target="RFC5733"></xref>.</t>
-<t>RESTful Provisioning Protocol - A RESTful protocol for provisiong heterogeneous database objects.</t>
+<t>RPP Data Objects - The abstract data model definitions for domain name, contact, and host resources, as specified in <xref target="I-D.kowalik-rpp-data-objects"></xref>.</t>
+<t>RESTful Provisioning Protocol - A RESTful protocol for provisioning heterogeneous database objects.</t>
+<t>JSON Schema - A vocabulary that allows annotation and validation of JSON documents, as described in <xref target="JSON-SCHEMA"></xref>.</t>
+<t>EPP Compatibility Profile - A set of additional constraints defined in <xref target="I-D.kowalik-rpp-data-objects"></xref> that a server MUST adhere to when supporting both RPP and EPP concurrently.</t>
 </section>
 
 <section anchor="conventions-used-in-this-document"><name>Conventions Used in This Document</name>
 <t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
 &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
 document are to be interpreted as described in <xref target="RFC2119"></xref>.</t>
-<t>JSON is case sensitive. Unless stated otherwise, JSON specifications and examples provided in this document MUST be interpreted in the
-character case presented. The examples in this document assume that request and response messages
-are properly formatted JSON documents. Indentation and white space in examples are provided only to illustrate element relationships and for improving readability, and are not REQUIRED features of the protocol.</t>
+<t>JSON is case sensitive. Unless stated otherwise, JSON specifications and examples provided in this document MUST be interpreted in the character case presented. The examples in this document assume that request and response messages are properly formatted JSON documents. Indentation and white space in examples are provided only to illustrate element relationships and for improving readability, and are not REQUIRED features of the protocol.</t>
+<t>All JSON Schema definitions in this document use JSON Schema draft 2020-12 <xref target="JSON-SCHEMA"></xref>, and where not provided with a <tt>$schema</tt> keyword, the following default applies:</t>
+
+<sourcecode type="json"><![CDATA["$schema": "https://json-schema.org/draft/2020-12/schema"
+]]>
+</sourcecode>
 </section>
 
-<section anchor="xsd-conversion-rules"><name>XSD Conversion Rules</name>
-<t>This chapter presents rules for converting EPP XSD into JSON Schema.</t>
+<section anchor="json-representation-rules"><name>JSON Representation Rules</name>
+<t>This section defines the normative rules for representing the RPP data model in JSON. The data model is specified in <xref target="I-D.kowalik-rpp-data-objects"></xref>, which defines all primitive types, common data types, component objects, resource objects, and associations independently of any concrete representation format. The rules in this section specify how those abstract definitions map to JSON and JSON Schema version 2020-12.</t>
 
-<section anchor="elements-and-attributes"><name>Elements and Attributes</name>
-<t>Rule 1: Elements in XSD must be converted to properties in the JSON Schema, preserving names.</t>
-<t>XSD:</t>
+<section anchor="primitive-type-mappings"><name>Primitive Type Mappings</name>
+<t>RPP primitive types MUST be represented in JSON as follows:</t>
+<table>
+<thead>
+<tr>
+<th>RPP Primitive Type</th>
+<th>JSON Type</th>
+<th>Notes</th>
+</tr>
+</thead>
 
-<sourcecode type="xml"><![CDATA[<element name="name" type="eppcom:labelType"/>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
+<tbody>
+<tr>
+<td>String</td>
+<td><tt>string</tt></td>
+<td>Unicode character sequence</td>
+</tr>
+
+<tr>
+<td>Integer</td>
+<td><tt>integer</tt></td>
+<td>Whole number, positive or negative</td>
+</tr>
+
+<tr>
+<td>Boolean</td>
+<td><tt>boolean</tt></td>
+<td><tt>true</tt> or <tt>false</tt></td>
+</tr>
+
+<tr>
+<td>Decimal</td>
+<td><tt>number</tt></td>
+<td>Base-10 fractional value</td>
+</tr>
+
+<tr>
+<td>Date</td>
+<td><tt>string</tt></td>
+<td>Full-date as per <xref target="RFC3339"></xref>, e.g. <tt>&quot;2025-10-27&quot;</tt></td>
+</tr>
+
+<tr>
+<td>Timestamp</td>
+<td><tt>string</tt></td>
+<td>Date-time in UTC as per <xref target="RFC3339"></xref>, e.g. <tt>&quot;2025-10-27T09:42:51Z&quot;</tt></td>
+</tr>
+
+<tr>
+<td>URL</td>
+<td><tt>string</tt></td>
+<td>Uniform Resource Locator as per <xref target="RFC1738"></xref></td>
+</tr>
+
+<tr>
+<td>Binary</td>
+<td><tt>string</tt></td>
+<td>Base64-encoded binary data</td>
+</tr>
+</tbody>
+</table></section>
+
+<section anchor="cardinality-rules"><name>Cardinality Rules</name>
+<t>The cardinality of each data element in the RPP data model MUST be represented as follows in JSON:</t>
+<t>Rule 1: A data element with cardinality <tt>1</tt> (exactly one) MUST be represented as a JSON property and MUST be present in the containing JSON object. The element MUST be listed under <tt>required</tt> in the corresponding JSON Schema.</t>
 
 <sourcecode type="json"><![CDATA[{
-  ...
+  "type": "object",
   "properties": {
-    "name": {
-      "$ref": "#/definitions/labelType"
-    }
-    ...
-  }
-}
-]]>
-</sourcecode>
-<t>Rule 2: Attributes in XSD must be represented as JSON properties, prefixed with &quot;@&quot;, retaining original names with the prefix addition.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[<simpleContent>
-    <extension base="normalizedString">
-    <attribute name="s" type="domain:statusValueType" use="required"/>
-    <attribute name="lang" type="language"/>
-    </extension>
-</simpleContent>
-]]>
-</sourcecode>
-<t>JSON Schema</t>
-
-<sourcecode type="json"><![CDATA[{
-  ...
-  "properties": {
-    "@s": {
-      "$ref": "#/definitions/statusValueType"
-    },
-    "@lang": {
-      "$ref": "#/definitions/language"
-    }
-    ...
+    "name": { "type": "string" }
   },
-  "required": ["@s"]
+  "required": ["name"]
+}
+]]>
+</sourcecode>
+<t>Rule 2: A data element with cardinality <tt>0-1</tt> (zero or one) MUST be represented as an optional JSON property. The element MUST NOT be listed under <tt>required</tt> in the corresponding JSON Schema. When absent, the element MUST be omitted from the JSON object (not represented as <tt>null</tt>).</t>
+
+<sourcecode type="json"><![CDATA[{
+  "type": "object",
+  "properties": {
+    "expiryDate": { "type": "string", "format": "date-time" }
+  }
+}
+]]>
+</sourcecode>
+<t>Rule 3: A data element with cardinality <tt>0+</tt> (zero or more) MUST be represented as an optional JSON array. When no values are present, the property MUST be omitted or represented as an empty array.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" }
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Rule 4: A data element with cardinality <tt>1+</tt> (one or more) MUST be represented as a required JSON array with <tt>&quot;minItems&quot;: 1</tt> and the element MUST be listed under <tt>required</tt> in the corresponding JSON Schema.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "type": "object",
+  "properties": {
+    "postalInfo": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/postalInfo" },
+      "minItems": 1
+    }
+  },
+  "required": ["postalInfo"]
 }
 ]]>
 </sourcecode>
 </section>
 
-<section anchor="simple-types-and-enumerations"><name>Simple Types and Enumerations</name>
-<t>Rule 3: Simple types, including elements with only text content, must be converted to appropriate JSON types, e.g., xs:string to type: string.</t>
-<t>XSD:</t>
+<section anchor="mutability-rules"><name>Mutability Rules</name>
+<t>Data elements in the RPP data model carry a mutability attribute: <tt>create-only</tt>, <tt>read-only</tt>, or <tt>read-write</tt>. These MUST be represented in JSON Schema as follows:</t>
+<t>Rule 5: Data elements with mutability <tt>read-only</tt> MUST be annotated with <tt>&quot;readOnly&quot;: true</tt> in the JSON Schema. Clients MUST NOT include read-only properties in create or update request bodies. Servers MUST ignore any read-only properties provided by a client in a request.</t>
 
-<sourcecode type="xml"><![CDATA[<simpleType name="labelType">
-  <restriction base="xs:string" />
-</simpleType>
+<sourcecode type="json"><![CDATA[{
+  "repositoryId": {
+    "type": "string",
+    "readOnly": true
+  }
+}
 ]]>
 </sourcecode>
-<t>JSON Schema:</t>
+<t>Rule 6: Data elements with mutability <tt>create-only</tt> MUST be annotated with <tt>&quot;writeOnly&quot;: true</tt> in the JSON Schema for request schemas, and excluded from update request schemas. Servers MUST reject requests that attempt to modify a <tt>create-only</tt> element after object creation.</t>
+<t>Rule 7: Data elements with mutability <tt>read-write</tt> have no additional annotation. They MAY appear in both request and response bodies.</t>
+</section>
 
-<artwork><![CDATA[{
-  "definitions": {
-    "labelType": {
-      "type": "string"
+<section anchor="association-rules"><name>Association Rules</name>
+<t>The RPP data model defines several association types between objects, the following rules specify their JSON representations.
+A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.</t>
+</section>
+
+<section anchor="labelled-associations"><name>Labelled associations</name>
+<t>Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property <tt>label</tt> MUST be included  alongside the reference to the target object. A property with the name <tt>object</tt> MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.</t>
+
+<section anchor="aggregation"><name>Aggregation</name>
+<t>An <tt>Aggregation[Type]</tt> represents a relationship between two independent objects. When the cardinality allows more than one target, it MUST be represented as a JSON array. Each element of the array MUST be the identifier of the referenced object.</t>
+<t>Rule 8: <tt>Aggregation[Type]</tt> with cardinality <tt>0+</tt> or <tt>1+</tt> MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
+<t>Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field <tt>hostName</tt>:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "name": "name.example",
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.name.example" },
+        { "@type": "host", "hostName": "ns2.name.example" }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="composition"><name>Composition</name>
+<t>A <tt>Composition[Type]</tt> represents a parent-child relationship where the child's lifecycle is bound to the parent and the child cannot exist independently of the parent. In JSON, the child object MUST be fully embedded within the parent object. The JSON representation of a composition is the same as that of an aggregation. The distinction between the two is semantic and does not affect the JSON structure.</t>
+
+<sourcecode type="json"><![CDATA[{ 
+        "@type": "domainName",
+        "name": "name.example",
+        "nameservers": [
+            {
+                "@type": "host",
+                "hostName": "ns1.name.example",
+                "provisioningMetadata": {
+                    "@type": "provisioningMetadata",
+                    "repositoryId": "NS1EXAMPLE-REP",
+                    "sponsoringClientId": "ClientX"
+                },
+                "status": [ { "@type": "status", "label": "ok" } ],
+                "dns": [
+                    {
+                        "@type": "dnsResourceRecord",
+                        "hostNamelabel": "ns1.name.example",
+                        "type": "A",
+                        "data": "192.0.2.1",
+                        "ttl": 3600
+                    }
+                ]
+            }
+        ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="labelled-aggregation"><name>Labelled Aggregation</name>
+<t>A <tt>LabelledAggregation[Type]</tt> is a relationship between two independent objects where each association carries a string label. Multiple associations with the same label are allowed.</t>
+<t>Rule 9: <tt>LabelledAggregation[Type]</tt> with cardinality <tt>0+</tt> MUST be represented as a JSON array of objects. Each object in the array MUST contain a <tt>label</tt> property (string) alongside the identifier of the referenced object. The object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
+<t>Example: domain contacts (LabelledAggregation[Contact Object]):</t>
+
+<sourcecode type="json"><![CDATA["contacts": [
+    { 
+        "label": "admin",
+        "object": { 
+            "@type": "contact",
+            "id": "ABC-8013" 
+        }
+    },
+    { 
+        "label": "tech",
+        "object": { 
+            "@type": "contact",
+            "id": "ABC-8014" 
+        }
+     }
+]
+]]>
+</sourcecode>
+</section>
+
+<section anchor="dictionary-aggregation"><name>Dictionary Aggregation</name>
+<t>A <tt>DictionaryAggregation[Type]</tt> is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.</t>
+<t>Rule 10: <tt>DictionaryAggregation[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
+<t>Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):</t>
+
+<sourcecode type="json"><![CDATA["contacts": {
+    "admin": {
+        "@type": "contact",
+        "id": "ABC-8013"
+    },
+    "tech": {
+        "@type": "contact",
+        "id": "ABC-8014"
+    }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="labelled-composition"><name>Labelled Composition</name>
+<t>A <tt>LabelledComposition[Type]</tt> is a parent-child relationship where each embedded child carries a string label. Multiple instances with the same label are allowed.</t>
+<t>Rule 11: <tt>LabelledComposition[Type]</tt> with cardinality <tt>0+</tt> MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a <tt>label</tt> property alongside the data elements of the composed type.</t>
+<t>Example: contact postal info (LabelledComposition[Postal Info Object]):</t>
+
+<sourcecode type="json"><![CDATA["addresses": [
+    {
+        "label": "int",
+        "object": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["123 Example Dr."],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
+            }
+        }
+    }
+]
+]]>
+</sourcecode>
+</section>
+
+<section anchor="dictionary-composition"><name>Dictionary Composition</name>
+<t>A <tt>DictionaryComposition[Type]</tt> is a parent-child relationship where each embedded child carries a unique string label used as a dictionary key.</t>
+<t>Rule 12: <tt>DictionaryComposition[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the fully embedded child object.</t>
+<t>Example: contact postal info (DictionaryComposition[Postal Info Object]):</t>
+
+<sourcecode type="json"><![CDATA["addresses": {
+    "int": {
+        "@type": "postalInfo",
+        "type": "PERSON",
+        "name": "John Doe",
+        "addr": {
+            "@type": "postalAddress",
+            "street": ["123 Example Dr."],
+            "city": "Dulles",
+            "sp": "VA",
+            "pc": "20166-6503",
+            "cc": "US"
+        }
+    }
+}
+]]>
+</sourcecode>
+</section>
+</section>
+
+<section anchor="object-identifier-rules"><name>Object Identifier Rules</name>
+<t>Rule 13: When a resource or component object is referenced by identifier (for example in an aggregation), the identifier MUST be represented as a JSON string using the value of the object's primary identifier data element.</t>
+<t>Rule 14: When a resource or component object is embedded (as in a composition), all data elements of the object MUST be represented as properties of a JSON object according to the rules of this section.</t>
+</section>
+
+<section anchor="json-schema-definition-rules"><name>JSON Schema Definition Rules</name>
+<t>Rule 15: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the <tt>$defs</tt> keyword of the JSON Schema document.</t>
+<t>Rule 16: Identifier fields MUST use <tt>&quot;type&quot;: &quot;string&quot;</tt> in JSON Schema.</t>
+<t>Rule 17: Enumeration constraints on string fields MUST be expressed using the <tt>&quot;enum&quot;</tt> keyword in JSON Schema.</t>
+<t>Example (Transfer Status enum):</t>
+
+<sourcecode type="json"><![CDATA["transferStatus": {
+    "type": "string",
+    "enum": ["pending", "clientApproved", "clientCancelled",
+             "clientRejected", "serverApproved", "serverCancelled"]
+}
+]]>
+</sourcecode>
+<t>Rule 18: Each JSON Schema definition for an RPP object MUST include a <tt>&quot;required&quot;</tt> array listing all data elements with cardinality <tt>1</tt> or <tt>1+</tt>.</t>
+<t>Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use <tt>&quot;additionalProperties&quot;: false</tt> if the schema is intended to be extended, However, root schemas MUST use <tt>&quot;unevaluatedProperties&quot;: false</tt> to prevent the presence of undeclared properties in JSON subschemas.</t>
+<t>Rule 20: Every RPP object representation MUST include a <tt>&quot;@type&quot;</tt> property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The <tt>&quot;@type&quot;</tt> property MUST be included in the JSON Schema <tt>&quot;properties&quot;</tt> object for each RPP object definition with a <tt>&quot;const&quot;</tt> constraint fixing the value to the object's registered identifier. The <tt>&quot;@type&quot;</tt> property MUST be listed in the <tt>&quot;required&quot;</tt> array of the corresponding JSON Schema definition.</t>
+<t>Example (Domain Name Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "@type": "domainName",
+  "name": "example.example"
+}
+]]>
+</sourcecode>
+<t>Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <tt>authorisationInformation</tt> object in the JSON request body. Instead, the client MUST convey the authorization information using the <tt>RPP-Authorization</tt> HTTP request header as defined in <xref target="I-D.wullink-rpp-core"></xref>. Servers MUST reject any request that includes an <tt>authorisationInformation</tt> object in the JSON body with an appropriate error response.</t>
+
+<section anchor="rpp-profiles-and-validation"><name>RPP Profiles and Validation</name>
+<t>RPP profiles, such as the EPP Compatibility Profile defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.</t>
+</section>
+</section>
+</section>
+
+<section anchor="json-schema-definitions"><name>JSON Schema Definitions</name>
+<t>This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 <xref target="JSON-SCHEMA"></xref>.</t>
+
+<section anchor="common-component-schemas"><name>Common Component Schemas</name>
+<t>This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions.</t>
+
+<section anchor="identifier"><name>Identifier</name>
+<t>Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in <xref target="RFC5730" sectionFormat="of" section="2.8"></xref>. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.</t>
+</section>
+
+<section anchor="client-identifier"><name>Client Identifier</name>
+<t>Client identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format. Client identifiers use the <tt>clIDType</tt> syntax described in <xref target="RFC5730"></xref>.</t>
+<t>In JSON, a Client Identifier MUST be represented as a <tt>string</tt> value.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "clientIdentifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 16,
+      "pattern": "^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?$"
     }
   }
 }
 ]]>
-</artwork>
-<t>Rule 4: Enumerations in XSD must be represented using the enum keyword in JSON Schema.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[<simpleType name="trStatusType">
-  <restriction base="token">
-    <enumeration value="clientApproved"/>
-    <enumeration value="clientCancelled"/>
-    ...
-  </restriction>
-</simpleType>
-]]>
 </sourcecode>
-<t>JSON Schema:</t>
+</section>
+
+<section anchor="phone-number"><name>Phone Number</name>
+<t>Telephone number syntax is derived from structures defined in <xref target="ITU.E164.2005"></xref>. Telephone numbers described in this specification are character strings that MUST begin with a plus sign (&quot;+&quot;, ASCII value 0x002B), followed by a country code defined in <xref target="ITU.E164.2005"></xref>, followed by a dot (&quot;.&quot;, ASCII value 0x002E), followed by a sequence of digits representing the telephone number. An optional &quot;x&quot; (ASCII value 0x0078) separator with additional digits representing extension information can be appended to the end of the value.</t>
+<t>In JSON, a Phone Number MUST be represented as a <tt>string</tt> value conforming to the pattern described above.</t>
 
 <sourcecode type="json"><![CDATA[{
-  "definitions": {
-    "trStatusType": {
+  "$defs": {
+    "phoneNumber": {
       "type": "string",
-      "enum": [
-        "clientApproved",
-        "clientCancelled",
-        ...
+      "pattern": "^\\+[0-9]{1,3}\\.[0-9]+( x[0-9]+)?$"
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="period-object"><name>Period Object</name>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "period": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "period" },
+        "value": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["y", "m"]
+        }
+      },
+      "required": ["@type", "value", "unit"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="provisioning-metadata-object"><name>Provisioning Metadata Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>updatingClientId</tt> and <tt>updateDate</tt> MUST NOT be present if the object has never been modified.</li>
+<li><tt>transferDate</tt> MUST NOT be present if the object has never been transferred.</li>
+<li>In EPP Compatibility Profile, <tt>repositoryId</tt> MUST be provided.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "provisioningMetadata": {
+      "type": "object",
+      "properties": {
+        "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
+        "repositoryId":       { "type": "string", "readOnly": true },
+        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
+        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
+        "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "sponsoringClientId"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="status-object"><name>Status Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>label</tt> MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix &quot;server&quot;; labels set explicitly by a client MUST use the prefix &quot;client&quot;; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.</li>
+<li><tt>due</tt>: Servers MAY restrict the ability of clients to set or update this value.</li>
+<li>When the RGP feature is supported, the following additional status labels MAY appear on objects that support RGP: <tt>addPeriod</tt>, <tt>autoRenewPeriod</tt>, <tt>renewPeriod</tt>, <tt>transferPeriod</tt>, <tt>redemptionPeriod</tt>, <tt>pendingRestore</tt>, <tt>rgpPendingDelete</tt>. The labels <tt>redemptionPeriod</tt>, <tt>pendingRestore</tt>, and <tt>rgpPendingDelete</tt> MUST only appear alongside the standard <tt>pendingDelete</tt> status.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "status": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "status" },
+        "label":  { "type": "string", "pattern": "^[a-zA-Z]+$" },
+        "reason": { "type": "string" },
+        "due":    { "type": "string", "format": "date-time" }
+      },
+      "required": ["@type", "label"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="dns-resource-record"><name>DNS Resource Record</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>hostNamelabel</tt> MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.</li>
+<li><tt>type</tt> MUST be a valid string representation of a DNS resource record type as defined in <xref target="RFC1035"></xref>. Allowed values MAY be further constrained by server policy.</li>
+<li><tt>data</tt> MUST be a syntactically valid resource record data value for the given <tt>type</tt> in zone file string representation.</li>
+<li><tt>ttl</tt> value range MAY be constrained by server policy.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "dnsResourceRecord": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "dnsResourceRecord" },
+        "hostNamelabel": { "type": "string", "format": "hostname" },
+        "type":          { "type": "string" },
+        "data":          { "type": "string" },
+        "ttl":           { "type": "integer" }
+      },
+      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="authorisation-information-object"><name>Authorisation Information Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>method</tt> MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in <xref target="I-D.wullink-rpp-core"></xref>. In EPP Compatibility Profile, this value MUST be &quot;authinfo&quot; for standard password-based authorisation.</li>
+<li>The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of <tt>authdata</tt> MAY not be returned in read responses, depending on the method and server policy.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "authorisationInformation": {
+      "type": "object",
+      "properties": {
+        "@type":    { "type": "string", "const": "authorisationInformation" },
+        "method":   { "type": "string" },
+        "authdata": { "type": "string" }
+      },
+      "required": ["@type", "method", "authdata"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="postal-address-object"><name>Postal Address Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>cc</tt> MUST be a valid two-character country code from <xref target="ISO3166-1"></xref>. The JSON Schema pattern enforces uppercase alpha-2 format.</li>
+<li>In EPP Compatibility Profile, <tt>city</tt> and <tt>cc</tt> MUST be provided.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "postalAddress": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "postalAddress" },
+        "street": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "city":  { "type": "string" },
+        "sp":    { "type": "string" },
+        "pc":    { "type": "string" },
+        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="postal-info-object"><name>Postal Info Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>name</tt> MAY be required by implementations when <tt>type</tt> is &quot;PERSON&quot;. In EPP Compatibility Profile, <tt>name</tt> MUST be provided.</li>
+<li><tt>org</tt> MAY be required by implementations when <tt>type</tt> is &quot;ORG&quot;.</li>
+<li>In EPP Compatibility Profile, <tt>addr</tt> MUST be provided.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "postalInfo": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "postalInfo" },
+        "type": {
+          "type": "string",
+          "enum": ["PERSON", "ORG"]
+        },
+        "name": { "type": "string" },
+        "org":  { "type": "string" },
+        "addr": { "$ref": "#/$defs/postalAddress" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="transfer-data-object"><name>Transfer Data Object</name>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "transferData": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "transferData", "readOnly": true },
+        "transferStatus": {
+          "type": "string",
+          "enum": ["pending", "clientApproved", "clientCancelled",
+                   "clientRejected", "serverApproved", "serverCancelled"],
+          "readOnly": true
+        },
+        "transferDirection": {
+          "type": "string",
+          "enum": ["pull", "push"],
+          "readOnly": true
+        },
+        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
+        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": [
+        "@type", "transferStatus", "transferDirection", "requestingClientId",
+        "requestDate", "actingClientId", "actionDate"
       ]
     }
   }
@@ -154,1008 +658,485 @@ are properly formatted JSON documents. Indentation and white space in examples a
 </sourcecode>
 </section>
 
-<section anchor="occurrence-constraints"><name>Occurrence Constraints</name>
-<t>Rule 5: Elements with minOccurs: 0 and maxOccurs: 1 should be represented as optional properties in the JSON Schema.</t>
-<t>XSD:</t>
+<section anchor="restore-data-object"><name>Restore Data Object</name>
+<t>The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
-<sourcecode type="xml"><![CDATA[  <complexType name="infoType">
-    <sequence>
-      <element name="authInfo" type="authInfoType" minOccurs="0"/>
-      ...
-    </sequence>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
+<ul spacing="compact">
+<li><tt>requestDate</tt> MUST NOT be present if no restore request has been submitted yet.</li>
+<li><tt>reportDate</tt> MUST NOT be present if no restore report has been accepted yet.</li>
+<li><tt>reportDueDate</tt> MUST NOT be present when <tt>restoreStatus</tt> is not <tt>&quot;pendingRestore&quot;</tt>.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "properties": {
-    "authInfo": {
-      "$ref": "#/definitions/authInfoType"
-    }
-    ...
-  },
-  "required": []
-}
-]]>
-</sourcecode>
-<t>Rule 6: Elements with minOccurs: 1 and maxOccurs: 1 or omitted attributes must be represented as mandatory properties in the JSON Schema.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[<xs:complexType name="createType">
-  <xs:sequence>
-    <xs:element name="name" type="xs:string"/>
-    ...
-  </xs:sequence>
-</xs:complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string"
-    }
-    ...
-  },
-  "required": ["name"]
-}
-]]>
-</sourcecode>
-<t>Rule 7: Elements allowing multiple occurrences must be represented as JSON arrays, using minItems and maxItems to enforce minOccurs and maxOccurs.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[  <complexType name="mNameType">
-    <sequence>
-      <element name="name" type="eppcom:labelType" maxOccurs="10"/>
-    </sequence>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/labelType"
-      },
-      "maxItems" : 10
-    }
-  }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="complex-types"><name>Complex Types</name>
-<t>Rule 8: Complex types in XSD must be converted to JSON objects in the JSON Schema, with properties adhering to subsequent rules for elements and attributes. Properties rendered through choice or sequence elements included in complex types shall be included in the same object definition as opposed to creating a separate object level.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[  <complexType name="createType">
-    <sequence>
-      <element name="name" type="eppcom:labelType"/>
-      <element name="period" type="domain:periodType" minOccurs="0"/>
-      ...
-    </sequence>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "title": "createType",
-    "type": "object",
-    "properties": {
-        "name": {
-            "$ref": "#/definitions/labelType"
-        },
-        "period": {
-            "$ref": "#/definitions/periodType"
-        },
-        ...
-    },
-    "required": ["name", ...]
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="sequences"><name>Sequences</name>
-<t>Rule 9: Sequences in XSD must be converted to JSON objects in the JSON Schema, with each sequence element becoming a property of the object. Cardinality dictated by minOccurs and maxOccurs must be applied to determine if an element is represented as optional, mandatory, or an array.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[  <complexType name="createType">
-    <sequence>
-      <element name="name" type="eppcom:labelType"/>
-      <element name="period" type="domain:periodType" minOccurs="0"/>
-      ...
-    </sequence>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "title": "createType",
-    "type": "object",
-    "properties": {
-        "name": {
-            "$ref": "#/definitions/labelType"
-        },
-        "period": {
-            "$ref": "#/definitions/periodType"
-        },
-        ...
-    },
-    "required": ["name", ...]
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="choices"><name>Choices</name>
-<t>Rule 10: The choice construct in XSD must be represented in JSON Schema using the oneOf keyword, allowing for representation of multiple possible structures with only one being valid at a time. Each choice property MUST be marked as required to make a clear and unambigous distinction between the variants.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[<complexType name="authInfoChgType">
-  <choice>
-    <element name="pw" type="eppcom:pwAuthInfoType"/>
-    <element name="ext" type="eppcom:extAuthInfoType"/>
-    ...
-  </choice>
-</complexType>
-
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "oneOf": [
-    {
+  "$defs": {
+    "restoreData": {
+      "type": "object",
       "properties": {
-        "pw": {
-          "$ref": "#/definitions/pwAuthInfoType"
-        }
-      },
-      "required": ["pw"]
-    },
-    {
-      "properties": {
-        "ext": {
-          "$ref": "#/definitions/extAuthInfoType"
-        }
-      },
-      "required": ["ext"]
-    }
-    ...
-  ]
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="mixed-content-and-special-cases"><name>Mixed Content and Special Cases</name>
-<t>Rule 11: Elements with mixed content must be represented as JSON objects with #text for text content and properties for each child element. If schema allows for multiple instances of text content the #text property should be defined as an array.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[  <complexType name="errValueType" mixed="true">
-    <sequence>
-      <any namespace="##any" processContents="skip"/>
-    </sequence>
-    <anyAttribute namespace="##any" processContents="skip"/>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "properties": {
-    "#text": {
-      "type": "array",
-      "items": {
-        "type": string
-      }
-    },
-    "additionalProperties": true
-  }
-}
-]]>
-</sourcecode>
-<t>Rule 12: Empty elements in XSD or EPP normative text must be represented as properties with a null fixed value in the JSON Schema.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[<complexType name="eppType">
-    <choice>
-      ...
-      <element name="hello"/>
-      ...
-    </choice>
-</complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "oneOf": [
-    ...
-    {
-        "properties": {
-            "hello": {
-                "type": "null"
-            }
+        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
         },
-        "required": ["hello"]
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"]
     }
-    ...
-  ]
-}
-]]>
-</sourcecode>
-<t>Rule 13: Elements with attributes and text content must be represented as JSON objects with #text for text and properties for each attribute, prefixed with &quot;@&quot;.</t>
-<t>XSD:</t>
-
-<sourcecode type="xml"><![CDATA[  <complexType name="mixedMsgType" mixed="true">
-    <sequence>
-      <any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
-    </sequence>
-    <attribute name="lang" type="language" default="en"/>
-  </complexType>
-]]>
-</sourcecode>
-<t>JSON Schema:</t>
-
-<sourcecode type="json"><![CDATA[{
-  "type": "object",
-  "properties": {
-    "#text": {
-      "type": "array",
-      "items": {
-        "type": string
-      }
-    },
-    "@lang": {
-        "$ref": "#/definitions/language"
-    },
-    "additionalProperties": true
   }
 }
 ]]>
 </sourcecode>
-
-<artwork><![CDATA[TODO: Rules for different flavours of token type (min/max characters etc.)
-]]>
-</artwork>
-
-<artwork><![CDATA[TODO: merge the content examples with the rules above?
-]]>
-</artwork>
-</section>
 </section>
 
-<section anchor="xml-conversion-rules"><name>XML Conversion Rules</name>
-<t>A XML element may exist in one of 7 distinct forms, the sections below describe how these forms MUST be translated to valid JSON.</t>
+<section anchor="restore-report-object"><name>Restore Report Object</name>
+<t>The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process (<xref target="RFC3915"></xref>).</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
-<ol spacing="compact">
-<li>Empty</li>
-<li>Pure text content</li>
-<li>Attributes only</li>
-<li>Pure text content and attributes</li>
-<li>Child elements with different names</li>
-<li>Child elements with identical names</li>
-<li>Child element(s) and contiguous text</li>
-</ol>
-
-<section anchor="empty"><name>Empty</name>
-<t>An empty XML element MUST be mapped to to a key matching the name of the element and a null value.</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<hello/>
-]]>
-</sourcecode>
-<t>JSON:</t>
+<ul spacing="compact">
+<li>At least one and at most two <tt>statements</tt> MUST be provided.</li>
+<li><tt>restoreTime</tt> MAY be omitted when the restore report is submitted inline within the restore request in a single-step process.</li>
+<li>In EPP Compatibility Profile, <tt>restoreTime</tt> MUST be present as defined in <xref target="RFC3915"></xref>.</li>
+<li>In EPP Compatibility Profile, exactly two <tt>statements</tt> MUST be present as defined in <xref target="RFC3915"></xref>.</li>
+</ul>
 
 <sourcecode type="json"><![CDATA[{
-    "hello": null
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="pure-text-content"><name>Pure text content</name>
-<t>An XML element containing text only MUST be mapped to a key matching the name of the element and the text MUST be used for the value</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<lang>en</lang>
-]]>
-</sourcecode>
-<t>JSON:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "lang": "en"
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="attributes-only"><name>Attributes only</name>
-<t>An XML element containing one or more atributes only, MUST be mapped to a JSON object matching the name of the element. Each XML attribute, prefixed using the <tt>@</tt> character, MUST be added as a key-value pair to the object.</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<msgQ count="5" id="12345"/>
-]]>
-</sourcecode>
-<t>JSON:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "msgQ": {
-        "@count": "5",
-        "@id": "12345"
+  "$defs": {
+    "restoreReport": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "preData":       { "type": "string" },
+        "postData":      { "type": "string" },
+        "deleteTime":    { "type": "string", "format": "date-time" },
+        "restoreTime":   { "type": "string", "format": "date-time" },
+        "restoreReason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "other": { "type": "string" }
+      },
+      "required": ["@type", "statements"]
     }
+  }
+}
+]]>
+</sourcecode>
+</section>
+</section>
+
+<section anchor="resource-object-schemas"><name>Resource Object Schemas</name>
+<t>Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.</t>
+
+<section anchor="domain-name-data-object"><name>Domain Name Data Object</name>
+<t>The Domain Name Data Object represents a domain name and its associated provisioning data.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>name</tt> MUST be a fully qualified domain name conforming to the syntax described in <xref target="RFC1035"></xref>. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.</li>
+</ul>
+<t>Create request schema (create-only and read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type": { "type": "string", "const": "domainName" },
+    "name": { "type": "string" },
+    "registrant": { "type": "string" },
+    "contacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/contact" }
+    },
+    "nameservers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/host" }
+    },
+    "dns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dnsResourceRecord" }
+    },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "period":   { "$ref": "#/$defs/period" }
+  },
+  "required": ["@type", "name"],
+  "unevaluatedProperties": false
+}
+]]>
+</sourcecode>
+<t>Read response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
+    "name":                  { "type": "string", "readOnly": true },
+    "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" },
+      "readOnly": true
+    },
+    "registrant":  { "type": "string" },
+    "contacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/contact" }
+    },
+    "nameservers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/host" }
+    },
+    "dns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dnsResourceRecord" }
+    },
+    "subordinateHosts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/host" },
+      "readOnly": true
+    },
+    "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
+    "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
+  },
+  "required": ["@type", "name", "provisioningMetadata"],
+  "unevaluatedProperties": false
 }
 ]]>
 </sourcecode>
 </section>
 
-<section anchor="pure-text-content-and-attributes"><name>Pure text content and attributes</name>
-<t>An XML element containing one or more atributes and text content only, MUST be mapped to a JSON object matching the name of the element. The text content MUST, prefixed using the string <tt>#text</tt>, MUST be added as a key-value pair to the object.</t>
-<t>XML:</t>
+<section anchor="contact-data-object"><name>Contact Data Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
-<sourcecode type="xml"><![CDATA[<msg lang="en">Command completed successfully</msg>
-]]>
-</sourcecode>
-<t>JSON:</t>
+<ul spacing="compact">
+<li><tt>postalInfo</tt> keys MUST be either &quot;int&quot; (internationalised, all-ASCII) or &quot;loc&quot; (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.</li>
+</ul>
+<t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "msg": {
-        "@lang": "en",
-        "#text": "Command completed successfully"
-    }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type": { "type": "string", "const": "contact" },
+    "id": { "type": "string" },
+    "postalInfo": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+      "minProperties": 1,
+      "maxProperties": 2
+    },
+    "voice": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "fax": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "email": {
+      "type": "array",
+      "items": { "type": "string", "format": "email" }
+    },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "disclose":  { "type": "object" }
+  },
+  "required": ["@type", "id", "postalInfo"],
+  "unevaluatedProperties": false
+}
+]]>
+</sourcecode>
+<t>Read response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
+    "id": { "type": "string", "readOnly": true },
+    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" },
+      "readOnly": true
+    },
+    "postalInfo": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+      "minProperties": 1,
+      "maxProperties": 2
+    },
+    "voice": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "fax": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "email": {
+      "type": "array",
+      "items": { "type": "string", "format": "email" }
+    },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "disclose":  { "type": "object" }
+  },
+  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "unevaluatedProperties": false
 }
 ]]>
 </sourcecode>
 </section>
 
-<section anchor="child-elements-with-different-names"><name>Child elements with different names</name>
-<t>An XML element containing one or more child elements, where each child uses an unique name, MUST be mapped to a JSON object matching the name of the element. Each child element MUST be added as a key-value pair to the parent object.</t>
-<t>XML:</t>
+<section anchor="host-data-object"><name>Host Data Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
-<sourcecode type="xml"><![CDATA[<trID>
-    <clTRID>ABC-12345</clTRID>
-    <svTRID>54321-XYZ</svTRID>
-</trID>
-]]>
-</sourcecode>
-<t>JSON:</t>
+<ul spacing="compact">
+<li><tt>hostName</tt> MUST be a syntactically valid fully qualified host name.</li>
+<li>If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.</li>
+</ul>
+<t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "trID": {
-        "clTRID": "ABC-12345",
-        "svTRID": "54321-XYZ"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type":    { "type": "string", "const": "host" },
+    "hostName": { "type": "string", "format": "hostname" },
+    "dns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dnsResourceRecord" }
     }
+  },
+  "required": ["@type", "hostName"],
+  "unevaluatedProperties": false
+}
+]]>
+</sourcecode>
+<t>Read response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type":    { "type": "string", "const": "host", "readOnly": true },
+    "hostName": { "type": "string", "format": "hostname" },
+    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" },
+      "readOnly": true
+    },
+    "dns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dnsResourceRecord" }
+    }
+  },
+  "required": ["@type", "hostName", "provisioningMetadata"],
+  "unevaluatedProperties": false
 }
 ]]>
 </sourcecode>
 </section>
-
-<section anchor="child-elements-with-identical-names"><name>Child elements with identical names</name>
-<t>An XML element containing multiple child elements, where multiple child elements use the same name, MUST be mapped to a JSON object containing an array. The name of the array MUST match the name of the non-unique children, each child element MUST be converted to JSON and added to the array.</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<host>
-    <addr>192.0.2.1</addr>
-    <addr>192.0.2.2</addr>
-</host>
-]]>
-</sourcecode>
-<t>JSON:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "host": {
-        "addr": [
-            "192.0.2.1",
-            "192.0.2.2"
-        ]
-    }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="child-elements-and-contiguous-text"><name>Child elements and contiguous text</name>
-<t>An XML element containing one or more child elements and contiguous text, MUST be mapped to a JSON object containing a key-value entry for each child element, the text value MUST result in a key named <tt>#text</tt>.</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<msg lang="en">
-    Credit balance low.
-    <limit>100</limit>
-    <bal>5</bal>
-</msg>
-]]>
-</sourcecode>
-<t>JSON:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "msg": {
-        "@lang": "en",
-        "limit": 100,
-        "bal": 5,
-        "#text": "Credit balance low."
-    }
-}
-]]>
-</sourcecode>
-<t>When child elements are mixed with multiple text segments, the resulting <tt>#text</tt> key-value entry MUST be an array, containing all text segments.</t>
-<t>XML:</t>
-
-<sourcecode type="xml"><![CDATA[<msg lang="en">
-    Credit balance low.
-    <limit>100</limit>
-    <bal>5</bal>
-    Please increase balance.
-</msg>
-]]>
-</sourcecode>
-<t>JSON:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "msg": {
-        "@lang": "en",
-        "limit": 100,
-        "bal": 5,
-        "#text": ["Credit balance low.", "Please increase balance asap."]
-    }
-}
-]]>
-</sourcecode>
-<t>The rules above are based on the conversion approach found on <xref target="XMLCOM-WEB"></xref></t>
 </section>
 </section>
 
 <section anchor="examples"><name>Examples</name>
-<t>This section lists examples for each of the existing EPP commands that are support by RPP.</t>
+<t>This section provides examples that follow the JSON representation rules and JSON Schema definitions specified in the previous sections. The examples illustrate typical request and response messages for domain name, contact, and host resources.</t>
 
-<artwork><![CDATA[TODO: full examples of schema conversion
-]]>
-</artwork>
-
-<section anchor="hello"><name>Hello</name>
-<t>The Hello request message does not exist in the context of RPP.</t>
-<t>Example XML response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <greeting>
-        <svID>Example EPP server epp.example.com</svID>
-        <svDate>2000-06-08T22:00:00.0Z</svDate>
-        <svcMenu>
-            <version>1.0</version>
-            <lang>en</lang>
-            <lang>fr</lang>
-            <objURI>urn:ietf:params:xml:ns:obj1</objURI>
-            <objURI>urn:ietf:params:xml:ns:obj2</objURI>
-            <objURI>urn:ietf:params:xml:ns:obj3</objURI>
-            <svcExtension>
-                <extURI>http://custom/obj1ext-1.0</extURI>
-            </svcExtension>
-        </svcMenu>
-        <dcp>
-            <access>
-                <all/>
-            </access>
-            <statement>
-                <purpose>
-                    <admin/>
-                    <prov/>
-                </purpose>
-                <recipient>
-                    <ours/>
-                    <public/>
-                </recipient>
-                <retention>
-                    <stated/>
-                </retention>
-            </statement>
-        </dcp>
-    </greeting>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "greeting": {
-            "svID": "Example RPP server v1.0",
-            "svDate": "2000-06-08T22:00:00.0Z",
-            "svcMenu": {
-                "version": "1.0",
-                "lang": [
-                    "en",
-                    "fr"
-                ]
-            },
-            "dcp": {
-                "access": {
-                    "all": null
-                },
-                "statement": {
-                    "purpose": {
-                        "admin": null,
-                        "prov": null
-                    },
-                    "recipient": {
-                        "ours": null,
-                        "public": null
-                    },
-                    "retention": {
-                        "stated": null
-                    }
-                }
-            }
-        }
-    }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="login"><name>Login</name>
-<t>The Login request and response message are not used for RPP.</t>
-</section>
-
-<section anchor="logout"><name>Logout</name>
-<t>The Logout request and response message are not used for RPP.</t>
-</section>
-
-<section anchor="check"><name>Check</name>
-<t>The Check request and responses messages are not used for RPP.</t>
-</section>
-
-<section anchor="info"><name>Info</name>
-<t>The Info request message is not used for RPP.</t>
-<t>Example XML Domain Info response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <resData>
-            <domain:infData
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:roid>EXAMPLE1-REP</domain:roid>
-                <domain:status s="ok"/>
-                <domain:registrant>jd1234</domain:registrant>
-                <domain:contact type="admin">sh8013</domain:contact>
-                <domain:contact type="tech">sh8013</domain:contact>
-                <domain:ns>
-                    <domain:hostObj>ns1.example.com</domain:hostObj>
-                    <domain:hostObj>ns1.example.net</domain:hostObj>
-                </domain:ns>
-                <domain:host>ns1.example.com</domain:host>
-                <domain:host>ns2.example.com</domain:host>
-                <domain:clID>ClientX</domain:clID>
-                <domain:crID>ClientY</domain:crID>
-                <domain:crDate>1999-04-03T22:00:00.0Z</domain:crDate>
-                <domain:upID>ClientX</domain:upID>
-                <domain:upDate>1999-12-03T09:00:00.0Z</domain:upDate>
-                <domain:exDate>2005-04-03T22:00:00.0Z</domain:exDate>
-                <domain:trDate>2000-04-08T09:00:00.0Z</domain:trDate>
-                <domain:authInfo>
-                    <domain:pw>2fooBAR</domain:pw>
-                </domain:authInfo>
-            </domain:infData>
-        </resData>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54322-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Info response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "resData": {
-                "domain:infData": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:roid": "EXAMPLE1-REP",
-                    "domain:status": {
-                        "@s": "ok"
-                    },
-                    "domain:registrant": "jd1234",
-                    "domain:contact": [
-                        {
-                            "@type": "admin",
-                            "#text": "sh8013"
-                        },
-                        {
-                            "@type": "tech",
-                            "#text": "sh8013"
-                        }
-                    ],
-                    "domain:ns": {
-                        "domain:hostObj": [
-                            "ns1.example.com",
-                            "ns1.example.net"
-                        ]
-                    },
-                    "domain:host": [
-                        "ns1.example.com",
-                        "ns2.example.com"
-                    ],
-                    "domain:clID": "ClientX",
-                    "domain:crID": "ClientY",
-                    "domain:crDate": "1999-04-03T22:00:00.0Z",
-                    "domain:upID": "ClientX",
-                    "domain:upDate": "1999-12-03T09:00:00.0Z",
-                    "domain:exDate": "2005-04-03T22:00:00.0Z",
-                    "domain:trDate": "2000-04-08T09:00:00.0Z",
-                    "domain:authInfo": {
-                        "domain:pw": "2fooBAR"
-                    }
-                }
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54322-XYZ"
-            }
-        }
-    }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="poll"><name>Poll</name>
-<t>The Poll request message is not used for RPP.</t>
-<t>Example XML response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1301">
-            <msg>Command completed successfully; ack to dequeue</msg>
-        </result>
-        <msgQ count="4" id="12346">
-            <qDate>2000-06-08T22:10:00.0Z</qDate>
-            <msg lang="en">Credit balance low.
-                <limit>100</limit>
-                <bal>5</bal>
-            </msg>
-        </msgQ>
-        <trID>
-            <clTRID>ABC-12346</clTRID>
-            <svTRID>54321-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1301",
-                "msg": "Command completed successfully; ack to dequeue"
-            },
-            "msgQ": {
-                "@count": "4",
-                "@id": "12346",
-                "qDate": "2024-01-15T22:10:00.0Z",
-                "msg": {
-                    "@lang": "en",
-                    "limit": "100",
-                    "bal": "5",
-                    "#text": "Credit balance low."
-                }
-            },
-            "trID": {
-                "clTRID": "ABC-12346",
-                "svTRID": "54321-XYZ"
-            }
-        }
-    }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="poll-ack"><name>Poll Ack</name>
-<t>The Poll Ack request message is not used for RPP.</t>
-<t>Example XML response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <msgQ count="0" id="12345"/>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>XYZ-12345</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "msgQ": {
-                "@count": "0",
-                "@id": "12345"
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "XYZ-12345"
-            }
-        }
-    }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="transfer-query"><name>Transfer Query</name>
-<t>The Domain Transfer Query request message is not used for RPP.</t>
-<t>Example XML  Domain Transfer Query response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <resData>
-            <domain:trnData
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:trStatus>pending</domain:trStatus>
-                <domain:reID>ClientX</domain:reID>
-                <domain:reDate>2000-06-06T22:00:00.0Z</domain:reDate>
-                <domain:acID>ClientY</domain:acID>
-                <domain:acDate>2000-06-11T22:00:00.0Z</domain:acDate>
-                <domain:exDate>2002-09-08T22:00:00.0Z</domain:exDate>
-            </domain:trnData>
-        </resData>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54322-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Transfer Query response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "resData": {
-                "domain:trnData": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:trStatus": "pending",
-                    "domain:reID": "ClientX",
-                    "domain:reDate": "2000-06-06T22:00:00.0Z",
-                    "domain:acID": "ClientY",
-                    "domain:acDate": "2000-06-11T22:00:00.0Z",
-                    "domain:exDate": "2002-09-08T22:00:00.0Z"
-                }
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54322-XYZ"
-            }
-        }
-    }
-}
-]]>
-</sourcecode>
-</section>
+<section anchor="domain-name"><name>Domain Name</name>
 
 <section anchor="create"><name>Create</name>
-<t>Example XML Domain Create request:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <command>
-        <create>
-            <domain:create
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:period unit="y">2</domain:period>
-                <domain:ns>
-                    <domain:hostObj>ns1.example.net</domain:hostObj>
-                    <domain:hostObj>ns2.example.net</domain:hostObj>
-                </domain:ns>
-                <domain:registrant>jd1234</domain:registrant>
-                <domain:contact type="admin">sh8013</domain:contact>
-                <domain:contact type="tech">sh8013</domain:contact>
-                <domain:authInfo>
-                    <domain:pw>2fooBAR</domain:pw>
-                </domain:authInfo>
-            </domain:create>
-        </create>
-        <clTRID>ABC-12345</clTRID>
-    </command>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Create request:</t>
+<t>Example domain create request:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "command": {
-            "create": {
-                "domain:create": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:period": {
-                        "@unit": "y",
-                        "#text": "2"
-                    },
-                    "domain:ns": {
-                        "domain:hostObj": [
-                            "ns1.example.net",
-                            "ns2.example.net"
-                        ]
-                    },
-                    "domain:registrant": "jd1234",
-                    "domain:contact": [
-                        {
-                            "@type": "admin",
-                            "#text": "sh8013"
-                        },
-                        {
-                            "@type": "tech",
-                            "#text": "sh8013"
-                        }
-                    ],
-                    "domain:authInfo": {
-                        "domain:pw": "2fooBAR"
-                    }
-                }
-            },
-            "clTRID": "ABC-12345"
-        }
+    "@type": "domainName",
+    "name": "example.example",
+    "period": {
+        "@type": "period",
+        "value": 2,
+        "unit": "y"
+    },
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
+    ],
+    "registrant": "jd1234",
+    "contacts": [
+        { "label": "admin", "id": "sh8013" },
+        { "label": "tech",  "id": "sh8013" }
+    ],
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
+        "method": "authinfo",
+        "authdata": "2fooBAR"
     }
 }
 ]]>
 </sourcecode>
-<t>Example XML Domain Create response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <resData>
-            <domain:creData
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:crDate>1999-04-03T22:00:00.0Z</domain:crDate>
-                <domain:exDate>2001-04-03T22:00:00.0Z</domain:exDate>
-            </domain:creData>
-        </resData>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54321-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Create response:</t>
+<t>Example domain create response from a server with RGP support:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
+    "@type": "domainName",
+    "name": "example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" },
+        { "@type": "status", "label": "addPeriod" }
+    ],
+    "expiryDate": "2001-04-03T22:00:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="read"><name>Read</name>
+<t>Example domain read response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "name": "example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientY",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "1999-12-03T09:00:00.0Z",
+        "transferDate": "2000-04-08T09:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "registrant": "jd1234",
+    "contacts": [
+        { "label": "admin", "id": "sh8013" },
+        { "label": "tech",  "id": "sh8013" }
+    ],
+    "nameservers": [
+        {
+            "@type": "host",
+            "hostName": "ns1.example.example",
+            "provisioningMetadata": {
+                "@type": "provisioningMetadata",
+                "repositoryId": "NS1EXAMPLE-REP",
+                "sponsoringClientId": "ClientX"
             },
-            "resData": {
-                "domain:creData": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:crDate": "1999-04-03T22:00:00.0Z",
-                    "domain:exDate": "2001-04-03T22:00:00.0Z"
+            "status": [ { "@type": "status", "label": "ok" } ],
+            "dns": [
+                {
+                    "@type": "dnsResourceRecord",
+                    "hostNamelabel": "ns1.example.example.",
+                    "type": "A",
+                    "data": "192.0.2.1",
+                    "ttl": 3600
                 }
+            ]
+        },
+        {
+            "@type": "host",
+            "hostName": "ns1.example.example",
+            "provisioningMetadata": {
+                "@type": "provisioningMetadata",
+                "repositoryId": "NS1EXAMPLENET-REP",
+                "sponsoringClientId": "ClientZ"
             },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54321-XYZ"
-            }
+            "status": [ { "@type": "status", "label": "ok" } ]
         }
+    ],
+    "subordinateHosts": [
+        {
+            "@type": "host",
+            "hostName": "ns1.example.example",
+            "provisioningMetadata": {
+                "@type": "provisioningMetadata",
+                "repositoryId": "NS1EXAMPLE-REP",
+                "sponsoringClientId": "ClientX"
+            },
+            "status": [ { "@type": "status", "label": "ok" } ]
+        },
+        {
+            "@type": "host",
+            "hostName": "ns2.example.example",
+            "provisioningMetadata": {
+                "@type": "provisioningMetadata",
+                "repositoryId": "NS2EXAMPLE-REP",
+                "sponsoringClientId": "ClientX"
+            },
+            "status": [ { "@type": "status", "label": "ok" } ]
+        }
+    ],
+    "expiryDate": "2005-04-03T22:00:00.0Z",
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
+        "method": "authinfo",
+        "authdata": "2fooBAR"
     }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="update"><name>Update</name>
+<t>Example domain update request (read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "registrant": "sh8013",
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
+        "method": "authinfo",
+        "authdata": "2BARfoo"
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain update response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "name": "example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientY",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2000-01-15T09:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "registrant": "sh8013"
 }
 ]]>
 </sourcecode>
 </section>
 
 <section anchor="delete"><name>Delete</name>
-<t>The Delete request message is not used for RPP.</t>
-<t>Example XML Domain Delete response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54321-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Delete response:</t>
+<t>The domain delete operation takes the domain name as the resource identifier in the request. No request body is required.</t>
+<t>Example domain delete response (minimal, server may return full representation):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54321-XYZ"
-            }
-        }
+    "@type": "domainName",
+    "name": "example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "sponsoringClientId": "ClientX"
     }
 }
 ]]>
@@ -1163,255 +1144,583 @@ are properly formatted JSON documents. Indentation and white space in examples a
 </section>
 
 <section anchor="renew"><name>Renew</name>
-<t>The Renew request message is not used for RPP.</t>
-<t>Example XML Domain Renew response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <resData>
-            <domain:renData
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:exDate>2005-04-03T22:00:00.0Z</domain:exDate>
-            </domain:renData>
-        </resData>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54322-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Renew response:</t>
+<t>The renew operation accepts a transient <tt>currentExpiryDate</tt> parameter for validation and an optional <tt>renewalPeriod</tt>.</t>
+<t>Example domain renew request:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "resData": {
-                "domain:renData": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:exDate": "2005-04-03T22:00:00.0Z"
-                }
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54322-XYZ"
-            }
-        }
+    "currentExpiryDate": "2005-04-03T22:00:00.0Z",
+    "renewalPeriod": {
+        "@type": "period",
+        "value": 5,
+        "unit": "y"
     }
+}
+]]>
+</sourcecode>
+<t>Example domain renew response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "name": "example.example",
+    "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ]]>
 </sourcecode>
 </section>
 
 <section anchor="transfer-request"><name>Transfer Request</name>
-<t>The Transfer request message is not used for RPP.</t>
-<t>Example XML Domain Transfer response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1001">
-            <msg>Command completed successfully; action pending</msg>
-        </result>
-        <resData>
-            <domain:trnData
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:trStatus>pending</domain:trStatus>
-                <domain:reID>ClientX</domain:reID>
-                <domain:reDate>2000-06-08T22:00:00.0Z</domain:reDate>
-                <domain:acID>ClientY</domain:acID>
-                <domain:acDate>2000-06-13T22:00:00.0Z</domain:acDate>
-                <domain:exDate>2002-09-08T22:00:00.0Z</domain:exDate>
-            </domain:trnData>
-        </resData>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>54322-XYZ</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Transfer response:</t>
+<t>Authorization information for the transfer MUST be conveyed using the <tt>RPP-Authorization</tt> HTTP header (see Rule 21), not in the JSON request body.</t>
+<t>Example domain transfer request (pull transfer)</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1001",
-                "msg": "Command completed successfully; action pending"
-            },
-            "resData": {
-                "domain:trnData": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:trStatus": "pending",
-                    "domain:reID": "ClientX",
-                    "domain:reDate": "2000-06-08T22:00:00.0Z",
-                    "domain:acID": "ClientY",
-                    "domain:acDate": "2000-06-13T22:00:00.0Z",
-                    "domain:exDate": "2002-09-08T22:00:00.0Z"
-                }
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "54322-XYZ"
+    "transferDirection": "pull",
+    "transferPeriod": {
+        "@type": "period",
+        "value": 1,
+        "unit": "y"
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain transfer response (Transfer Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z",
+    "expiryDate": "2002-09-08T22:00:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="transfer-query"><name>Transfer Query</name>
+<t>Example domain transfer query response (Transfer Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z",
+    "expiryDate": "2002-09-08T22:00:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="transfer-cancel-reject-approve"><name>Transfer Cancel / Reject / Approve</name>
+<t>Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The <tt>transferStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+</section>
+
+<section anchor="restore-request"><name>Restore Request</name>
+<t>Example domain restore request (without inline report; object transitions to <tt>pendingRestore</tt> state):</t>
+
+<sourcecode type="json"><![CDATA[{}
+]]>
+</sourcecode>
+<t>Example domain restore response (Restore Data Object, server requires a report):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example domain restore request with inline restore report (single-step; object restored immediately):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain restore response with inline report (Restore Data Object, immediately restored):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-report"><name>Restore Report</name>
+<t>Example domain restore report request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
+        "postData": "Domain example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Domain deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this domain name."
+        ]
+    }
+}
+]]>
+</sourcecode>
+<t>Example domain restore report response (Restore Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-query"><name>Restore Query</name>
+<t>The Restore Query operation takes no request body (Parameters: None).</t>
+
+<sourcecode type="json"><![CDATA[{}
+]]>
+</sourcecode>
+<t>Example domain restore query response (Restore Data Object, object in <tt>pendingRestore</tt> state):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example domain restore query response (Restore Data Object, object restored):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+</section>
+
+<section anchor="contact"><name>Contact</name>
+
+<section anchor="create-1"><name>Create</name>
+<t>Example contact create request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "contact",
+    "id": "jd1234",
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "123 Example Dr.",
+                    "Suite 100"
+                ],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
             }
         }
+    },
+    "voice": ["+1.7035555555"],
+    "fax": ["+1.7035555556"],
+    "email": ["jdoe@example.example"],
+    "authorisationInformation": {
+        "@type": "authorisationInformation",
+        "method": "authinfo",
+        "authdata": "2fooBAR"
     }
 }
 ]]>
 </sourcecode>
-</section>
-
-<section anchor="transfer-cancel"><name>Transfer Cancel</name>
-<t>The Transfer Cancel request message is not used for RPP.</t>
-<t>Example XML Domain Cancel Transfer response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>XYZ-12345</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Cancel Transfer response:</t>
+<t>Example contact create response:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "XYZ-12345"
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "123 Example Dr.",
+                    "Suite 100"
+                ],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
             }
         }
-    }
+    },
+    "voice": ["+1.7035555555"],
+    "fax": ["+1.7035555556"],
+    "email": ["jdoe@example.example"]
 }
 ]]>
 </sourcecode>
 </section>
 
-<section anchor="transfer-reject"><name>Transfer Reject</name>
-<t>The Transfer Reject request message is not used for RPP and the response message is the same as for the Transfer Cancel command.</t>
-</section>
-
-<section anchor="transfer-approve"><name>Transfer Approve</name>
-<t>The Transfer Approve request message is not used for RPP and the response message is the same as for the Transfer Cancel command.</t>
-</section>
-
-<section anchor="update"><name>Update</name>
-<t>Example XML Domain Update request:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <command>
-        <update>
-            <domain:update
-                xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-                <domain:name>example.com</domain:name>
-                <domain:chg>
-                    <domain:registrant>sh8013</domain:registrant>
-                    <domain:authInfo>
-                        <domain:pw>2BARfoo</domain:pw>
-                    </domain:authInfo>
-                </domain:chg>
-            </domain:update>
-        </update>
-        <clTRID>ABC-12345</clTRID>
-    </command>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Update request:</t>
+<section anchor="read-1"><name>Read</name>
+<t>Example contact read response:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "command": {
-            "update": {
-                "domain:update": {
-                    "@xmlns:domain": "urn:ietf:params:xml:ns:domain-1.0",
-                    "domain:name": "example.com",
-                    "domain:chg": {
-                        "domain:registrant": "sh8013",
-                        "domain:authInfo": {
-                            "domain:pw": "2BARfoo"
-                        }
-                    }
-                }
-            },
-            "clTRID": "ABC-12345"
-        }
-    }
-}
-]]>
-</sourcecode>
-<t>Example XML Domain Update response:</t>
-
-<sourcecode type="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<epp
-    xmlns="urn:ietf:params:xml:ns:epp-1.0">
-    <response>
-        <result code="1000">
-            <msg>Command completed successfully</msg>
-        </result>
-        <trID>
-            <clTRID>ABC-12345</clTRID>
-            <svTRID>XYZ-12345</svTRID>
-        </trID>
-    </response>
-</epp>
-]]>
-</sourcecode>
-<t>Example JSON Domain Update response:</t>
-
-<sourcecode type="json"><![CDATA[{
-    "rpp": {
-        "@xmlns": "urn:ietf:params:xml:ns:epp-1.0",
-        "response": {
-            "result": {
-                "@code": "1000",
-                "msg": "Command completed successfully"
-            },
-            "trID": {
-                "clTRID": "ABC-12345",
-                "svTRID": "XYZ-12345"
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2000-01-15T09:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["123 Example Dr.", "Suite 100"],
+                "city": "Dulles",
+                "sp": "VA",
+                "pc": "20166-6503",
+                "cc": "US"
             }
         }
+    },
+    "voice": ["+1.7035555555"],
+    "email": ["jdoe@example.example"]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="update-1"><name>Update</name>
+<t>TBD</t>
+</section>
+
+<section anchor="delete-1"><name>Delete</name>
+<t>The contact delete operation takes the contact identifier as the resource identifier. No request body is required.</t>
+</section>
+
+<section anchor="transfer-request-1"><name>Transfer Request</name>
+<t>Authorization information for the transfer MUST be conveyed using the <tt>RPP-Authorization</tt> HTTP header (see Rule 21), not in the JSON request body.</t>
+<t>Example contact transfer request (pull transfer)</t>
+
+<sourcecode type="json"><![CDATA[{
+    "transferDirection": "pull"
+}
+]]>
+</sourcecode>
+<t>Example contact transfer response (Transfer Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="transfer-query-1"><name>Transfer Query</name>
+<t>Example contact transfer query response (Transfer Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="transfer-cancel-reject-approve-1"><name>Transfer Cancel / Reject / Approve</name>
+<t>Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The <tt>transferStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+<t>Note: Unlike domain transfers, contact transfers do not include an <tt>expiryDate</tt> field in the Transfer Data Object, as contacts do not have registration periods.</t>
+</section>
+</section>
+
+<section anchor="host"><name>Host</name>
+
+<section anchor="create-2"><name>Create</name>
+<t>Example host create request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "hostName": "ns1.example.example",
+    "dns": [
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "A",
+            "data": "192.0.2.1",
+            "ttl": 3600
+        },
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "AAAA",
+            "data": "2001:db8::1",
+            "ttl": 3600
+        }
+    ]
+}
+]]>
+</sourcecode>
+<t>Example host create response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "hostName": "ns1.example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "NS1EXAMPLE-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "dns": [
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "A",
+            "data": "192.0.2.1",
+            "ttl": 3600
+        },
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "AAAA",
+            "data": "2001:db8::1",
+            "ttl": 3600
+        }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="read-2"><name>Read</name>
+<t>Example host read response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "hostName": "ns1.example.example",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "NS1EXAMPLE-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientY",
+        "creationDate": "1999-04-03T22:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "dns": [
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "A",
+            "data": "192.0.2.1",
+            "ttl": 3600
+        }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="update-2"><name>Update</name>
+<t>Example host update request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "hostName": "ns1.example.example",
+    "dns": [
+        {
+            "@type": "dnsResourceRecord",
+            "hostNamelabel": "ns1.example.example.",
+            "type": "A",
+            "data": "198.51.100.1",
+            "ttl": 3600
+        }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="delete-2"><name>Delete</name>
+<t>The host delete operation takes the host name as the resource identifier. No request body is required. The server SHOULD reject the request if the host object is associated with any domain name objects.</t>
+</section>
+
+<section anchor="restore-request-1"><name>Restore Request</name>
+<t>Example host restore request (without inline report; object transitions to <tt>pendingRestore</tt> state):</t>
+
+<sourcecode type="json"><![CDATA[{}
+]]>
+</sourcecode>
+<t>Example host restore request response (Restore Data Object, server requires a report):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example host restore request with inline restore report (single-step; object restored immediately):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
     }
 }
 ]]>
 </sourcecode>
+<t>Example host restore response with inline report (Restore Data Object, immediately restored):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-20T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-report-1"><name>Restore Report</name>
+<t>Example host restore report request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "host",
+    "restoreReport": {
+        "@type": "restoreReport",
+        "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
+        "postData": "Host ns1.example.example is being restored with the same registration data.",
+        "deleteTime": "2025-01-10T12:00:00.0Z",
+        "restoreTime": "2025-01-20T15:30:00.0Z",
+        "restoreReason": "Host deleted in error by client operator.",
+        "statements": [
+            "The information in this report is true to the best of my knowledge.",
+            "I have a valid reason for restoring this host object."
+        ]
+    }
+}
+]]>
+</sourcecode>
+<t>Example host restore report response (Restore Data Object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="restore-query-1"><name>Restore Query</name>
+<t>The Restore Query operation takes no request body (Parameters: None).</t>
+<t>Example host restore query response (Restore Data Object, object in <tt>pendingRestore</tt> state):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "pendingRestore",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDueDate": "2025-01-27T15:30:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example host restore query response (Restore Data Object, object restored):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "restoreData",
+    "restoreStatus": "restored",
+    "requestDate": "2025-01-20T15:30:00.0Z",
+    "reportDate": "2025-01-22T09:15:00.0Z"
+}
+]]>
+</sourcecode>
+</section>
 </section>
 </section>
 
@@ -1431,26 +1740,70 @@ are properly formatted JSON documents. Indentation and white space in examples a
 <t>TODO</t>
 </section>
 
+<section anchor="change-history"><name>Change History</name>
+
+<section anchor="version-00-to-01"><name>Version 00 to 01</name>
+
+<ul spacing="compact">
+<li>Updated all examples and schemas to be based on RPP Data Object and no longer on EPP XML schemas. (Issue #15)</li>
+<li>Updated labelled and dictionary aggregation rules (Issue #17)</li>
+<li>Added required &quot;@type&quot; property to all JSON Schema definitions. (Issue #20)</li>
+<li>Updated all example domain names to use the .example TLD. (Issue #26)</li>
+</ul>
+</section>
+</section>
+
 </middle>
 
 <back>
 <references><name>References</name>
 <references><name>Normative References</name>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.kowalik-rpp-data-objects.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.wullink-rpp-core.xml"/>
+<reference anchor="ISO3166-1" target="https://www.iso.org/standard/72482.html">
+  <front>
+    <title>Codes for the representation of names of countries and their subdivisions - Part 1: Country code</title>
+    <author>
+      <organization>International Organization for Standardization</organization>
+    </author>
+    <date year="2020"></date>
+  </front>
+  <seriesInfo name="ISO" value="3166-1:2020"></seriesInfo>
+</reference>
+<reference anchor="ITU.E164.2005" target="">
+  <front>
+    <title>The international public telecommunication numbering plan</title>
+    <author>
+      <organization>International Telecommunication Union</organization>
+    </author>
+    <date year="2005" month="02"></date>
+  </front>
+  <seriesInfo name="ITU-T Recommendation" value="E.164"></seriesInfo>
+</reference>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.1738.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.3339.xml"/>
+<reference anchor="RFC3915" target="https://www.rfc-editor.org/rfc/rfc3915">
+  <front>
+    <title>Domain Registry Grace Period Mapping for the Extensible Provisioning Protocol (EPP)</title>
+    <author fullname="Scott Hollenbeck" initials="S." surname="Hollenbeck"></author>
+    <date year="2004" month="09"></date>
+  </front>
+  <seriesInfo name="RFC" value="3915"></seriesInfo>
+  <seriesInfo name="DOI" value="10.17487/RFC3915"></seriesInfo>
+</reference>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5730.xml"/>
-<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5731.xml"/>
-<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5732.xml"/>
-<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5733.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml"/>
 </references>
 <references><name>Informative References</name>
-<reference anchor="XMLCOM-WEB" target="https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html">
+<reference anchor="JSON-SCHEMA" target="https://json-schema.org/draft/2020-12/json-schema-core">
   <front>
-    <title>Converting Between XML and JSON</title>
+    <title>JSON Schema: A Media Type for Describing JSON Documents</title>
     <author>
-      <organization>XML.com</organization>
+      <organization>JSON Schema</organization>
     </author>
-    <date year="2006"></date>
+    <date year="2020"></date>
   </front>
 </reference>
 </references>
