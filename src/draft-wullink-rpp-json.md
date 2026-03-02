@@ -372,7 +372,8 @@ Example (Transfer Status enum):
 
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
-Rule 19: JSON Schema definitions for RPP objects MUST use `"additionalProperties": false` by default to prevent unrecognised properties.
+
+Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -384,6 +385,8 @@ Example (Domain Name Data Object):
   "name": "example.example"
 }
 ```
+
+Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authorisationInformation` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authorisationInformation` object in the JSON body with an appropriate error response.
 
 ### RPP Profiles and Validation
 
@@ -460,8 +463,7 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
           "enum": ["y", "m"]
         }
       },
-      "required": ["@type", "value", "unit"],
-      "additionalProperties": false
+      "required": ["@type", "value", "unit"]
     }
   }
 }
@@ -490,8 +492,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
         "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
       },
-      "required": ["@type", "sponsoringClientId"],
-      "additionalProperties": false
+      "required": ["@type", "sponsoringClientId"]
     }
   }
 }
@@ -503,6 +504,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 - `label` MUST use camelCase notation using only ASCII alphabetic characters. Labels set explicitly by the server MUST use the prefix "server"; labels set explicitly by a client MUST use the prefix "client"; all other labels MUST NOT use either prefix. The allowed set of label values depends on the provisioning object type and MAY be extended by extensions.
 - `due`: Servers MAY restrict the ability of clients to set or update this value.
+- When the RGP feature is supported, the following additional status labels MAY appear on objects that support RGP: `addPeriod`, `autoRenewPeriod`, `renewPeriod`, `transferPeriod`, `redemptionPeriod`, `pendingRestore`, `rgpPendingDelete`. The labels `redemptionPeriod`, `pendingRestore`, and `rgpPendingDelete` MUST only appear alongside the standard `pendingDelete` status.
 
 ```json
 {
@@ -515,8 +517,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "reason": { "type": "string" },
         "due":    { "type": "string", "format": "date-time" }
       },
-      "required": ["@type", "label"],
-      "additionalProperties": false
+      "required": ["@type", "label"]
     }
   }
 }
@@ -543,8 +544,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "data":          { "type": "string" },
         "ttl":           { "type": "integer" }
       },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"],
-      "additionalProperties": false
+      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
     }
   }
 }
@@ -567,8 +567,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "method":   { "type": "string" },
         "authdata": { "type": "string" }
       },
-      "required": ["@type", "method", "authdata"],
-      "additionalProperties": false
+      "required": ["@type", "method", "authdata"]
     }
   }
 }
@@ -597,8 +596,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "pc":    { "type": "string" },
         "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
       },
-      "required": ["@type"],
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -627,8 +625,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "org":  { "type": "string" },
         "addr": { "$ref": "#/$defs/postalAddress" }
       },
-      "required": ["@type"],
-      "additionalProperties": false
+      "required": ["@type"]
     }
   }
 }
@@ -662,8 +659,76 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
       "required": [
         "@type", "transferStatus", "transferDirection", "requestingClientId",
         "requestDate", "actingClientId", "actionDate"
-      ],
-      "additionalProperties": false
+      ]
+    }
+  }
+}
+```
+
+### Restore Data Object
+
+The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* `requestDate` MUST NOT be present if no restore request has been submitted yet.
+* `reportDate` MUST NOT be present if no restore report has been accepted yet.
+* `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
+
+```json
+{
+  "$defs": {
+    "restoreData": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"]
+    }
+  }
+}
+```
+
+### Restore Report Object
+
+The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process ([@!RFC3915]).
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* At least one and at most two `statements` MUST be provided.
+* `restoreTime` MAY be omitted when the restore report is submitted inline within the restore request in a single-step process.
+* In EPP Compatibility Profile, `restoreTime` MUST be present as defined in [@!RFC3915].
+* In EPP Compatibility Profile, exactly two `statements` MUST be present as defined in [@!RFC3915].
+
+```json
+{
+  "$defs": {
+    "restoreReport": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "preData":       { "type": "string" },
+        "postData":      { "type": "string" },
+        "deleteTime":    { "type": "string", "format": "date-time" },
+        "restoreTime":   { "type": "string", "format": "date-time" },
+        "restoreReason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "other": { "type": "string" }
+      },
+      "required": ["@type", "statements"]
     }
   }
 }
@@ -693,31 +758,11 @@ Create request schema (create-only and read-write properties):
     "registrant": { "type": "string" },
     "contacts": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "id":    { "type": "string" }
-        },
-        "required": ["label", "id"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/contact" }
     },
     "nameservers": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "@type":   { "type": "string", "const": "host" },
-          "hostName": { "type": "string", "format": "hostname" },
-          "dns": {
-            "type": "array",
-            "items": { "$ref": "#/$defs/dnsResourceRecord" }
-          }
-        },
-        "required": ["@type", "hostName"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/host" }
     },
     "dns": {
       "type": "array",
@@ -727,7 +772,7 @@ Create request schema (create-only and read-write properties):
     "period":   { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -749,15 +794,7 @@ Read response schema (read-write and read-only properties):
     "registrant":  { "type": "string" },
     "contacts": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "id":    { "type": "string" }
-        },
-        "required": ["label", "id"],
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/contact" }
     },
     "nameservers": {
       "type": "array",
@@ -776,7 +813,7 @@ Read response schema (read-write and read-only properties):
     "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
   },
   "required": ["@type", "name", "provisioningMetadata"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -817,7 +854,7 @@ Create request schema (create-only and read-write properties):
     "disclose":  { "type": "object" }
   },
   "required": ["@type", "id", "postalInfo"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -858,7 +895,7 @@ Read response schema (read-write and read-only properties):
     "disclose":  { "type": "object" }
   },
   "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -884,7 +921,7 @@ Create request schema (create-only and read-write properties):
     }
   },
   "required": ["@type", "hostName"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -909,7 +946,7 @@ Read response schema (read-write and read-only properties):
     }
   },
   "required": ["@type", "hostName", "provisioningMetadata"],
-  "additionalProperties": false
+  "unevaluatedProperties": false
 }
 ```
 
@@ -949,7 +986,7 @@ Example domain create request:
 }
 ```
 
-Example domain create response:
+Example domain create response from a server with RGP support:
 
 ```json
 {
@@ -962,6 +999,10 @@ Example domain create response:
         "creatingClientId": "ClientX",
         "creationDate": "1999-04-03T22:00:00.0Z"
     },
+    "status": [
+        { "@type": "status", "label": "ok" },
+        { "@type": "status", "label": "addPeriod" }
+    ],
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
 ```
@@ -1139,16 +1180,13 @@ Example domain renew response:
 
 ### Transfer Request
 
-Example domain transfer request (pull transfer):
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example domain transfer request (pull transfer)
 
 ```json
 {
     "transferDirection": "pull",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
-        "method": "authinfo",
-        "authdata": "2fooBAR"
-    },
     "transferPeriod": {
         "@type": "period",
         "value": 1,
@@ -1427,6 +1465,132 @@ Example contact read response:
     "email": ["jdoe@example.example"]
 }
 ```
+
+### Update
+
+TBD
+
+<!--
+Example contact update request:
+
+```json
+{
+    "@type": "contact",
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "456 New Street",
+                    "Suite 200"
+                ],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    }
+}
+```
+
+Example contact update response:
+
+```json
+{
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2025-06-01T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["456 New Street", "Suite 200"],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    },
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"]
+}
+```
+-->
+
+### Delete
+
+The contact delete operation takes the contact identifier as the resource identifier. No request body is required.
+
+### Transfer Request
+
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example contact transfer request (pull transfer)
+
+```json
+{
+    "transferDirection": "pull"
+}
+```
+
+Example contact transfer response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z"
+}
+```
+
+### Transfer Query
+
+Example contact transfer query response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z"
+}
+```
+
+### Transfer Cancel / Reject / Approve
+
+Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+
+Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Data Object, as contacts do not have registration periods.
 
 ## Host
 
@@ -1709,4 +1873,14 @@ TODO
     <date year="2020"/>
   </front>
   <seriesInfo name="ISO" value="3166-1:2020"/>
+</reference>
+
+<reference anchor="RFC3915" target="https://www.rfc-editor.org/rfc/rfc3915">
+  <front>
+    <title>Domain Registry Grace Period Mapping for the Extensible Provisioning Protocol (EPP)</title>
+    <author initials="S." surname="Hollenbeck" fullname="Scott Hollenbeck"/>
+    <date year="2004" month="09"/>
+  </front>
+  <seriesInfo name="RFC" value="3915"/>
+  <seriesInfo name="DOI" value="10.17487/RFC3915"/>
 </reference>
