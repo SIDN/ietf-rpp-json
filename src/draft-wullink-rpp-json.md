@@ -385,6 +385,8 @@ Example (Domain Name Data Object):
 }
 ```
 
+Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authorisationInformation` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authorisationInformation` object in the JSON body with an appropriate error response.
+
 ### RPP Profiles and Validation
 
 RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
@@ -1213,16 +1215,13 @@ Example domain renew response:
 
 ### Transfer Request
 
-Example domain transfer request (pull transfer):
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example domain transfer request (pull transfer)
 
 ```json
 {
     "transferDirection": "pull",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
-        "method": "authinfo",
-        "authdata": "2fooBAR"
-    },
     "transferPeriod": {
         "@type": "period",
         "value": 1,
@@ -1495,6 +1494,132 @@ Example contact read response:
     "email": ["jdoe@example.example"]
 }
 ```
+
+### Update
+
+TBD
+
+<!--
+Example contact update request:
+
+```json
+{
+    "@type": "contact",
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": [
+                    "456 New Street",
+                    "Suite 200"
+                ],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    }
+}
+```
+
+Example contact update response:
+
+```json
+{
+    "@type": "contact",
+    "id": "jd1234",
+    "provisioningMetadata": {
+        "@type": "provisioningMetadata",
+        "repositoryId": "JD1234-REP",
+        "sponsoringClientId": "ClientX",
+        "creatingClientId": "ClientX",
+        "creationDate": "1999-04-03T22:00:00.0Z",
+        "updatingClientId": "ClientX",
+        "updateDate": "2025-06-01T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "postalInfo": {
+        "int": {
+            "@type": "postalInfo",
+            "type": "PERSON",
+            "name": "John Doe",
+            "org": "Example Inc.",
+            "addr": {
+                "@type": "postalAddress",
+                "street": ["456 New Street", "Suite 200"],
+                "city": "Reston",
+                "sp": "VA",
+                "pc": "20190",
+                "cc": "US"
+            }
+        }
+    },
+    "voice": ["+1.7035555556"],
+    "email": ["jdoe-new@example.example"]
+}
+```
+-->
+
+### Delete
+
+The contact delete operation takes the contact identifier as the resource identifier. No request body is required.
+
+### Transfer Request
+
+Authorization information for the transfer MUST be conveyed using the `RPP-Authorization` HTTP header (see Rule 21), not in the JSON request body.
+
+Example contact transfer request (pull transfer)
+
+```json
+{
+    "transferDirection": "pull"
+}
+```
+
+Example contact transfer response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-08T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-13T22:00:00.0Z"
+}
+```
+
+### Transfer Query
+
+Example contact transfer query response (Transfer Data Object):
+
+```json
+{
+    "@type": "transferData",
+    "transferStatus": "pending",
+    "transferDirection": "pull",
+    "requestingClientId": "ClientX",
+    "requestDate": "2000-06-06T22:00:00.0Z",
+    "actingClientId": "ClientY",
+    "actionDate": "2000-06-11T22:00:00.0Z"
+}
+```
+
+### Transfer Cancel / Reject / Approve
+
+Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+
+Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Data Object, as contacts do not have registration periods.
 
 ## Host
 
