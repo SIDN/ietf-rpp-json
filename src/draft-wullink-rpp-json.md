@@ -400,7 +400,7 @@ This section provides normative JSON Schema definitions for RPP component object
 
 <!-- TODO: can we say normative for json schema definitions? -->
 
-## Common Component Schemas
+## Common Object Schemas
 
 This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
 
@@ -703,6 +703,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
+## Process Object Schemas
+
 ### Restore Report Object
 
 The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process ([@!RFC3915]).
@@ -812,12 +814,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 ```
 
 
-
-## Resource Object Schemas
-
-Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
-
-### Domain Name Data Object
+## Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
 
@@ -890,7 +887,7 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
-### Contact Data Object
+## Contact Data Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -972,7 +969,7 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
-### Host Data Object
+## Host Data Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -1016,6 +1013,10 @@ Read response schema (read-write and read-only properties):
   "unevaluatedProperties": false
 }
 ```
+
+## Organisation Data Object
+
+TBD
 
 # Examples
 
