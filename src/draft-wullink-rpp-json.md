@@ -152,13 +152,13 @@ Rule 4: A data element with cardinality `1+` (one or more) MUST be represented a
 {
   "type": "object",
   "properties": {
-    "postalInfo": {
+    "records": {
       "type": "array",
-      "items": { "$ref": "#/$defs/postalInfo" },
+      "items": { "$ref": "#/$defs/dnsRecord" },
       "minItems": 1
     }
   },
-  "required": ["postalInfo"]
+  "required": ["records"]
 }
 ```
 
@@ -297,24 +297,22 @@ A `LabelledComposition[Type]` is a parent-child relationship where each embedded
 
 Rule 11: `LabelledComposition[Type]` with cardinality `0+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a `label` property alongside the data elements of the composed type.
 
-Example: contact postal info (LabelledComposition[Postal Info Object]):
+Example: remarks (LabelledComposition[Remark Object]):
 
 ```json
-"addresses": [
+"remarks": [
     {
-        "label": "int",
+        "label": "public",
         "object": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "@type": "postalAddress",
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
+            "@type": "remark",
+            "description": "This domain is used for test purposes."
+        }
+    },
+    {
+        "label": "private",
+        "object": {
+            "@type": "remark",
+            "description": "Internal note for the sponsoring client."
         }
     }
 ]
@@ -326,22 +324,17 @@ A `DictionaryComposition[Type]` is a parent-child relationship where each embedd
 
 Rule 12: `DictionaryComposition[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the fully embedded child object.
 
-Example: contact postal info (DictionaryComposition[Postal Info Object]):
+Example: remarks keyed by scope (DictionaryComposition[Remark Object]):
 
 ```json
-"addresses": {
-    "int": {
-        "@type": "postalInfo",
-        "type": "PERSON",
-        "name": "John Doe",
-        "addr": {
-            "@type": "postalAddress",
-            "street": ["123 Example Dr."],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
-        }
+"remarks": {
+    "public": {
+        "@type": "remark",
+        "description": "This domain is used for test purposes."
+    },
+    "private": {
+        "@type": "remark",
+        "description": "Internal note for the sponsoring client."
     }
 }
 ```
@@ -573,59 +566,108 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-### Postal Address Object
+### JSContact Card Object
+
+The Contact Data Object uses JSContact [@!RFC9553] Card version 2.0 to represent contact information.  The `contact` component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
-- `cc` MUST be a valid two-character country code from [@!ISO3166-1]. The JSON Schema pattern enforces uppercase alpha-2 format.
-- In EPP Compatibility Profile, `city` and `cc` MUST be provided.
+- `addresses[*].countryCode` MUST be a valid two-character ISO 3166-1 [@!ISO3166-1] alpha-2 code when present.
+- `localizations` MUST be fully expanded; nested PatchObject-style keys (e.g., `"addresses/addr/full"`) are NOT allowed.
+- When `phones[*].features` is absent, the number MUST be treated as a voice number.
 
 ```json
 {
   "$defs": {
-    "postalAddress": {
+    "contact": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalAddress" },
-        "street": {
-          "type": "array",
-          "items": { "type": "string" }
+        "@type":    { "type": "string", "const": "Card" },
+        "version":  { "type": "string", "const": "2.0" },
+        "kind":     { "type": "string", "enum": ["individual", "org"] },
+        "language": { "type": "string" },
+        "name": {
+          "type": "object",
+          "properties": {
+            "full": { "type": "string" },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind":  { "type": "string", "enum": ["given", "surname"] },
+                  "value": { "type": "string" }
+                },
+                "required": ["kind", "value"]
+              }
+            }
+          }
         },
-        "city":  { "type": "string" },
-        "sp":    { "type": "string" },
-        "pc":    { "type": "string" },
-        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
-      },
-      "required": ["@type"]
-    }
-  }
-}
-```
-
-### Postal Info Object
-
-The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
-
-- `name` MAY be required by implementations when `type` is "PERSON". In EPP Compatibility Profile, `name` MUST be provided.
-- `org` MAY be required by implementations when `type` is "ORG".
-- In EPP Compatibility Profile, `addr` MUST be provided.
-
-```json
-{
-  "$defs": {
-    "postalInfo": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "postalInfo" },
-        "type": {
-          "type": "string",
-          "enum": ["PERSON", "ORG"]
+        "organizations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
         },
-        "name": { "type": "string" },
-        "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalAddress" }
+        "addresses": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "full":        { "type": "string" },
+              "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind":  { "type": "string", "enum": ["name", "locality", "region", "postcode", "country"] },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["kind", "value"]
+                }
+              }
+            }
+          }
+        },
+        "phones": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "number":   { "type": "string" },
+              "features": { "type": "object" }
+            },
+            "required": ["number"]
+          }
+        },
+        "emails": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "address": { "type": "string", "format": "email" }
+            },
+            "required": ["address"]
+          }
+        },
+        "links": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "uri":  { "type": "string", "format": "uri" },
+              "kind": { "type": "string", "const": "contact" }
+            },
+            "required": ["uri"]
+          }
+        },
+        "localizations": { "type": "object" }
       },
-      "required": ["@type"]
+      "required": ["@type", "version"]
     }
   }
 }
@@ -819,9 +861,42 @@ Read response schema (read-write and read-only properties):
 
 ### Contact Data Object
 
+This document uses JSContact [@!RFC9553] Card version 2.0 for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
+
+#### JSContact Profile for RPP
+
+Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, aligned with the approach described in [@I-D.ietf-regext-rdap-jscontact] for RDAP.
+
+The following JSContact Card properties are used in the RPP profile:
+
+- **`@type`**: MUST be `"Card"`.
+- **`version`**: MUST be `"2.0"`.
+- **`kind`**: MUST be `"individual"` for an individual or `"org"` for an organisation.
+- **`language`**: SHOULD be set when `localizations` are specified.
+- **`name`**: SHOULD include the `full` property. In EPP Compatibility Profile, `name.full` MUST be provided. The `name.components` array MAY be included; each `NameComponent` MUST contain only `kind` and `value`, with `kind` restricted to `"given"` or `"surname"`.
+- **`organizations`**: Each map entry MUST contain only the `name` property.
+- **`addresses`**: Each `Address` entry MUST include at least one of `full`, `components`, or `countryCode`. Each `AddressComponent` MUST contain only `kind` and `value`, with `kind` restricted to `"name"` (street), `"locality"` (city), `"region"` (state/province), `"postcode"`, or `"country"` (country name). `countryCode` MUST be a valid ISO 3166-1 alpha-2 code.
+- **`phones`**: Each `Phone` entry MUST include `number`. The `features` property MAY be included; allowed `PhoneFeature` values are `"voice"` and `"fax"`. When `features` is absent, the phone number is treated as a voice number.
+- **`emails`**: Each `EmailAddress` entry MUST contain only the `address` property.
+- **`links`**: Each `Link` entry MUST include `uri`. The `kind` property MAY be included and MUST be `"contact"` when provided.
+- **`localizations`**: MAY be provided. All localizations MUST be fully expanded (nested PatchObject-style keys are not allowed).
+
+Map keys MUST conform to the JSContact `Id` type (Section 1.4.1 of [@!RFC9553]) and SHOULD remain stable. For EPP Compatibility Profile conformance, the following map keys MUST be used:
+
+- `"org"` in the `organizations` map for the primary organisation.
+- `"addr"` in the `addresses` map for the primary postal address.
+- `"email"` in the `emails` map for the primary email address.
+- `"voice"` in the `phones` map for the primary voice phone number.
+- `"fax"` in the `phones` map for the fax phone number.
+
+When both an internationalised (`int`) and a localised (`loc`) version of postal address data exist (EPP Compatibility Profile), the internationalised version MUST be represented as the main Card properties, and the localised version MUST be placed in the `localizations` map keyed by an appropriate BCP 47 language tag.
+
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
-- `postalInfo` keys MUST be either "int" (internationalised, all-ASCII) or "loc" (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.
+- `card.name.full` MUST be provided in EPP Compatibility Profile.
+- `card.addresses.addr` MUST be provided in EPP Compatibility Profile, containing at least `countryCode` and a `"locality"` kind component.
+- `card.emails.email.address` MUST be provided in EPP Compatibility Profile.
+- `card.addresses[*].countryCode` MUST be a valid two-character ISO 3166-1 [@!ISO3166-1] alpha-2 code when present.
 
 Create request schema (create-only and read-write properties):
 
@@ -830,30 +905,12 @@ Create request schema (create-only and read-write properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "contact" },
-    "id": { "type": "string" },
-    "postalInfo": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
+    "@type":  { "type": "string", "const": "contact" },
+    "id":     { "type": "string" },
+    "card":   { "$ref": "#/$defs/jscontact_card" },
+    "authInfo": { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["@type", "id", "postalInfo"],
+  "required": ["@type", "id", "card"],
   "unevaluatedProperties": false
 }
 ```
@@ -865,36 +922,18 @@ Read response schema (read-write and read-only properties):
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "contact", "readOnly": true },
-    "id": { "type": "string", "readOnly": true },
-    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "@type":  { "type": "string", "const": "contact", "readOnly": true },
+    "id":     { "type": "string", "readOnly": true },
+    "provMetadata": { "$ref": "#/$defs/provMetadata" },
     "status": {
       "type": "array",
       "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
-    "postalInfo": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
+    "card":   { "$ref": "#/$defs/jscontact_card" },
+    "authInfo": { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "required": ["@type", "id", "provMetadata", "card"],
   "unevaluatedProperties": false
 }
 ```
@@ -1354,30 +1393,42 @@ Example contact create request:
 {
     "@type": "contact",
     "id": "jd1234",
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": [
-                    "123 Example Dr.",
-                    "Suite 100"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
                 ],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" },
+            "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
     },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"],
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1390,38 +1441,50 @@ Example contact create response:
 {
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
-        "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": [
-                    "123 Example Dr.",
-                    "Suite 100"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
                 ],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" },
+            "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ```
 
@@ -1433,68 +1496,81 @@ Example contact read response:
 {
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
-        "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2000-01-15T09:00:00.0Z"
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": ["123 Example Dr.", "Suite 100"],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
+                ],
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ```
 
 ### Update
 
-TBD
-
-<!--
 Example contact update request:
 
 ```json
 {
     "@type": "contact",
-    "voice": ["+1.7035555556"],
-    "email": ["jdoe-new@example.example"],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": [
-                    "456 New Street",
-                    "Suite 200"
+                "components": [
+                    { "kind": "name",     "value": "456 New Street, Suite 200" },
+                    { "kind": "locality", "value": "Reston" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20190" },
+                    { "kind": "country",  "value": "United States" }
                 ],
-                "city": "Reston",
-                "sp": "VA",
-                "pc": "20190",
-                "cc": "US"
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe-new@example.example" }
         }
     }
 }
@@ -1506,39 +1582,53 @@ Example contact update response:
 {
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
-        "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2025-06-01T10:00:00.0Z"
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2025-06-01T10:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": ["456 New Street", "Suite 200"],
-                "city": "Reston",
-                "sp": "VA",
-                "pc": "20190",
-                "cc": "US"
+                "components": [
+                    { "kind": "name",     "value": "456 New Street, Suite 200" },
+                    { "kind": "locality", "value": "Reston" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20190" },
+                    { "kind": "country",  "value": "United States" }
+                ],
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe-new@example.example" }
         }
-    },
-    "voice": ["+1.7035555556"],
-    "email": ["jdoe-new@example.example"]
+    }
 }
 ```
--->
 
 ### Delete
 
@@ -1886,4 +1976,15 @@ TODO
   </front>
   <seriesInfo name="RFC" value="3915"/>
   <seriesInfo name="DOI" value="10.17487/RFC3915"/>
+</reference>
+
+<reference anchor="RFC9553" target="https://www.rfc-editor.org/rfc/rfc9553">
+  <front>
+    <title>JSContact: A JSON Representation of Contact Data</title>
+    <author initials="R." surname="Stepanek" fullname="Robert Stepanek"/>
+    <author initials="M." surname="Loffredo" fullname="Mario Loffredo"/>
+    <date year="2024" month="05"/>
+  </front>
+  <seriesInfo name="RFC" value="9553"/>
+  <seriesInfo name="DOI" value="10.17487/RFC9553"/>
 </reference>
