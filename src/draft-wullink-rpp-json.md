@@ -431,7 +431,7 @@ This section provides normative JSON Schema definitions for RPP component object
 
 <!-- TODO: can we say normative for json schema definitions? -->
 
-## Common Object Schemas
+## Common Data Types Schemas
 
 This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
 
@@ -476,6 +476,8 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
   }
 }
 ```
+
+## Component Objects Schemas
 
 ### Period Object
 
@@ -734,7 +736,6 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-## Process Object Schemas
 
 ### Restore Report Object
 
@@ -772,6 +773,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
   }
 }
 ```
+
+## Process Object Schemas
 
 ### Transfer Process Object
 
@@ -817,7 +820,7 @@ Alternative 1 (with oneOf):
             }
           },
           "required": [
-            "@type", "transferDir", 
+            "@type", "transferDir"
           ]
         }
       ]
@@ -990,21 +993,21 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type": { "type": "string", "const": "domainName" },
         "name": { "type": "string", "writeOnly": true },
-        "registrant": { "$ref": "#/$defs/contact" },
+        "registrant": { "$ref": "#/$defs/contactObject.reference" },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contact" }
+              "object": { "$ref": "#/$defs/contactObject.reference" }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/host" }
+          "items": { "$ref": "#/$defs/hostObject.reference" }
         },
         "dns":    { "$ref": "#/$defs/dnsData" },
         "authInfo": { "$ref": "#/$defs/authInfo" },
@@ -1035,32 +1038,52 @@ Read response schema (read-write and read-only properties):
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "registrant":  { "$ref": "#/$defs/contact" },
+        "registrant":  { "$ref": "#/$defs/contactObject.reference" },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contact" }
+              "object": { "$ref": "#/$defs/contactObject.reference" }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/host" }
+          "items": { "$ref": "#/$defs/hostObject.reference" }
         },
         "dns":    { "$ref": "#/$defs/dnsData" },
         "subordinateHosts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/host" },
+          "items": { "$ref": "#/$defs/hostObject.reference" },
           "readOnly": true
         },
         "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
         "authInfo":  { "$ref": "#/$defs/authInfo" }
       },
       "required": ["@type", "name", "provMetadata"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/domainObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "name"]
     }
   }
 }
@@ -1158,6 +1181,28 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "contact", "readOnly": true },
+        "id": { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
+
+
+
 ## Host Data Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
@@ -1208,6 +1253,26 @@ Read response schema (read-write and read-only properties):
         "dns":           { "$ref": "#/$defs/dnsData" }
       },
       "required": ["@type", "hostName", "provMetadata"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/hostObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname", "readOnly": true }
+      },
+      "required": ["@type", "hostName"]
     }
   }
 }
@@ -1461,6 +1526,7 @@ Example domain transfer request (pull transfer)
 
 ```json
 {
+    "@type": "transferProcess",
     "transferDir": "pull",
     "transferPeriod": {
         "@type": "period",
@@ -1757,6 +1823,7 @@ Example contact transfer request (pull transfer)
 
 ```json
 {
+    "@type": "transferProcess", 
     "transferDir": "pull"
 }
 ```
