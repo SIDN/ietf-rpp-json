@@ -20,3 +20,4 @@ report.xml
 build/*
 .DS_Store
 examples/
+.venv
