@@ -186,7 +186,7 @@ Rule 7: Data elements with mutability `read-write` have no additional annotation
 The RPP data model defines several association types between objects, the following rules specify their JSON representations.
 A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.
 
-## Labelled associations
+### Labelled associations
 
 Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included  alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
 
