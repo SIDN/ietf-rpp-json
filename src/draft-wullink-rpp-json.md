@@ -999,7 +999,7 @@ Create request schema (create-only and read-write properties):
               "label": { "type": "string" },
               "object": { "$ref": "#/$defs/contact" }
             },
-            "requited": ["label", "object"]
+            "required": ["label", "object"]
            }
         },
         "nameservers": {
@@ -1044,7 +1044,7 @@ Read response schema (read-write and read-only properties):
               "label": { "type": "string" },
               "object": { "$ref": "#/$defs/contact" }
             },
-            "requited": ["label", "object"]
+            "required": ["label", "object"]
            }
         },
         "nameservers": {
