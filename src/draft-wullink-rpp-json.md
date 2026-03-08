@@ -234,8 +234,14 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
                     "records": [
                         {
                             "@type": "dnsRecord",
+                            "name": "@",
+                            "type": "ns",
+                            "rdata": { "nsdname": "ns1.name.example." }
+                        },
+                        {
+                            "@type": "dnsRecord",
                             "name": "ns1.name.example.",
-                            "type": "A",
+                            "type": "a",
                             "rdata": { "address": "192.0.2.1" }
                         }
                     ]
@@ -281,14 +287,26 @@ Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object wher
 Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
 
 ```json
-"contacts": {
-    "admin": {
-        "@type": "contact",
-        "id": "ABC-8013"
+"postalInfo": {
+    "int": {
+        "@type": "postalInfo",
+        "type": "PERSON",
+        "name": "John Doe",
+        "org": "Example Inc.",
+        "addr": {
+            "@type": "postalData",
+            "street": [
+                "123 Example Dr.",
+                "Suite 100"
+            ],
+            "city": "Dulles",
+            "sp": "VA",
+            "pc": "20166-6503",
+            "cc": "US"
+        }
     },
-    "tech": {
-        "@type": "contact",
-        "id": "ABC-8014"
+    "loc": {
+      ...
     }
 }
 ```
@@ -299,25 +317,38 @@ A `LabelledComposition[Type]` is a parent-child relationship where each embedded
 
 Rule 11: `LabelledComposition[Type]` with cardinality `0+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a `label` property alongside the data elements of the composed type.
 
-Example: contact postal info (LabelledComposition[Postal Info Object]):
+Example: contact postal info (LabelledComposition[Contact Object]):
 
 ```json
-"addresses": [
+"contacts": [
     {
-        "label": "int",
+        "label": "admin",
         "object": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "@type": "postalData",
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
-        }
+          "@type": "contact",
+          "id": "jd1234",
+          "postalInfo": {
+              "int": {
+                  "@type": "postalInfo",
+                  "type": "PERSON",
+                  "name": "John Doe",
+                  "org": "Example Inc.",
+                  "addr": {
+                      "@type": "postalData",
+                      "street": [
+                          "123 Example Dr.",
+                          "Suite 100"
+                      ],
+                      "city": "Dulles",
+                      "sp": "VA",
+                      "pc": "20166-6503",
+                      "cc": "US"
+                  }
+              }
+          },
+          "voice": ["+1.7035555555"],
+          "fax": ["+1.7035555556"],
+          "email": ["jdoe@example.example"]
+      }
     }
 ]
 ```
@@ -722,7 +753,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
     "restoreReport": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "@type":         { "type": "string", "const": "restoreReport" },
         "preData":       { "type": "string" },
         "postData":      { "type": "string" },
         "deleteTime":    { "type": "string", "format": "date-time" },
@@ -901,7 +932,7 @@ Create request schema (create-only and read-write properties):
     "restoreProcess.create": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
+        "@type":         { "type": "string", "const": "restoreProcess" },
         "restoreReport": { "$ref": "#/$defs/restoreReport" }
       },
       "required": ["@type"]
@@ -962,7 +993,14 @@ Create request schema (create-only and read-write properties):
         "registrant": { "$ref": "#/$defs/contact" },
         "contacts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/contact" }
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contact" }
+            },
+            "requited": ["label", "object"]
+           }
         },
         "nameservers": {
           "type": "array",
@@ -1000,7 +1038,14 @@ Read response schema (read-write and read-only properties):
         "registrant":  { "$ref": "#/$defs/contact" },
         "contacts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/contact" }
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contact" }
+            },
+            "requited": ["label", "object"]
+           }
         },
         "nameservers": {
           "type": "array",
@@ -1270,8 +1315,14 @@ Example domain read response:
                 "records": [
                     {
                         "@type": "dnsRecord",
+                        "name": "@",
+                        "type": "ns",
+                        "rdata": { "nsdname": "ns1.example.example." }
+                    },
+                    {
+                        "@type": "dnsRecord",
                         "name": "ns1.example.example.",
-                        "type": "A",
+                        "type": "a",
                         "rdata": { "address": "192.0.2.1" }
                     }
                 ]
@@ -1761,14 +1812,20 @@ Example host create request:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             },
             {
                 "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "AAAA",
+                "type": "aaaa",
                 "rdata": { "address": "2001:db8::1" }
             }
         ]
@@ -1797,14 +1854,20 @@ Example host create response:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             },
             {
                 "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "AAAA",
+                "type": "aaaa",
                 "rdata": { "address": "2001:db8::1" }
             }
         ]
@@ -1835,8 +1898,14 @@ Example host read response:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             }
         ]
@@ -1857,8 +1926,14 @@ Example host update request:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "198.51.100.1" }
             }
         ]
