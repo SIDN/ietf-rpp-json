@@ -284,7 +284,7 @@ A `DictionaryAggregation[Type]` is a relationship between two independent object
 
 Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
-Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
+Example: domain contacts keyed by unique role (DictionaryAggregation[Postal Info Object]):
 
 ```json
 "postalInfo": {
