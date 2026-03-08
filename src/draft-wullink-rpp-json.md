@@ -310,7 +310,7 @@ Example: contact postal info (LabelledComposition[Postal Info Object]):
             "type": "PERSON",
             "name": "John Doe",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": ["123 Example Dr."],
                 "city": "Dulles",
                 "sp": "VA",
@@ -337,7 +337,7 @@ Example: contact postal info (DictionaryComposition[Postal Info Object]):
         "type": "PERSON",
         "name": "John Doe",
         "addr": {
-            "@type": "postalAddress",
+            "@type": "postalData",
             "street": ["123 Example Dr."],
             "city": "Dulles",
             "sp": "VA",
@@ -655,10 +655,10 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 ```json
 {
   "$defs": {
-    "postalAddress": {
+    "postalData": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalAddress" },
+        "@type": { "type": "string", "const": "postalData" },
         "street": {
           "type": "array",
           "items": { "type": "string" }
@@ -695,7 +695,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         },
         "name": { "type": "string" },
         "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalAddress" }
+        "addr": { "$ref": "#/$defs/postalData" }
       },
       "required": ["@type"]
     }
@@ -748,18 +748,116 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 * `gainingClientId` is REQUIRED for push transfers and MUST NOT be provided for pull transfers.
 
+A> NOTE: this can be assured by a schema (see below).
+But, maybe we want to have a rule about limiting JSON Schema vocabulary and only using "flat" schemas - without any allOf/anyOf/oneOf, or any conditional constructs? It would limit a bit as what can be verified by the schema, but to the benefit of schemas possible to be better suited for code generation.
+
+Create request schema (create-only and read-write properties):
+
+Alternative 1 (with oneOf):
 
 ```json
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create",
+  "unevaluatedProperties": false,
   "$defs": {
-    "transferProcess": {
+    "transferProcess.create": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess"},
+            "transferDir": {
+              "type": "string",
+              "const": "push"
+            },
+            "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
+          },
+          "required": [
+            "@type", "transferDir", "gainingClientId"
+          ]
+        },
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess" },
+            "transferDir": {
+              "type": "string",
+              "const": "pull"
+            }
+          },
+          "required": [
+            "@type", "transferDir", 
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+Alternative 2 (flat):
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "transferProcess" },
+        "transferDir": {
+          "type": "string",
+          "enum": ["pull", "push"]
+        },
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
+      },
+      "required": [
+        "@type", "transferDir"
+      ]
+    }
+  }
+}
+```
+
+Create request for Domain Object schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create.domain",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.create.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.create" },
+        {
+          "properties": {
+            "transferPeriod": { "$ref": "#/$defs/period" }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.read": {
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "transferProcess", "readOnly": true },
         "trStatus": {
           "type": "string",
           "enum": ["pending", "clientApproved", "clientCancelled",
-                   "clientRejected", "serverApproved", "serverCancelled"],
+                    "clientRejected", "serverApproved", "serverCancelled"],
           "readOnly": true
         },
         "transferDir": {
@@ -767,13 +865,14 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
           "enum": ["pull", "push"],
           "readOnly": true
         },
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
         "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
-        "@type", "trStatus", "reqClientId",
+        "@type", "transferDir", "trStatus", "reqClientId",
         "requestDate", "actClientId", "actionDate"
       ]
     }
@@ -791,10 +890,35 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 * `reportDate` MUST NOT be present if no restore report has been accepted yet.
 * `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
 
+Create request schema (create-only and read-write properties):
+
 ```json
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.create",
+  "unevaluatedProperties": false,
   "$defs": {
-    "restoreProcess": {
+    "restoreProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
+        "restoreReport": { "$ref": "#/$defs/restoreReport" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "restoreProcess.read": {
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
@@ -827,25 +951,30 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "domainName" },
-    "name": { "type": "string" },
-    "registrant": { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns":    { "$ref": "#/$defs/dnsData" },
-    "authInfo": { "$ref": "#/$defs/authInfo" },
-    "period": { "$ref": "#/$defs/period" }
-  },
-  "required": ["@type", "name"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "domainName" },
+        "name": { "type": "string", "writeOnly": true },
+        "registrant": { "$ref": "#/$defs/contact" },
+        "contacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contact" }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/host" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type", "name"]
+    }
+  }
 }
 ```
 
@@ -854,36 +983,41 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-    "name":        { "type": "string", "readOnly": true },
-    "provMetadata": { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "registrant":  { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns":    { "$ref": "#/$defs/dnsData" },
-    "subordinateHosts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" },
-      "readOnly": true
-    },
-    "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-    "authInfo":  { "$ref": "#/$defs/authInfo" }
-  },
-  "required": ["@type", "name", "provMetadata"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "registrant":  { "$ref": "#/$defs/contact" },
+        "contacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contact" }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/host" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "subordinateHosts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/host" },
+          "readOnly": true
+        },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
+        "authInfo":  { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "name", "provMetadata"]
+    }
+  }
 }
 ```
 
@@ -898,33 +1032,38 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "contact" },
-    "id": { "type": "string" },
-    "postalInfo": {
+  "$ref": "#/$defs/contactObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.create": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authInfo":  { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
-  },
-  "required": ["@type", "id", "postalInfo"],
-  "unevaluatedProperties": false
+      "properties": {
+        "@type": { "type": "string", "const": "contact" },
+        "id": { "type": "string", "writeOnly": true },
+        "postalInfo": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "minProperties": 1,
+          "maxProperties": 2
+        },
+        "voice": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "fax": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "email": {
+          "type": "array",
+          "items": { "type": "string", "format": "email" }
+        },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "disclose":  { "type": "object" }
+      },
+      "required": ["@type", "id", "postalInfo"]
+    }
+  }
 }
 ```
 
@@ -933,39 +1072,44 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "contact", "readOnly": true },
-    "id": { "type": "string", "readOnly": true },
-    "provMetadata": { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "postalInfo": {
+  "$ref": "#/$defs/contactObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.read": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authInfo":  { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
-  },
-  "required": ["@type", "id", "provMetadata", "postalInfo"],
-  "unevaluatedProperties": false
+      "properties": {
+        "@type": { "type": "string", "const": "contact", "readOnly": true },
+        "id": { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "postalInfo": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "minProperties": 1,
+          "maxProperties": 2
+        },
+        "voice": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "fax": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "email": {
+          "type": "array",
+          "items": { "type": "string", "format": "email" }
+        },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "disclose":  { "type": "object" }
+      },
+      "required": ["@type", "id", "provMetadata", "postalInfo"]
+    }
+  }
 }
 ```
 
@@ -981,14 +1125,19 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string", "format": "hostname" },
-    "dns":      { "$ref": "#/$defs/dnsData" }
-  },
-  "required": ["@type", "hostName"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/hostObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":    { "type": "string", "const": "host" },
+        "hostName": { "type": "string", "format": "hostname" },
+        "dns":      { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName"]
+    }
+  }
 }
 ```
 
@@ -997,20 +1146,25 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":         { "type": "string", "const": "host", "readOnly": true },
-    "hostName":      { "type": "string", "format": "hostname" },
-    "provMetadata":  { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "dns":           { "$ref": "#/$defs/dnsData" }
-  },
-  "required": ["@type", "hostName", "provMetadata"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/hostObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname" },
+        "provMetadata":  { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "dns":           { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName", "provMetadata"]
+    }
+  }
 }
 ```
 
@@ -1041,10 +1195,10 @@ Example domain create request:
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
     "authInfo": {
         "@type": "authInfo",
@@ -1096,10 +1250,10 @@ Example domain read response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
     "nameservers": [
         {
@@ -1172,7 +1326,7 @@ Example domain update request (read-write properties):
 ```json
 {
     "@type": "domainName",
-    "registrant": "sh8013",
+    "registrant": { "@type": "contact", "id": "sh8013" },
     "authInfo": {
         "@type": "authInfo",
         "method": "authinfo",
@@ -1199,7 +1353,7 @@ Example domain update response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "sh8013"
+    "registrant": { "@type": "contact", "id": "sh8013" }
 }
 ```
 
@@ -1431,7 +1585,7 @@ Example contact create request:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1477,7 +1631,7 @@ Example contact create response:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1522,7 +1676,7 @@ Example contact read response:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": ["123 Example Dr.", "Suite 100"],
                 "city": "Dulles",
                 "sp": "VA",
