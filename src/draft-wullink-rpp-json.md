@@ -1577,7 +1577,9 @@ Transfer cancel, reject, and approve responses return the Transfer Process Objec
 Example domain restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+    "@type": "restoreProcess"
+}
 ```
 
 Example domain restore response (Restore Process Object, server requires a report):
@@ -1658,10 +1660,6 @@ Example domain restore report response (Restore Process Object):
 ### Restore Query
 
 The Restore Query operation takes no request body (Parameters: None).
-
-```json
-{}
-```
 
 Example domain restore query response (Restore Process Object, object in `pendingRestore` state):
 
@@ -2017,7 +2015,9 @@ The host delete operation takes the host name as the resource identifier. No req
 Example host restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+  "@type": "restoreProcess"
+}
 ```
 
 Example host restore request response (Restore Process Object, server requires a report):
