@@ -97,11 +97,11 @@ RPP primitive types MUST be represented in JSON as follows:
 | RPP Primitive Type | JSON Type   | Notes                                                                          |
 |--------------------|-------------|--------------------------------------------------------------------------------|
 | String             | `string`    | Unicode character sequence                                                     |
-| Integer            | `integer`   | Whole number, positive or negative                                             |
+| Integer            | `number`    | Whole number, positive or negative                                             |
 | Boolean            | `boolean`   | `true` or `false`                                                              |
-| Decimal            | `number`    | Base-10 fractional value                                                       |
-| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                             |
-| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`           |
+| Decimal            | `string`    | Base-10 fractional value with exact representation within a defined precision. Number is encoded into string same as `"number"` in [@!RFC8259] without exponent part `"ext"`. |
+| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                              |
+| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`             |
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
