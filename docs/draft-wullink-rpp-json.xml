@@ -224,21 +224,23 @@ A Aggregation represents a relationship between two independent objects, where o
             {
                 "@type": "host",
                 "hostName": "ns1.name.example",
-                "provisioningMetadata": {
-                    "@type": "provisioningMetadata",
+                "provMetadata": {
+                    "@type": "provMetadata",
                     "repositoryId": "NS1EXAMPLE-REP",
-                    "sponsoringClientId": "ClientX"
+                    "spClientId": "ClientX"
                 },
                 "status": [ { "@type": "status", "label": "ok" } ],
-                "dns": [
-                    {
-                        "@type": "dnsResourceRecord",
-                        "hostNamelabel": "ns1.name.example",
-                        "type": "A",
-                        "data": "192.0.2.1",
-                        "ttl": 3600
-                    }
-                ]
+                "dns": {
+                    "@type": "dnsData",
+                    "records": [
+                        {
+                            "@type": "dnsRecord",
+                            "name": "ns1.name.example.",
+                            "type": "A",
+                            "rdata": { "address": "192.0.2.1" }
+                        }
+                    ]
+                }
             }
         ]
 }
@@ -353,7 +355,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Rule 17: Enumeration constraints on string fields MUST be expressed using the <tt>&quot;enum&quot;</tt> keyword in JSON Schema.</t>
 <t>Example (Transfer Status enum):</t>
 
-<sourcecode type="json"><![CDATA["transferStatus": {
+<sourcecode type="json"><![CDATA["trStatus": {
     "type": "string",
     "enum": ["pending", "clientApproved", "clientCancelled",
              "clientRejected", "serverApproved", "serverCancelled"]
@@ -371,7 +373,7 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <tt>authorisationInformation</tt> object in the JSON request body. Instead, the client MUST convey the authorization information using the <tt>RPP-Authorization</tt> HTTP request header as defined in <xref target="I-D.wullink-rpp-core"></xref>. Servers MUST reject any request that includes an <tt>authorisationInformation</tt> object in the JSON body with an appropriate error response.</t>
+<t>Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <tt>authInfo</tt> object in the JSON request body. Instead, the client MUST convey the authorization information using the <tt>RPP-Authorization</tt> HTTP request header as defined in <xref target="I-D.wullink-rpp-core"></xref>. Servers MUST reject any request that includes an <tt>authInfo</tt> object in the JSON body with an appropriate error response.</t>
 
 <section anchor="rpp-profiles-and-validation"><name>RPP Profiles and Validation</name>
 <t>RPP profiles, such as the EPP Compatibility Profile defined in <xref target="I-D.kowalik-rpp-data-objects"></xref>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.</t>
@@ -382,7 +384,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="json-schema-definitions"><name>JSON Schema Definitions</name>
 <t>This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 <xref target="JSON-SCHEMA"></xref>.</t>
 
-<section anchor="common-component-schemas"><name>Common Component Schemas</name>
+<section anchor="common-object-schemas"><name>Common Object Schemas</name>
 <t>This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions.</t>
 
 <section anchor="identifier"><name>Identifier</name>
@@ -453,26 +455,26 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
 <ul spacing="compact">
-<li><tt>updatingClientId</tt> and <tt>updateDate</tt> MUST NOT be present if the object has never been modified.</li>
-<li><tt>transferDate</tt> MUST NOT be present if the object has never been transferred.</li>
+<li><tt>upClientId</tt> and <tt>upDate</tt> MUST NOT be present if the object has never been modified.</li>
+<li><tt>trDate</tt> MUST NOT be present if the object has never been transferred.</li>
 <li>In EPP Compatibility Profile, <tt>repositoryId</tt> MUST be provided.</li>
 </ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
-    "provisioningMetadata": {
+    "provMetadata": {
       "type": "object",
       "properties": {
-        "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
-        "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
-        "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
+        "@type":       { "type": "string", "const": "provMetadata", "readOnly": true },
+        "repositoryId": { "type": "string", "readOnly": true },
+        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "crDate":      { "type": "string", "format": "date-time", "readOnly": true },
+        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "upDate":      { "type": "string", "format": "date-time", "readOnly": true },
+        "trDate":      { "type": "string", "format": "date-time", "readOnly": true }
       },
-      "required": ["@type", "sponsoringClientId"]
+      "required": ["@type", "spClientId"]
     }
   }
 }
@@ -507,28 +509,99 @@ A Aggregation represents a relationship between two independent objects, where o
 </sourcecode>
 </section>
 
-<section anchor="dns-resource-record"><name>DNS Resource Record</name>
+<section anchor="dns-resource-record-object"><name>DNS Resource Record Object</name>
 <t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
 <ul spacing="compact">
-<li><tt>hostNamelabel</tt> MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.</li>
-<li><tt>type</tt> MUST be a valid string representation of a DNS resource record type as defined in <xref target="RFC1035"></xref>. Allowed values MAY be further constrained by server policy.</li>
-<li><tt>data</tt> MUST be a syntactically valid resource record data value for the given <tt>type</tt> in zone file string representation.</li>
-<li><tt>ttl</tt> value range MAY be constrained by server policy.</li>
+<li><tt>name</tt> MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs (with trailing dot) and relative host names are allowed, as well as the <tt>@</tt> symbol representing the domain name itself.</li>
+<li><tt>type</tt> MUST be a valid string representation of a DNS resource record type as defined in <xref target="RFC1035"></xref>. Values MUST be converted to lower case. Allowed values MAY be further constrained by server policy.</li>
+<li>In EPP Compatibility Profile (<xref target="RFC5732"></xref>), the following record types MUST be supported: <tt>ns</tt>, <tt>a</tt>, and <tt>aaaa</tt>. With DNSSEC Extension <xref target="RFC5910"></xref>, <tt>ds</tt> and <tt>dnskey</tt> MUST additionally be supported.</li>
+<li><tt>class</tt>, if present, MUST be chosen from Section 3.2.4 (CLASS values) of <xref target="RFC1035"></xref>. A client SHOULD omit this element; the server MUST assume <tt>IN</tt> as the default.</li>
+<li>The fields within <tt>rdata</tt> MUST match the expected structure for the given record type (see RDATA structures below).</li>
+</ul>
+<t>RDATA structures required in EPP Compatibility Profile:</t>
+
+<ul spacing="compact">
+<li>NS records (<xref target="RFC1035"></xref>, Section 3.3.11): <tt>nsdname</tt></li>
+<li>A records (<xref target="RFC1035"></xref>, Section 3.4.1): <tt>address</tt></li>
+<li>AAAA records (<xref target="RFC3596"></xref>, Section 2.2): <tt>address</tt></li>
+<li>DS records (<xref target="RFC4034"></xref>, Section 5, with DNSSEC Extension): <tt>keyTag</tt>, <tt>algorithm</tt>, <tt>digestType</tt>, <tt>digest</tt></li>
+<li>DNSKEY records (<xref target="RFC4034"></xref>, Section 2, with DNSSEC Extension): <tt>flags</tt>, <tt>protocol</tt>, <tt>algorithm</tt>, <tt>publicKey</tt></li>
+</ul>
+<t>All <tt>rdata</tt> property names MUST be written in camelCase and all values MUST use the string data type.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "dnsRecord": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "dnsRecord" },
+        "name":  { "type": "string" },
+        "class": { "type": "string" },
+        "type":  { "type": "string" },
+        "rdata": { "type": "object" }
+      },
+      "required": ["@type", "name", "type", "rdata"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="dns-operational-controls-object"><name>DNS Operational Controls Object</name>
+<t>The DNS Operational Controls Object contains operational control parameters that a client MAY use to influence server-side DNS behaviour for a set of DNS records. A server MAY ignore these values, e.g. for policy reasons. This structure is aligned with <xref target="I-D.simmen-rpp-dns-data"></xref>.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "dnsControls": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "dnsControls" },
+        "ttl": {
+          "type": "object",
+            "propertyNames": {
+              "pattern": "^[a-z]+$"
+            },
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "maxSigLifetime": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z]+$"
+          },
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="dns-data-object"><name>DNS Data Object</name>
+<t>The DNS Data Object is a container for DNS resource records and associated operational controls for a provisioned object. This structure groups DNS records together with control parameters that influence server-side DNS behaviour. It is aligned with <xref target="I-D.simmen-rpp-dns-data"></xref>.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li>In EPP Compatibility Profile with DNSSEC Extension <xref target="RFC5910"></xref>, records of type <tt>ds</tt> and <tt>dnskey</tt> MUST be supported in addition to <tt>ns</tt>, <tt>a</tt>, and <tt>aaaa</tt>. A server MUST support either <tt>ds</tt> or <tt>dnskey</tt> or both. If provided with only <tt>dnskey</tt>, a server MUST calculate the DS record.</li>
 </ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
-    "dnsResourceRecord": {
+    "dnsData": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string", "format": "hostname" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
+        "@type": { "type": "string", "const": "dnsData" },
+        "records": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dnsRecord" }
+        },
+        "controls": { "$ref": "#/$defs/dnsControls" }
       },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
+      "required": ["@type"]
     }
   }
 }
@@ -546,10 +619,10 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
-    "authorisationInformation": {
+    "authInfo": {
       "type": "object",
       "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
+        "@type":    { "type": "string", "const": "authInfo" },
         "method":   { "type": "string" },
         "authdata": { "type": "string" }
       },
@@ -622,74 +695,9 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]>
 </sourcecode>
 </section>
-
-<section anchor="transfer-data-object"><name>Transfer Data Object</name>
-
-<sourcecode type="json"><![CDATA[{
-  "$defs": {
-    "transferData": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "transferData", "readOnly": true },
-        "transferStatus": {
-          "type": "string",
-          "enum": ["pending", "clientApproved", "clientCancelled",
-                   "clientRejected", "serverApproved", "serverCancelled"],
-          "readOnly": true
-        },
-        "transferDirection": {
-          "type": "string",
-          "enum": ["pull", "push"],
-          "readOnly": true
-        },
-        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": [
-        "@type", "transferStatus", "transferDirection", "requestingClientId",
-        "requestDate", "actingClientId", "actionDate"
-      ]
-    }
-  }
-}
-]]>
-</sourcecode>
 </section>
 
-<section anchor="restore-data-object"><name>Restore Data Object</name>
-<t>The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.</t>
-<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
-
-<ul spacing="compact">
-<li><tt>requestDate</tt> MUST NOT be present if no restore request has been submitted yet.</li>
-<li><tt>reportDate</tt> MUST NOT be present if no restore report has been accepted yet.</li>
-<li><tt>reportDueDate</tt> MUST NOT be present when <tt>restoreStatus</tt> is not <tt>&quot;pendingRestore&quot;</tt>.</li>
-</ul>
-
-<sourcecode type="json"><![CDATA[{
-  "$defs": {
-    "restoreData": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
-        "restoreStatus": {
-          "type": "string",
-          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
-          "readOnly": true
-        },
-        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
-        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
-        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": ["@type", "restoreStatus"]
-    }
-  }
-}
-]]>
-</sourcecode>
-</section>
+<section anchor="process-object-schemas"><name>Process Object Schemas</name>
 
 <section anchor="restore-report-object"><name>Restore Report Object</name>
 <t>The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process (<xref target="RFC3915"></xref>).</t>
@@ -728,10 +736,80 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]>
 </sourcecode>
 </section>
+
+<section anchor="transfer-process-object"><name>Transfer Process Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>gainingClientId</tt> is REQUIRED for push transfers and MUST NOT be provided for pull transfers.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "transferProcess": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "transferProcess", "readOnly": true },
+        "trStatus": {
+          "type": "string",
+          "enum": ["pending", "clientApproved", "clientCancelled",
+                   "clientRejected", "serverApproved", "serverCancelled"],
+          "readOnly": true
+        },
+        "transferDir": {
+          "type": "string",
+          "enum": ["pull", "push"],
+          "readOnly": true
+        },
+        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
+        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": [
+        "@type", "trStatus", "reqClientId",
+        "requestDate", "actClientId", "actionDate"
+      ]
+    }
+  }
+}
+]]>
+</sourcecode>
 </section>
 
-<section anchor="resource-object-schemas"><name>Resource Object Schemas</name>
-<t>Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.</t>
+<section anchor="restore-process-object"><name>Restore Process Object</name>
+<t>The Restore Process Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as a response for all restore operations.</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>requestDate</tt> MUST NOT be present if no restore request has been submitted yet.</li>
+<li><tt>reportDate</tt> MUST NOT be present if no restore report has been accepted yet.</li>
+<li><tt>reportDueDate</tt> MUST NOT be present when <tt>restoreStatus</tt> is not <tt>&quot;pendingRestore&quot;</tt>.</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "restoreProcess": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+</section>
 
 <section anchor="domain-name-data-object"><name>Domain Name Data Object</name>
 <t>The Domain Name Data Object represents a domain name and its associated provisioning data.</t>
@@ -757,12 +835,9 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "array",
       "items": { "$ref": "#/$defs/host" }
     },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "period":   { "$ref": "#/$defs/period" }
+    "dns":    { "$ref": "#/$defs/dnsData" },
+    "authInfo": { "$ref": "#/$defs/authInfo" },
+    "period": { "$ref": "#/$defs/period" }
   },
   "required": ["@type", "name"],
   "unevaluatedProperties": false
@@ -775,9 +850,9 @@ A Aggregation represents a relationship between two independent objects, where o
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
-    "name":                  { "type": "string", "readOnly": true },
-    "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
+    "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+    "name":        { "type": "string", "readOnly": true },
+    "provMetadata": { "$ref": "#/$defs/provMetadata" },
     "status": {
       "type": "array",
       "items": { "$ref": "#/$defs/status" },
@@ -792,19 +867,16 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "array",
       "items": { "$ref": "#/$defs/host" }
     },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    },
+    "dns":    { "$ref": "#/$defs/dnsData" },
     "subordinateHosts": {
       "type": "array",
       "items": { "$ref": "#/$defs/host" },
       "readOnly": true
     },
     "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-    "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
+    "authInfo":  { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["@type", "name", "provisioningMetadata"],
+  "required": ["@type", "name", "provMetadata"],
   "unevaluatedProperties": false
 }
 ]]>
@@ -843,7 +915,7 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "array",
       "items": { "type": "string", "format": "email" }
     },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "authInfo":  { "$ref": "#/$defs/authInfo" },
     "disclose":  { "type": "object" }
   },
   "required": ["@type", "id", "postalInfo"],
@@ -859,7 +931,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "properties": {
     "@type": { "type": "string", "const": "contact", "readOnly": true },
     "id": { "type": "string", "readOnly": true },
-    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "provMetadata": { "$ref": "#/$defs/provMetadata" },
     "status": {
       "type": "array",
       "items": { "$ref": "#/$defs/status" },
@@ -883,10 +955,10 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "array",
       "items": { "type": "string", "format": "email" }
     },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "authInfo":  { "$ref": "#/$defs/authInfo" },
     "disclose":  { "type": "object" }
   },
-  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "required": ["@type", "id", "provMetadata", "postalInfo"],
   "unevaluatedProperties": false
 }
 ]]>
@@ -908,10 +980,7 @@ A Aggregation represents a relationship between two independent objects, where o
   "properties": {
     "@type":    { "type": "string", "const": "host" },
     "hostName": { "type": "string", "format": "hostname" },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    }
+    "dns":      { "$ref": "#/$defs/dnsData" }
   },
   "required": ["@type", "hostName"],
   "unevaluatedProperties": false
@@ -924,25 +993,21 @@ A Aggregation represents a relationship between two independent objects, where o
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string", "format": "hostname" },
-    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "@type":         { "type": "string", "const": "host", "readOnly": true },
+    "hostName":      { "type": "string", "format": "hostname" },
+    "provMetadata":  { "$ref": "#/$defs/provMetadata" },
     "status": {
       "type": "array",
       "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    }
+    "dns":           { "$ref": "#/$defs/dnsData" }
   },
-  "required": ["@type", "hostName", "provisioningMetadata"],
+  "required": ["@type", "hostName", "provMetadata"],
   "unevaluatedProperties": false
 }
 ]]>
 </sourcecode>
-</section>
 </section>
 </section>
 
@@ -971,8 +1036,8 @@ A Aggregation represents a relationship between two independent objects, where o
         { "label": "admin", "id": "sh8013" },
         { "label": "tech",  "id": "sh8013" }
     ],
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -984,12 +1049,12 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" },
@@ -1007,15 +1072,15 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "1999-12-03T09:00:00.0Z",
-        "transferDate": "2000-04-08T09:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "1999-12-03T09:00:00.0Z",
+        "trDate": "2000-04-08T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
@@ -1029,29 +1094,31 @@ A Aggregation represents a relationship between two independent objects, where o
         {
             "@type": "host",
             "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
+            "provMetadata": {
+                "@type": "provMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
+                "spClientId": "ClientX"
             },
             "status": [ { "@type": "status", "label": "ok" } ],
-            "dns": [
-                {
-                    "@type": "dnsResourceRecord",
-                    "hostNamelabel": "ns1.example.example.",
-                    "type": "A",
-                    "data": "192.0.2.1",
-                    "ttl": 3600
-                }
-            ]
+            "dns": {
+                "@type": "dnsData",
+                "records": [
+                    {
+                        "@type": "dnsRecord",
+                        "name": "ns1.example.example.",
+                        "type": "A",
+                        "rdata": { "address": "192.0.2.1" }
+                    }
+                ]
+            }
         },
         {
             "@type": "host",
             "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
+            "provMetadata": {
+                "@type": "provMetadata",
                 "repositoryId": "NS1EXAMPLENET-REP",
-                "sponsoringClientId": "ClientZ"
+                "spClientId": "ClientZ"
             },
             "status": [ { "@type": "status", "label": "ok" } ]
         }
@@ -1060,27 +1127,27 @@ A Aggregation represents a relationship between two independent objects, where o
         {
             "@type": "host",
             "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
+            "provMetadata": {
+                "@type": "provMetadata",
                 "repositoryId": "NS1EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
+                "spClientId": "ClientX"
             },
             "status": [ { "@type": "status", "label": "ok" } ]
         },
         {
             "@type": "host",
             "hostName": "ns2.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
+            "provMetadata": {
+                "@type": "provMetadata",
                 "repositoryId": "NS2EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
+                "spClientId": "ClientX"
             },
             "status": [ { "@type": "status", "label": "ok" } ]
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1095,8 +1162,8 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
     "registrant": "sh8013",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2BARfoo"
     }
@@ -1108,14 +1175,14 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2000-01-15T09:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
@@ -1133,10 +1200,10 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX"
+        "spClientId": "ClientX"
     }
 }
 ]]>
@@ -1173,7 +1240,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example domain transfer request (pull transfer)</t>
 
 <sourcecode type="json"><![CDATA[{
-    "transferDirection": "pull",
+    "transferDir": "pull",
     "transferPeriod": {
         "@type": "period",
         "value": 1,
@@ -1182,15 +1249,15 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Example domain transfer response (Transfer Data Object):</t>
+<t>Example domain transfer response (Transfer Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
@@ -1199,15 +1266,15 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="transfer-query"><name>Transfer Query</name>
-<t>Example domain transfer query response (Transfer Data Object):</t>
+<t>Example domain transfer query response (Transfer Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-06T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
@@ -1216,7 +1283,7 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="transfer-cancel-reject-approve"><name>Transfer Cancel / Reject / Approve</name>
-<t>Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The <tt>transferStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+<t>Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <tt>trStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
 </section>
 
 <section anchor="restore-request"><name>Restore Request</name>
@@ -1225,10 +1292,10 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{}
 ]]>
 </sourcecode>
-<t>Example domain restore response (Restore Data Object, server requires a report):</t>
+<t>Example domain restore response (Restore Process Object, server requires a report):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
@@ -1238,7 +1305,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example domain restore request with inline restore report (single-step; object restored immediately):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "domainName",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1254,10 +1321,10 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Example domain restore response with inline report (Restore Data Object, immediately restored):</t>
+<t>Example domain restore response with inline report (Restore Process Object, immediately restored):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
@@ -1270,7 +1337,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example domain restore report request:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "domainName",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1286,10 +1353,10 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Example domain restore report response (Restore Data Object):</t>
+<t>Example domain restore report response (Restore Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1304,20 +1371,20 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{}
 ]]>
 </sourcecode>
-<t>Example domain restore query response (Restore Data Object, object in <tt>pendingRestore</tt> state):</t>
+<t>Example domain restore query response (Restore Process Object, object in <tt>pendingRestore</tt> state):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
 ]]>
 </sourcecode>
-<t>Example domain restore query response (Restore Data Object, object restored):</t>
+<t>Example domain restore query response (Restore Process Object, object restored):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1357,8 +1424,8 @@ A Aggregation represents a relationship between two independent objects, where o
     "voice": ["+1.7035555555"],
     "fax": ["+1.7035555556"],
     "email": ["jdoe@example.example"],
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1370,12 +1437,12 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
@@ -1413,14 +1480,14 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2000-01-15T09:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
@@ -1461,19 +1528,19 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example contact transfer request (pull transfer)</t>
 
 <sourcecode type="json"><![CDATA[{
-    "transferDirection": "pull"
+    "transferDir": "pull"
 }
 ]]>
 </sourcecode>
-<t>Example contact transfer response (Transfer Data Object):</t>
+<t>Example contact transfer response (Transfer Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
 ]]>
@@ -1481,15 +1548,15 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="transfer-query-1"><name>Transfer Query</name>
-<t>Example contact transfer query response (Transfer Data Object):</t>
+<t>Example contact transfer query response (Transfer Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-06T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z"
 }
 ]]>
@@ -1497,8 +1564,8 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="transfer-cancel-reject-approve-1"><name>Transfer Cancel / Reject / Approve</name>
-<t>Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The <tt>transferStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
-<t>Note: Unlike domain transfers, contact transfers do not include an <tt>expiryDate</tt> field in the Transfer Data Object, as contacts do not have registration periods.</t>
+<t>Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <tt>trStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+<t>Note: Unlike domain transfers, contact transfers do not include an <tt>expiryDate</tt> field in the Transfer Process Object, as contacts do not have registration periods.</t>
 </section>
 </section>
 
@@ -1510,22 +1577,23 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
     "hostName": "ns1.example.example",
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        },
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "AAAA",
-            "data": "2001:db8::1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "A",
+                "rdata": { "address": "192.0.2.1" }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "AAAA",
+                "rdata": { "address": "2001:db8::1" }
+            }
+        ]
+    }
 }
 ]]>
 </sourcecode>
@@ -1534,32 +1602,33 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
     "hostName": "ns1.example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        },
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "AAAA",
-            "data": "2001:db8::1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "A",
+                "rdata": { "address": "192.0.2.1" }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "AAAA",
+                "rdata": { "address": "2001:db8::1" }
+            }
+        ]
+    }
 }
 ]]>
 </sourcecode>
@@ -1571,25 +1640,27 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
     "hostName": "ns1.example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "A",
+                "rdata": { "address": "192.0.2.1" }
+            }
+        ]
+    }
 }
 ]]>
 </sourcecode>
@@ -1601,15 +1672,17 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "host",
     "hostName": "ns1.example.example",
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "198.51.100.1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "A",
+                "rdata": { "address": "198.51.100.1" }
+            }
+        ]
+    }
 }
 ]]>
 </sourcecode>
@@ -1625,10 +1698,10 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{}
 ]]>
 </sourcecode>
-<t>Example host restore request response (Restore Data Object, server requires a report):</t>
+<t>Example host restore request response (Restore Process Object, server requires a report):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
@@ -1638,7 +1711,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example host restore request with inline restore report (single-step; object restored immediately):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "host",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
@@ -1654,10 +1727,10 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Example host restore response with inline report (Restore Data Object, immediately restored):</t>
+<t>Example host restore response with inline report (Restore Process Object, immediately restored):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
@@ -1670,7 +1743,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example host restore report request:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "host",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
@@ -1686,10 +1759,10 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Example host restore report response (Restore Data Object):</t>
+<t>Example host restore report response (Restore Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1700,20 +1773,20 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="restore-query-1"><name>Restore Query</name>
 <t>The Restore Query operation takes no request body (Parameters: None).</t>
-<t>Example host restore query response (Restore Data Object, object in <tt>pendingRestore</tt> state):</t>
+<t>Example host restore query response (Restore Process Object, object in <tt>pendingRestore</tt> state):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
 ]]>
 </sourcecode>
-<t>Example host restore query response (Restore Data Object, object restored):</t>
+<t>Example host restore query response (Restore Process Object, object restored):</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1794,9 +1867,11 @@ A Aggregation represents a relationship between two independent objects, where o
   <seriesInfo name="DOI" value="10.17487/RFC3915"></seriesInfo>
 </reference>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5730.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5732.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml"/>
 </references>
 <references><name>Informative References</name>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.simmen-rpp-dns-data.xml"/>
 <reference anchor="JSON-SCHEMA" target="https://json-schema.org/draft/2020-12/json-schema-core">
   <front>
     <title>JSON Schema: A Media Type for Describing JSON Documents</title>
@@ -1806,6 +1881,9 @@ A Aggregation represents a relationship between two independent objects, where o
     <date year="2020"></date>
   </front>
 </reference>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.3596.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.4034.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5910.xml"/>
 </references>
 </references>
 
