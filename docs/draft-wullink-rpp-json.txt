@@ -236,6 +236,15 @@ Internet-Draft                JSON for RPP                    March 2026
    mitigate these challenges, reducing fragmentation and simplifying
    integration efforts across the domain registration industry.
 
+
+
+
+
+Wullink & Kowalik       Expires 3 September 2026                [Page 4]
+
+Internet-Draft                JSON for RPP                    March 2026
+
+
 2.  Terminology
 
    In this document the following terminology is used.

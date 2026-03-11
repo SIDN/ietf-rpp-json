@@ -2614,7 +2614,48 @@ A Aggregation represents a relationship between two independent objects, where o
   "unevaluatedProperties": false
 }
 
-</pre><a href="#section-5.3-5" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2.2-5">Read response schema (read-write and read-only properties):<a href="#section-5.2.2-5" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.2.2-6">
+<pre>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@type": { "type": "string", "const": "contact", "readOnly": true },
+    "id": { "type": "string", "readOnly": true },
+    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "status": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/status" },
+      "readOnly": true
+    },
+    "postalInfo": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+      "minProperties": 1,
+      "maxProperties": 2
+    },
+    "voice": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "fax": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/phoneNumber" }
+    },
+    "email": {
+      "type": "array",
+      "items": { "type": "string", "format": "email" }
+    },
+    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
+    "disclose":  { "type": "object" }
+  },
+  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "unevaluatedProperties": false
+}
+
+</pre><a href="#section-5.2.2-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3-6">Read response schema (read-write and read-only properties):<a href="#section-5.3-6" class="pilcrow">¶</a></p>
 <div class="lang-json sourcecode" id="section-5.3-7">
