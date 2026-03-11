@@ -1818,7 +1818,6 @@ Example contact transfer request (pull transfer)
 ```
 
 Example contact transfer response (Transfer Process Object):
-Example contact transfer response (Transfer Process Object):
 
 ```json
 {
@@ -1826,12 +1825,7 @@ Example contact transfer response (Transfer Process Object):
     "trStatus": "pending",
     "transferDir": "pull",
     "reqClientId": "ClientX",
-    "@type": "transferProcess",
-    "trStatus": "pending",
-    "transferDir": "pull",
-    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actClientId": "ClientY",
     "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
