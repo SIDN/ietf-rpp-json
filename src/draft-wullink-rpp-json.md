@@ -225,10 +225,7 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
                 "hostName": "ns1.name.example",
                 "provMetadata": {
                     "@type": "provMetadata",
-                "provMetadata": {
-                    "@type": "provMetadata",
                     "repositoryId": "NS1EXAMPLE-REP",
-                    "spClientId": "ClientX"
                     "spClientId": "ClientX"
                 },
                 "status": [ { "@type": "status", "label": "ok" } ],
@@ -287,29 +284,17 @@ A `DictionaryAggregation[Type]` is a relationship between two independent object
 
 Rule 10: `DictionaryAggregation[Type]` MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
-Example: domain contacts keyed by unique role (DictionaryAggregation[Postal Info Object]):
+Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):
 
 ```json
-"postalInfo": {
-    "int": {
-        "@type": "postalInfo",
-        "type": "PERSON",
-        "name": "John Doe",
-        "org": "Example Inc.",
-        "addr": {
-            "@type": "postalData",
-            "street": [
-                "123 Example Dr.",
-                "Suite 100"
-            ],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
-        }
+"contacts": {
+    "admin": {
+        "@type": "contact",
+        "id": "ABC-8013"
     },
-    "loc": {
-      ...
+    "tech": {
+        "@type": "contact",
+        "id": "ABC-8014"  
     }
 }
 ```
@@ -327,31 +312,31 @@ Example: contact postal info (LabelledComposition[Contact Object]):
     {
         "label": "admin",
         "object": {
-          "@type": "contact",
-          "id": "jd1234",
-          "postalInfo": {
-              "int": {
-                  "@type": "postalInfo",
-                  "type": "PERSON",
-                  "name": "John Doe",
-                  "org": "Example Inc.",
-                  "addr": {
-                      "@type": "postalData",
-                      "street": [
-                          "123 Example Dr.",
-                          "Suite 100"
-                      ],
-                      "city": "Dulles",
-                      "sp": "VA",
-                      "pc": "20166-6503",
-                      "cc": "US"
-                  }
-              }
-          },
-          "voice": ["+1.7035555555"],
-          "fax": ["+1.7035555556"],
-          "email": ["jdoe@example.example"]
-      }
+            "@type": "contact",
+            "id": "jd1234",
+            "postalInfo": {
+                "int": {
+                    "@type": "postalInfo",
+                    "type": "PERSON",
+                    "name": "John Doe",
+                    "org": "Example Inc.",
+                    "addr": {
+                        "@type": "postalData",
+                        "street": [
+                            "123 Example Dr.",
+                            "Suite 100"
+                        ],
+                        "city": "Dulles",
+                        "sp": "VA",
+                        "pc": "20166-6503",
+                        "cc": "US"
+                    }
+                }
+            },
+            "voice": ["+1.7035555555"],
+            "fax": ["+1.7035555556"],
+            "email": ["jdoe@example.example"]
+        }
     }
 ]
 ```
@@ -378,6 +363,9 @@ Example: contact postal info (DictionaryComposition[Postal Info Object]):
             "pc": "20166-6503",
             "cc": "US"
         }
+    },
+    "loc": {
+        ...
     }
 }
 ```
@@ -417,8 +405,8 @@ Example (Domain Name Data Object):
 
 ```json
 {
-  "@type": "domainName",
-  "name": "example.example"
+    "@type": "domainName",
+    "name": "example.example"
 }
 ```
 

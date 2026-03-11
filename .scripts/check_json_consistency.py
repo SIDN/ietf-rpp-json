@@ -408,12 +408,29 @@ def run_checks(md_path: Path, deep_type_check: bool = True) -> int:
     # ==================================================================
     # 1. Snippets
     # ==================================================================
-    section_hdr("1. JSON Snippets in 'JSON Representation Rules'  [listed, skipped]")
-    info(f"Found {len(snippets)} snippet(s) — not validated (may be partial JSON)")
+    section_hdr("1. JSON Snippets in 'JSON Representation Rules'")
+    info(f"Found {len(snippets)} snippet(s) — validated as JSON or JSON object fragment")
     for blk in snippets:
         path_str = " > ".join(blk.chapter_path)
-        info(f"  Line {blk.line_start:4d}: [{path_str}]")
+        loc(f"Line {blk.line_start:4d}: [{path_str}]")
         info(f"            caption: {blk.caption[:80]}")
+        # Remove brevity placeholder lines ("...") before validating
+        cleaned = "\n".join(
+            line for line in blk.raw.splitlines()
+            if line.strip() != "..."
+        )
+        # Try as-is first
+        try:
+            json.loads(cleaned)
+            ok(f"  -> Valid JSON")
+        except json.JSONDecodeError:
+            # Try wrapped in { } to allow object fragments (key-value pairs)
+            try:
+                json.loads("{" + cleaned + "}")
+                ok(f"  -> Valid JSON object fragment (valid when wrapped in {{ }})")
+            except json.JSONDecodeError as e:
+                err(f"  -> INVALID: not valid JSON and not a valid JSON object fragment: {e}")
+                total_errors += 1
 
     # ==================================================================
     # 2. JSON Schema Definitions
@@ -647,7 +664,7 @@ def run_checks(md_path: Path, deep_type_check: bool = True) -> int:
     # Summary
     # ==================================================================
     section_hdr("Summary")
-    print(f"  Snippets (skipped):        {len(snippets)}")
+    print(f"  Snippets (validated):      {len(snippets)}")
     print(f"  Schema definitions:        {len(schema_entries)}")
     print(f"  Examples:                  {len(example_entries)}")
     print(f"  Other JSON blocks:         {len(other_blocks)}")
