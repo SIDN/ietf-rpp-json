@@ -97,11 +97,11 @@ RPP primitive types MUST be represented in JSON as follows:
 | RPP Primitive Type | JSON Type   | Notes                                                                          |
 |--------------------|-------------|--------------------------------------------------------------------------------|
 | String             | `string`    | Unicode character sequence                                                     |
-| Integer            | `integer`   | Whole number, positive or negative                                             |
+| Integer            | `number`    | Whole number, positive or negative                                             |
 | Boolean            | `boolean`   | `true` or `false`                                                              |
-| Decimal            | `number`    | Base-10 fractional value                                                       |
-| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                             |
-| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`           |
+| Decimal            | `string`    | Base-10 fractional value with exact representation within a defined precision. Number is encoded into string same as `"number"` in [@!RFC8259] without exponent part `"ext"`. |
+| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                              |
+| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`             |
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
@@ -186,7 +186,7 @@ Rule 7: Data elements with mutability `read-write` have no additional annotation
 The RPP data model defines several association types between objects, the following rules specify their JSON representations.
 A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.
 
-## Labelled associations
+### Labelled associations
 
 Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included  alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
 
@@ -234,8 +234,14 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
                     "records": [
                         {
                             "@type": "dnsRecord",
+                            "name": "@",
+                            "type": "ns",
+                            "rdata": { "nsdname": "ns1.name.example." }
+                        },
+                        {
+                            "@type": "dnsRecord",
                             "name": "ns1.name.example.",
-                            "type": "A",
+                            "type": "a",
                             "rdata": { "address": "192.0.2.1" }
                         }
                     ]
@@ -288,7 +294,7 @@ Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Obj
     },
     "tech": {
         "@type": "contact",
-        "id": "ABC-8014"
+        "id": "ABC-8014"  
     }
 }
 ```
@@ -299,24 +305,37 @@ A `LabelledComposition[Type]` is a parent-child relationship where each embedded
 
 Rule 11: `LabelledComposition[Type]` with cardinality `0+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a `label` property alongside the data elements of the composed type.
 
-Example: contact postal info (LabelledComposition[Postal Info Object]):
+Example: contact postal info (LabelledComposition[Contact Object]):
 
 ```json
-"addresses": [
+"contacts": [
     {
-        "label": "int",
+        "label": "admin",
         "object": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "@type": "postalAddress",
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
+            "@type": "contact",
+            "id": "jd1234",
+            "postalInfo": {
+                "int": {
+                    "@type": "postalInfo",
+                    "type": "PERSON",
+                    "name": "John Doe",
+                    "org": "Example Inc.",
+                    "addr": {
+                        "@type": "postalData",
+                        "street": [
+                            "123 Example Dr.",
+                            "Suite 100"
+                        ],
+                        "city": "Dulles",
+                        "sp": "VA",
+                        "pc": "20166-6503",
+                        "cc": "US"
+                    }
+                }
+            },
+            "voice": ["+1.7035555555"],
+            "fax": ["+1.7035555556"],
+            "email": ["jdoe@example.example"]
         }
     }
 ]
@@ -337,13 +356,16 @@ Example: contact postal info (DictionaryComposition[Postal Info Object]):
         "type": "PERSON",
         "name": "John Doe",
         "addr": {
-            "@type": "postalAddress",
+            "@type": "postalData",
             "street": ["123 Example Dr."],
             "city": "Dulles",
             "sp": "VA",
             "pc": "20166-6503",
             "cc": "US"
         }
+    },
+    "loc": {
+        ...
     }
 }
 ```
@@ -383,8 +405,8 @@ Example (Domain Name Data Object):
 
 ```json
 {
-  "@type": "domainName",
-  "name": "example.example"
+    "@type": "domainName",
+    "name": "example.example"
 }
 ```
 
@@ -400,7 +422,7 @@ This section provides normative JSON Schema definitions for RPP component object
 
 <!-- TODO: can we say normative for json schema definitions? -->
 
-## Common Object Schemas
+## Common Data Types Schemas
 
 This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
 
@@ -445,6 +467,8 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
   }
 }
 ```
+
+## Component Objects Schemas
 
 ### Period Object
 
@@ -655,10 +679,10 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 ```json
 {
   "$defs": {
-    "postalAddress": {
+    "postalData": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalAddress" },
+        "@type": { "type": "string", "const": "postalData" },
         "street": {
           "type": "array",
           "items": { "type": "string" }
@@ -695,7 +719,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         },
         "name": { "type": "string" },
         "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalAddress" }
+        "addr": { "$ref": "#/$defs/postalData" }
       },
       "required": ["@type"]
     }
@@ -703,7 +727,6 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-## Process Object Schemas
 
 ### Restore Report Object
 
@@ -722,7 +745,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
     "restoreReport": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "@type":         { "type": "string", "const": "restoreReport" },
         "preData":       { "type": "string" },
         "postData":      { "type": "string" },
         "deleteTime":    { "type": "string", "format": "date-time" },
@@ -742,24 +765,90 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
+## Process Object Schemas
+
 ### Transfer Process Object
 
-The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
-
-* `gainingClientId` is REQUIRED for push transfers and MUST NOT be provided for pull transfers.
-
+Create request schema (create-only and read-write properties):
 
 ```json
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create",
+  "unevaluatedProperties": false,
   "$defs": {
-    "transferProcess": {
+    "transferProcess.create": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess"},
+            "transferDir": {
+              "type": "string",
+              "const": "push"
+            },
+            "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
+          },
+          "required": [
+            "@type", "transferDir", "gainingClientId"
+          ]
+        },
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess" },
+            "transferDir": {
+              "type": "string",
+              "const": "pull"
+            }
+          },
+          "required": [
+            "@type", "transferDir"
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+Create request for Domain Object schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create.domain",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.create.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.create" },
+        {
+          "properties": {
+            "transferPeriod": { "$ref": "#/$defs/period" }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.read": {
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "transferProcess", "readOnly": true },
         "trStatus": {
           "type": "string",
           "enum": ["pending", "clientApproved", "clientCancelled",
-                   "clientRejected", "serverApproved", "serverCancelled"],
+                    "clientRejected", "serverApproved", "serverCancelled"],
           "readOnly": true
         },
         "transferDir": {
@@ -767,13 +856,14 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
           "enum": ["pull", "push"],
           "readOnly": true
         },
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
         "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
-        "@type", "trStatus", "reqClientId",
+        "@type", "transferDir", "trStatus", "reqClientId",
         "requestDate", "actClientId", "actionDate"
       ]
     }
@@ -791,10 +881,35 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 * `reportDate` MUST NOT be present if no restore report has been accepted yet.
 * `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
 
+Create request schema (create-only and read-write properties):
+
 ```json
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.create",
+  "unevaluatedProperties": false,
   "$defs": {
-    "restoreProcess": {
+    "restoreProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreProcess" },
+        "restoreReport": { "$ref": "#/$defs/restoreReport" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "restoreProcess.read": {
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
@@ -827,25 +942,37 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "domainName" },
-    "name": { "type": "string" },
-    "registrant": { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns":    { "$ref": "#/$defs/dnsData" },
-    "authInfo": { "$ref": "#/$defs/authInfo" },
-    "period": { "$ref": "#/$defs/period" }
-  },
-  "required": ["@type", "name"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "domainName" },
+        "name": { "type": "string", "writeOnly": true },
+        "registrant": { "$ref": "#/$defs/contactObject.reference" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type", "name"]
+    }
+  }
 }
 ```
 
@@ -854,36 +981,68 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-    "name":        { "type": "string", "readOnly": true },
-    "provMetadata": { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "registrant":  { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns":    { "$ref": "#/$defs/dnsData" },
-    "subordinateHosts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" },
-      "readOnly": true
-    },
-    "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-    "authInfo":  { "$ref": "#/$defs/authInfo" }
-  },
-  "required": ["@type", "name", "provMetadata"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "registrant":  { "$ref": "#/$defs/contactObject.reference" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "subordinateHosts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" },
+          "readOnly": true
+        },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
+        "authInfo":  { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "name", "provMetadata"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/domainObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "domainObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "name"]
+    }
+  }
 }
 ```
 
@@ -898,33 +1057,38 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "contact" },
-    "id": { "type": "string" },
-    "postalInfo": {
+  "$ref": "#/$defs/contactObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.create": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authInfo":  { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
-  },
-  "required": ["@type", "id", "postalInfo"],
-  "unevaluatedProperties": false
+      "properties": {
+        "@type": { "type": "string", "const": "contact" },
+        "id": { "type": "string", "writeOnly": true },
+        "postalInfo": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "minProperties": 1,
+          "maxProperties": 2
+        },
+        "voice": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "fax": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "email": {
+          "type": "array",
+          "items": { "type": "string", "format": "email" }
+        },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "disclose":  { "type": "object" }
+      },
+      "required": ["@type", "id", "postalInfo"]
+    }
+  }
 }
 ```
 
@@ -933,41 +1097,68 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "contact", "readOnly": true },
-    "id": { "type": "string", "readOnly": true },
-    "provMetadata": { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "postalInfo": {
+  "$ref": "#/$defs/contactObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.read": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authInfo":  { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
-  },
-  "required": ["@type", "id", "provMetadata", "postalInfo"],
-  "unevaluatedProperties": false
+      "properties": {
+        "@type": { "type": "string", "const": "contact", "readOnly": true },
+        "id": { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "postalInfo": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "minProperties": 1,
+          "maxProperties": 2
+        },
+        "voice": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "fax": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/phoneNumber" }
+        },
+        "email": {
+          "type": "array",
+          "items": { "type": "string", "format": "email" }
+        },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "disclose":  { "type": "object" }
+      },
+      "required": ["@type", "id", "provMetadata", "postalInfo"]
+    }
+  }
 }
 ```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "contactObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "contact", "readOnly": true },
+        "id": { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
+
+
 
 ## Host Data Object
 
@@ -981,14 +1172,19 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string", "format": "hostname" },
-    "dns":      { "$ref": "#/$defs/dnsData" }
-  },
-  "required": ["@type", "hostName"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/hostObject.create",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":    { "type": "string", "const": "host" },
+        "hostName": { "type": "string", "format": "hostname" },
+        "dns":      { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName"]
+    }
+  }
 }
 ```
 
@@ -997,20 +1193,45 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":         { "type": "string", "const": "host", "readOnly": true },
-    "hostName":      { "type": "string", "format": "hostname" },
-    "provMetadata":  { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "dns":           { "$ref": "#/$defs/dnsData" }
-  },
-  "required": ["@type", "hostName", "provMetadata"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/hostObject.read",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname" },
+        "provMetadata":  { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "dns":           { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName", "provMetadata"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/hostObject.reference",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "hostObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname", "readOnly": true }
+      },
+      "required": ["@type", "hostName"]
+    }
+  }
 }
 ```
 
@@ -1041,10 +1262,10 @@ Example domain create request:
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
     "authInfo": {
         "@type": "authInfo",
@@ -1096,10 +1317,10 @@ Example domain read response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
     "nameservers": [
         {
@@ -1116,8 +1337,14 @@ Example domain read response:
                 "records": [
                     {
                         "@type": "dnsRecord",
+                        "name": "@",
+                        "type": "ns",
+                        "rdata": { "nsdname": "ns1.example.example." }
+                    },
+                    {
+                        "@type": "dnsRecord",
                         "name": "ns1.example.example.",
-                        "type": "A",
+                        "type": "a",
                         "rdata": { "address": "192.0.2.1" }
                     }
                 ]
@@ -1172,7 +1399,7 @@ Example domain update request (read-write properties):
 ```json
 {
     "@type": "domainName",
-    "registrant": "sh8013",
+    "registrant": { "@type": "contact", "id": "sh8013" },
     "authInfo": {
         "@type": "authInfo",
         "method": "authinfo",
@@ -1199,7 +1426,7 @@ Example domain update response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "sh8013"
+    "registrant": { "@type": "contact", "id": "sh8013" }
 }
 ```
 
@@ -1256,6 +1483,7 @@ Example domain transfer request (pull transfer)
 
 ```json
 {
+    "@type": "transferProcess",
     "transferDir": "pull",
     "transferPeriod": {
         "@type": "period",
@@ -1306,7 +1534,9 @@ Transfer cancel, reject, and approve responses return the Transfer Process Objec
 Example domain restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+    "@type": "restoreProcess"
+}
 ```
 
 Example domain restore response (Restore Process Object, server requires a report):
@@ -1388,10 +1618,6 @@ Example domain restore report response (Restore Process Object):
 
 The Restore Query operation takes no request body (Parameters: None).
 
-```json
-{}
-```
-
 Example domain restore query response (Restore Process Object, object in `pendingRestore` state):
 
 ```json
@@ -1431,7 +1657,7 @@ Example contact create request:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1477,7 +1703,7 @@ Example contact create response:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": [
                     "123 Example Dr.",
                     "Suite 100"
@@ -1522,7 +1748,7 @@ Example contact read response:
             "name": "John Doe",
             "org": "Example Inc.",
             "addr": {
-                "@type": "postalAddress",
+                "@type": "postalData",
                 "street": ["123 Example Dr.", "Suite 100"],
                 "city": "Dulles",
                 "sp": "VA",
@@ -1552,6 +1778,7 @@ Example contact transfer request (pull transfer)
 
 ```json
 {
+    "@type": "transferProcess", 
     "transferDir": "pull"
 }
 ```
@@ -1607,14 +1834,20 @@ Example host create request:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             },
             {
                 "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "AAAA",
+                "type": "aaaa",
                 "rdata": { "address": "2001:db8::1" }
             }
         ]
@@ -1643,14 +1876,20 @@ Example host create response:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             },
             {
                 "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "AAAA",
+                "type": "aaaa",
                 "rdata": { "address": "2001:db8::1" }
             }
         ]
@@ -1681,8 +1920,14 @@ Example host read response:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "192.0.2.1" }
             }
         ]
@@ -1703,8 +1948,14 @@ Example host update request:
         "records": [
             {
                 "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
                 "name": "ns1.example.example.",
-                "type": "A",
+                "type": "a",
                 "rdata": { "address": "198.51.100.1" }
             }
         ]
@@ -1721,7 +1972,9 @@ The host delete operation takes the host name as the resource identifier. No req
 Example host restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+  "@type": "restoreProcess"
+}
 ```
 
 Example host restore request response (Restore Process Object, server requires a report):
