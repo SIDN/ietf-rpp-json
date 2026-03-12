@@ -371,14 +371,15 @@ def c(text, code):
     return f"{code}{text}{RESET}" if _col() else text
 
 
+_quiet = False
+_very_quiet = False
+
+
 def section_hdr(title: str):
     print()
     print(c("=" * 72, BOLD))
     print(c(f"  {title}", BOLD + CYAN))
     print(c("=" * 72, BOLD))
-
-
-_quiet = False
 
 
 def ok(msg: str):
@@ -387,11 +388,14 @@ def ok(msg: str):
 
 
 def loc(msg: str):
-    """Always-visible neutral location marker (item header). Never suppressed by -q."""
+    """Always-visible neutral location marker (item header). Never suppressed by -q or -vq."""
     print(c("  >>  ", CYAN) + " " + msg)
 
 
-def warn(msg: str): print(c(" WARN ", YELLOW) + " " + msg)
+def warn(msg: str):
+    if not _very_quiet:
+        print(c(" WARN ", YELLOW) + " " + msg)
+
 def err(msg: str):  print(c("  ERR ", RED)    + " " + msg)
 
 
@@ -698,6 +702,8 @@ if __name__ == "__main__":
                         help="Path to the markdown file (default: src/draft-wullink-rpp-json.md)")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Suppress OK and informational output; show only warnings and errors")
+    parser.add_argument("-vq", "--very-quiet", action="store_true",
+                        help="Suppress OK, info, and warnings; keep section headers, >> context lines, and errors")
     parser.add_argument("--no-deep-type-check", action="store_true",
                         help="Disable deep @type detection via allOf/anyOf/oneOf/$ref traversal "
                              "(by default the deep check is performed)")
@@ -705,6 +711,9 @@ if __name__ == "__main__":
 
     if args.quiet:
         _quiet = True
+    if args.very_quiet:
+        _quiet = True
+        _very_quiet = True
 
     md = Path(args.file) if args.file else Path(__file__).parent.parent / "src" / "draft-wullink-rpp-json.md"
 
