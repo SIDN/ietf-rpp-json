@@ -769,16 +769,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ### Transfer Process Object
 
-The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
-
-* `gainingClientId` is REQUIRED for push transfers and MUST NOT be provided for pull transfers.
-
-A> NOTE: this can be assured by a schema (see below).
-But, maybe we want to have a rule about limiting JSON Schema vocabulary and only using "flat" schemas - without any allOf/anyOf/oneOf, or any conditional constructs? It would limit a bit as what can be verified by the schema, but to the benefit of schemas possible to be better suited for code generation.
-
 Create request schema (create-only and read-write properties):
-
-Alternative 1 (with oneOf):
 
 ```json
 {
@@ -814,31 +805,6 @@ Alternative 1 (with oneOf):
             "@type", "transferDir"
           ]
         }
-      ]
-    }
-  }
-}
-```
-
-Alternative 2 (flat):
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.create",
-  "unevaluatedProperties": false,
-  "$defs": {
-    "transferProcess.create": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "transferProcess" },
-        "transferDir": {
-          "type": "string",
-          "enum": ["pull", "push"]
-        },
-        "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
-      },
-      "required": [
-        "@type", "transferDir"
       ]
     }
   }
