@@ -253,20 +253,21 @@ def make_validator(schema_fragment: dict, combined_schema: dict) -> Draft202012V
     return Draft202012Validator(merged)
 
 
-def schema_has_type_property(defn: dict, all_defs: dict, _seen: set = None) -> bool:
+def schema_find_type_const(defn: dict, all_defs: dict, _seen: Optional[set] = None) -> Optional[str]:
     """
-    Return True if `defn` defines or constrains an "@type" property, considering:
+    Return the '@type' const value if `defn` defines or constrains an "@type" property,
+    considering:
     - Direct "properties": {"@type": ...} at the top level of defn
     - allOf: at least one branch defines/constrains "@type" (or is a $ref that does)
     - anyOf / oneOf: all branches define/constrain "@type" (or are $ref that do)
     - $ref: follows the reference into all_defs (cycle-safe)
 
-    This is used when `--deep-type-check` is active.
+    Returns None if no @type const is found. This is used when `--deep-type-check` is active.
     """
     if _seen is None:
         _seen = set()
     if not isinstance(defn, dict):
-        return False
+        return None
 
     # Follow $ref
     ref = defn.get("$ref")
@@ -275,31 +276,36 @@ def schema_has_type_property(defn: dict, all_defs: dict, _seen: set = None) -> b
         if m:
             name = m.group(1)
             if name in _seen:
-                return False  # cycle guard
+                return None  # cycle guard
             target = all_defs.get(name)
             if target:
-                return schema_has_type_property(target, all_defs, _seen | {name})
-        return False
+                return schema_find_type_const(target, all_defs, _seen | {name})
+        return None
 
     # Direct properties
     props = defn.get("properties", {})
     if isinstance(props, dict) and "@type" in props:
-        return True
+        tp = props["@type"]
+        return tp.get("const") if isinstance(tp, dict) else None
 
-    # allOf: at least one branch must have @type
+    # allOf: return const from the first branch that has one
     all_of = defn.get("allOf")
     if isinstance(all_of, list) and all_of:
-        if any(schema_has_type_property(b, all_defs, _seen) for b in all_of):
-            return True
+        for branch in all_of:
+            val = schema_find_type_const(branch, all_defs, _seen)
+            if val is not None:
+                return val
 
-    # anyOf / oneOf: all branches must have @type
+    # anyOf / oneOf: return const only if all branches agree on the same value
     for keyword in ("anyOf", "oneOf"):
         branches = defn.get(keyword)
         if isinstance(branches, list) and branches:
-            if all(schema_has_type_property(b, all_defs, _seen) for b in branches):
-                return True
+            values = [schema_find_type_const(b, all_defs, _seen) for b in branches]
+            unique = {v for v in values if v is not None}
+            if len(unique) == 1:
+                return unique.pop()
 
-    return False
+    return None
 
 
 def collect_nested_types(obj) -> set:
@@ -483,8 +489,10 @@ def run_checks(md_path: Path, deep_type_check: bool = True) -> int:
         else:  # "required"
             if not has_type:
                 # Deep check: look inside allOf/anyOf/oneOf and follow $refs
-                if deep_type_check and schema_has_type_property(
-                        def_body, combined.get("$defs", {})):
+                deep_type_const = schema_find_type_const(
+                        def_body, combined.get("$defs", {})) if deep_type_check else None
+                if deep_type_const is not None:
+                    entry.type_const = deep_type_const
                     ok(f"  -> '{entry.def_name}': '@type' found via allOf/anyOf/oneOf/$ref (deep check)")
                 else:
                     err(f"  -> '{entry.def_name}': '@type' is required in '{entry.subchapter}' schemas but is missing"
