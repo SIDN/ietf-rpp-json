@@ -219,10 +219,7 @@ A Aggregation represents a relationship between two independent objects, where o
                 "hostName": "ns1.name.example",
                 "provMetadata": {
                     "@type": "provMetadata",
-                "provMetadata": {
-                    "@type": "provMetadata",
                     "repositoryId": "NS1EXAMPLE-REP",
-                    "spClientId": "ClientX"
                     "spClientId": "ClientX"
                 },
                 "status": [ { "@type": "status", "label": "ok" } ],
@@ -276,28 +273,16 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="dictionary-aggregation"><name>Dictionary Aggregation</name>
 <t>A <tt>DictionaryAggregation[Type]</tt> is a relationship between two independent objects where each association carries a unique string label that serves as a dictionary key.</t>
 <t>Rule 10: <tt>DictionaryAggregation[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the referenced object, the object MUST include at least the primary identifier field of the referenced object type. Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.</t>
-<t>Example: domain contacts keyed by unique role (DictionaryAggregation[Postal Info Object]):</t>
+<t>Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Object]):</t>
 
-<sourcecode type="json"><![CDATA["postalInfo": {
-    "int": {
-        "@type": "postalInfo",
-        "type": "PERSON",
-        "name": "John Doe",
-        "org": "Example Inc.",
-        "addr": {
-            "@type": "postalData",
-            "street": [
-                "123 Example Dr.",
-                "Suite 100"
-            ],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
-        }
+<sourcecode type="json"><![CDATA["contacts": {
+    "admin": {
+        "@type": "contact",
+        "id": "ABC-8013"
     },
-    "loc": {
-      ...
+    "tech": {
+        "@type": "contact",
+        "id": "ABC-8014"  
     }
 }
 ]]></sourcecode>
@@ -312,31 +297,31 @@ A Aggregation represents a relationship between two independent objects, where o
     {
         "label": "admin",
         "object": {
-          "@type": "contact",
-          "id": "jd1234",
-          "postalInfo": {
-              "int": {
-                  "@type": "postalInfo",
-                  "type": "PERSON",
-                  "name": "John Doe",
-                  "org": "Example Inc.",
-                  "addr": {
-                      "@type": "postalData",
-                      "street": [
-                          "123 Example Dr.",
-                          "Suite 100"
-                      ],
-                      "city": "Dulles",
-                      "sp": "VA",
-                      "pc": "20166-6503",
-                      "cc": "US"
-                  }
-              }
-          },
-          "voice": ["+1.7035555555"],
-          "fax": ["+1.7035555556"],
-          "email": ["jdoe@example.example"]
-      }
+            "@type": "contact",
+            "id": "jd1234",
+            "postalInfo": {
+                "int": {
+                    "@type": "postalInfo",
+                    "type": "PERSON",
+                    "name": "John Doe",
+                    "org": "Example Inc.",
+                    "addr": {
+                        "@type": "postalData",
+                        "street": [
+                            "123 Example Dr.",
+                            "Suite 100"
+                        ],
+                        "city": "Dulles",
+                        "sp": "VA",
+                        "pc": "20166-6503",
+                        "cc": "US"
+                    }
+                }
+            },
+            "voice": ["+1.7035555555"],
+            "fax": ["+1.7035555556"],
+            "email": ["jdoe@example.example"]
+        }
     }
 ]
 ]]></sourcecode>
@@ -360,6 +345,9 @@ A Aggregation represents a relationship between two independent objects, where o
             "pc": "20166-6503",
             "cc": "US"
         }
+    },
+    "loc": {
+        ...
     }
 }
 ]]></sourcecode>
@@ -389,8 +377,8 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example (Domain Name Data Object):</t>
 
 <sourcecode type="json"><![CDATA[{
-  "@type": "domainName",
-  "name": "example.example"
+    "@type": "domainName",
+    "name": "example.example"
 }
 ]]></sourcecode>
 <t>Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <tt>authInfo</tt> object in the JSON request body. Instead, the client MUST convey the authorization information using the <tt>RPP-Authorization</tt> HTTP request header as defined in <xref target="I-D.wullink-rpp-core"></xref>. Servers MUST reject any request that includes an <tt>authInfo</tt> object in the JSON body with an appropriate error response.</t>
@@ -749,17 +737,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="process-object-schemas"><name>Process Object Schemas</name>
 
 <section anchor="transfer-process-object"><name>Transfer Process Object</name>
-<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
-
-<ul spacing="compact">
-<li><tt>gainingClientId</tt> is REQUIRED for push transfers and MUST NOT be provided for pull transfers.</li>
-</ul>
-
-<aside><t>NOTE: this can be assured by a schema (see below).
-But, maybe we want to have a rule about limiting JSON Schema vocabulary and only using &quot;flat&quot; schemas - without any allOf/anyOf/oneOf, or any conditional constructs? It would limit a bit as what can be verified by the schema, but to the benefit of schemas possible to be better suited for code generation.</t>
-</aside>
 <t>Create request schema (create-only and read-write properties):</t>
-<t>Alternative 1 (with oneOf):</t>
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -794,30 +772,6 @@ But, maybe we want to have a rule about limiting JSON Schema vocabulary and only
             "@type", "transferDir"
           ]
         }
-      ]
-    }
-  }
-}
-]]></sourcecode>
-<t>Alternative 2 (flat):</t>
-
-<sourcecode type="json"><![CDATA[{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.create",
-  "unevaluatedProperties": false,
-  "$defs": {
-    "transferProcess.create": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "transferProcess" },
-        "transferDir": {
-          "type": "string",
-          "enum": ["pull", "push"]
-        },
-        "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
-      },
-      "required": [
-        "@type", "transferDir"
       ]
     }
   }
@@ -1736,20 +1690,14 @@ But, maybe we want to have a rule about limiting JSON Schema vocabulary and only
     "transferDir": "pull"
 }
 ]]></sourcecode>
-<t>Example contact transfer response (Transfer Process Object):
-Example contact transfer response (Transfer Process Object):</t>
+<t>Example contact transfer response (Transfer Process Object):</t>
 
 <sourcecode type="json"><![CDATA[{
     "@type": "transferProcess",
     "trStatus": "pending",
     "transferDir": "pull",
     "reqClientId": "ClientX",
-    "@type": "transferProcess",
-    "trStatus": "pending",
-    "transferDir": "pull",
-    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actClientId": "ClientY",
     "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
