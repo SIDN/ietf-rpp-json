@@ -248,6 +248,7 @@ def make_validator(schema_fragment: dict, combined_schema: dict) -> Draft202012V
     # The schema_fragment's own $defs take priority (override)
     merged_defs.update(schema_fragment.get("$defs", {}))
     merged["$defs"] = merged_defs
+    merged["unevaluatedProperties"] = False
     merged["$schema"] = "https://json-schema.org/draft/2020-12/schema"
 
     return Draft202012Validator(merged)

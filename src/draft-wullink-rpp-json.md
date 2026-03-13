@@ -397,7 +397,7 @@ Example (Transfer Status enum):
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
 
-Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
+Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with  `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. 
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -871,6 +871,28 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
+Read response for Domain Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read.domain",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "transferProcess.read.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.read" },
+        {
+          "properties": {
+            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
 ### Restore Process Object
 
 The Restore Process Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as a response for all restore operations.
@@ -1325,62 +1347,21 @@ Example domain read response:
     "nameservers": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ],
-            "dns": {
-                "@type": "dnsData",
-                "records": [
-                    {
-                        "@type": "dnsRecord",
-                        "name": "@",
-                        "type": "ns",
-                        "rdata": { "nsdname": "ns1.example.example." }
-                    },
-                    {
-                        "@type": "dnsRecord",
-                        "name": "ns1.example.example.",
-                        "type": "a",
-                        "rdata": { "address": "192.0.2.1" }
-                    }
-                ]
-            }
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLENET-REP",
-                "spClientId": "ClientZ"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "subordinateHosts": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns2.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS2EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
