@@ -140,7 +140,7 @@ Rule 3: A data element with cardinality `0+` (zero or more) MUST be represented 
   "properties": {
     "status": {
       "type": "array",
-      "items": { "$ref": "#/$defs/status" }
+      "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false }
     }
   }
 }
@@ -154,7 +154,7 @@ Rule 4: A data element with cardinality `1+` (one or more) MUST be represented a
   "properties": {
     "postalInfo": {
       "type": "array",
-      "items": { "$ref": "#/$defs/postalInfo" },
+      "items": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false},
       "minItems": 1
     }
   },
@@ -511,10 +511,10 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
       "properties": {
         "@type":       { "type": "string", "const": "provMetadata", "readOnly": true },
         "repositoryId": { "type": "string", "readOnly": true },
-        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
+        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
         "crDate":      { "type": "string", "format": "date-time", "readOnly": true },
-        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
         "upDate":      { "type": "string", "format": "date-time", "readOnly": true },
         "trDate":      { "type": "string", "format": "date-time", "readOnly": true }
       },
@@ -636,9 +636,9 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "@type": { "type": "string", "const": "dnsData" },
         "records": {
           "type": "array",
-          "items": { "$ref": "#/$defs/dnsRecord" }
+          "items": { "$ref": "#/$defs/dnsRecord", "unevaluatedProperties": false }
         },
-        "controls": { "$ref": "#/$defs/dnsControls" }
+        "controls": { "$ref": "#/$defs/dnsControls", "unevaluatedProperties": false }
       },
       "required": ["@type"]
     }
@@ -719,7 +719,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         },
         "name": { "type": "string" },
         "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalData" }
+        "addr": { "$ref": "#/$defs/postalData", "unevaluatedProperties": false }
       },
       "required": ["@type"]
     }
@@ -787,7 +787,7 @@ Create request schema (create-only and read-write properties):
               "type": "string",
               "const": "push"
             },
-            "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
+            "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "unevaluatedProperties": false }
           },
           "required": [
             "@type", "transferDir", "gainingClientId"
@@ -824,7 +824,7 @@ Create request for Domain Object schema (create-only and read-write properties):
         { "$ref": "#/$defs/transferProcess.create" },
         {
           "properties": {
-            "transferPeriod": { "$ref": "#/$defs/period" }
+            "transferPeriod": { "$ref": "#/$defs/period", "unevaluatedProperties": false }
           }
         }
       ]
@@ -856,10 +856,10 @@ Read response schema (read-write and read-only properties):
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
+        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false},
         "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
-        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
         "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
@@ -893,7 +893,7 @@ Create request schema (create-only and read-write properties):
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "restoreProcess" },
-        "restoreReport": { "$ref": "#/$defs/restoreReport" }
+        "restoreReport": { "$ref": "#/$defs/restoreReport", "unevaluatedProperties": false }
       },
       "required": ["@type"]
     }
@@ -950,25 +950,25 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type": { "type": "string", "const": "domainName" },
         "name": { "type": "string", "writeOnly": true },
-        "registrant": { "$ref": "#/$defs/contactObject.reference" },
+        "registrant": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contactObject.reference" }
+              "object": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference" }
+          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false }
         },
-        "dns":    { "$ref": "#/$defs/dnsData" },
-        "authInfo": { "$ref": "#/$defs/authInfo" },
-        "period": { "$ref": "#/$defs/period" }
+        "dns":    { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false },
+        "authInfo": { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
+        "period": { "$ref": "#/$defs/period", "unevaluatedProperties": false }
       },
       "required": ["@type", "name"]
     }
@@ -989,36 +989,36 @@ Read response schema (read-write and read-only properties):
       "properties": {
         "@type":       { "type": "string", "const": "domainName", "readOnly": true },
         "name":        { "type": "string", "readOnly": true },
-        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "provMetadata": { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status" },
+          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
           "readOnly": true
         },
-        "registrant":  { "$ref": "#/$defs/contactObject.reference" },
+        "registrant":  { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contactObject.reference" }
+              "object": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference" }
+          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false }
         },
-        "dns":    { "$ref": "#/$defs/dnsData" },
+        "dns":    { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false },
         "subordinateHosts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference" },
+          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false },
           "readOnly": true
         },
         "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-        "authInfo":  { "$ref": "#/$defs/authInfo" }
+        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false }
       },
       "required": ["@type", "name", "provMetadata"]
     }
@@ -1067,23 +1067,23 @@ Create request schema (create-only and read-write properties):
         "id": { "type": "string", "writeOnly": true },
         "postalInfo": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "additionalProperties": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false },
           "minProperties": 1,
           "maxProperties": 2
         },
         "voice": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber" }
+          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
         },
         "fax": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber" }
+          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
         },
         "email": {
           "type": "array",
           "items": { "type": "string", "format": "email" }
         },
-        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
         "disclose":  { "type": "object" }
       },
       "required": ["@type", "id", "postalInfo"]
@@ -1105,31 +1105,31 @@ Read response schema (read-write and read-only properties):
       "properties": {
         "@type": { "type": "string", "const": "contact", "readOnly": true },
         "id": { "type": "string", "readOnly": true },
-        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "provMetadata": { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status" },
+          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
           "readOnly": true
         },
         "postalInfo": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
+          "additionalProperties": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false },
           "minProperties": 1,
           "maxProperties": 2
         },
         "voice": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber" }
+          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
         },
         "fax": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber" }
+          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
         },
         "email": {
           "type": "array",
           "items": { "type": "string", "format": "email" }
         },
-        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
         "disclose":  { "type": "object" }
       },
       "required": ["@type", "id", "provMetadata", "postalInfo"]
@@ -1180,7 +1180,7 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type":    { "type": "string", "const": "host" },
         "hostName": { "type": "string", "format": "hostname" },
-        "dns":      { "$ref": "#/$defs/dnsData" }
+        "dns":      { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false }
       },
       "required": ["@type", "hostName"]
     }
@@ -1201,13 +1201,13 @@ Read response schema (read-write and read-only properties):
       "properties": {
         "@type":         { "type": "string", "const": "host", "readOnly": true },
         "hostName":      { "type": "string", "format": "hostname" },
-        "provMetadata":  { "$ref": "#/$defs/provMetadata" },
+        "provMetadata":  { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status" },
+          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
           "readOnly": true
         },
-        "dns":           { "$ref": "#/$defs/dnsData" }
+        "dns":           { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false }
       },
       "required": ["@type", "hostName", "provMetadata"]
     }
