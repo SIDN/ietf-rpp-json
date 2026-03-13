@@ -2065,6 +2065,10 @@ TODO
 
 # Change History
 
+## Version 01 to 02
+
+- Adjust rule 19 and all schemas to match it.
+
 ## Version 00 to 01
 
 - Updated all examples and schemas to be based on RPP Data Object and no longer on EPP XML schemas. (Issue #15)
