@@ -140,7 +140,7 @@ Rule 3: A data element with cardinality `0+` (zero or more) MUST be represented 
   "properties": {
     "status": {
       "type": "array",
-      "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false }
+      "items": { "$ref": "#/$defs/status" }
     }
   }
 }
@@ -154,7 +154,7 @@ Rule 4: A data element with cardinality `1+` (one or more) MUST be represented a
   "properties": {
     "postalInfo": {
       "type": "array",
-      "items": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false},
+      "items": { "$ref": "#/$defs/postalInfo"},
       "minItems": 1
     }
   },
@@ -320,6 +320,7 @@ Example: contact postal info (LabelledComposition[Contact Object]):
                     "type": "PERSON",
                     "name": "John Doe",
                     "org": "Example Inc.",
+                    "blah": "ffo",
                     "addr": {
                         "@type": "postalData",
                         "street": [
@@ -397,7 +398,9 @@ Example (Transfer Status enum):
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
 
-Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with  `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. 
+Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use `"additionalProperties": true` to allow for free key definition.
+
+<!-- Implementation of this is a nightmare, because one as to take care to put unevaluatedProperties: false on top level of allOf/anyOf branches, but not in the branches themselves. See inject_unevaluated_properties() function in the verification script. -->
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -511,10 +514,10 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
       "properties": {
         "@type":       { "type": "string", "const": "provMetadata", "readOnly": true },
         "repositoryId": { "type": "string", "readOnly": true },
-        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
-        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
+        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "crDate":      { "type": "string", "format": "date-time", "readOnly": true },
-        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
+        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "upDate":      { "type": "string", "format": "date-time", "readOnly": true },
         "trDate":      { "type": "string", "format": "date-time", "readOnly": true }
       },
@@ -579,7 +582,7 @@ All `rdata` property names MUST be written in camelCase and all values MUST use 
         "name":  { "type": "string" },
         "class": { "type": "string" },
         "type":  { "type": "string" },
-        "rdata": { "type": "object" }
+        "rdata": { "type": "object", "unevaluatedProperties": true }
       },
       "required": ["@type", "name", "type", "rdata"]
     }
@@ -636,9 +639,9 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "@type": { "type": "string", "const": "dnsData" },
         "records": {
           "type": "array",
-          "items": { "$ref": "#/$defs/dnsRecord", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/dnsRecord" }
         },
-        "controls": { "$ref": "#/$defs/dnsControls", "unevaluatedProperties": false }
+        "controls": { "$ref": "#/$defs/dnsControls" }
       },
       "required": ["@type"]
     }
@@ -719,7 +722,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         },
         "name": { "type": "string" },
         "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalData", "unevaluatedProperties": false }
+        "addr": { "$ref": "#/$defs/postalData" }
       },
       "required": ["@type"]
     }
@@ -775,7 +778,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.create": {
       "type": "object",
@@ -787,7 +789,7 @@ Create request schema (create-only and read-write properties):
               "type": "string",
               "const": "push"
             },
-            "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "unevaluatedProperties": false }
+            "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
           },
           "required": [
             "@type", "transferDir", "gainingClientId"
@@ -817,14 +819,13 @@ Create request for Domain Object schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create.domain",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.create.domain": {
       "allOf": [
         { "$ref": "#/$defs/transferProcess.create" },
         {
           "properties": {
-            "transferPeriod": { "$ref": "#/$defs/period", "unevaluatedProperties": false }
+            "transferPeriod": { "$ref": "#/$defs/period" }
           }
         }
       ]
@@ -839,7 +840,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.read": {
       "type": "object",
@@ -856,10 +856,10 @@ Read response schema (read-write and read-only properties):
           "enum": ["pull", "push"],
           "readOnly": true
         },
-        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
-        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false},
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true},
         "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
-        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true, "unevaluatedProperties": false },
+        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
       },
       "required": [
@@ -877,7 +877,6 @@ Read response for Domain Object schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.read.domain",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.read.domain": {
       "allOf": [
@@ -909,13 +908,12 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "restoreProcess.create": {
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "restoreProcess" },
-        "restoreReport": { "$ref": "#/$defs/restoreReport", "unevaluatedProperties": false }
+        "restoreReport": { "$ref": "#/$defs/restoreReport" }
       },
       "required": ["@type"]
     }
@@ -929,7 +927,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "restoreProcess.read": {
       "type": "object",
@@ -965,32 +962,31 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.create": {
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "domainName" },
         "name": { "type": "string", "writeOnly": true },
-        "registrant": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false },
+        "registrant": { "$ref": "#/$defs/contactObject.reference" },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false }
+              "object": { "$ref": "#/$defs/contactObject.reference" }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/hostObject.reference" }
         },
-        "dns":    { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false },
-        "authInfo": { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
-        "period": { "$ref": "#/$defs/period", "unevaluatedProperties": false }
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "period": { "$ref": "#/$defs/period" }
       },
       "required": ["@type", "name"]
     }
@@ -1004,43 +1000,42 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.read": {
       "type": "object",
       "properties": {
         "@type":       { "type": "string", "const": "domainName", "readOnly": true },
         "name":        { "type": "string", "readOnly": true },
-        "provMetadata": { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
+          "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "registrant":  { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false },
+        "registrant":  { "$ref": "#/$defs/contactObject.reference" },
         "contacts": {
           "type": "array",
           "items": { 
             "type": "object",
             "properties": {
               "label": { "type": "string" },
-              "object": { "$ref": "#/$defs/contactObject.reference", "unevaluatedProperties": false }
+              "object": { "$ref": "#/$defs/contactObject.reference" }
             },
             "required": ["label", "object"]
            }
         },
         "nameservers": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/hostObject.reference" }
         },
-        "dns":    { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false },
+        "dns":    { "$ref": "#/$defs/dnsData" },
         "subordinateHosts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/hostObject.reference", "unevaluatedProperties": false },
+          "items": { "$ref": "#/$defs/hostObject.reference" },
           "readOnly": true
         },
         "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false }
+        "authInfo":  { "$ref": "#/$defs/authInfo" }
       },
       "required": ["@type", "name", "provMetadata"]
     }
@@ -1054,7 +1049,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.reference": {
       "type": "object",
@@ -1080,7 +1074,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.create": {
       "type": "object",
@@ -1089,23 +1082,23 @@ Create request schema (create-only and read-write properties):
         "id": { "type": "string", "writeOnly": true },
         "postalInfo": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false },
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
           "minProperties": 1,
           "maxProperties": 2
         },
         "voice": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/phoneNumber" }
         },
         "fax": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/phoneNumber" }
         },
         "email": {
           "type": "array",
           "items": { "type": "string", "format": "email" }
         },
-        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
         "disclose":  { "type": "object" }
       },
       "required": ["@type", "id", "postalInfo"]
@@ -1120,38 +1113,37 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.read": {
       "type": "object",
       "properties": {
         "@type": { "type": "string", "const": "contact", "readOnly": true },
         "id": { "type": "string", "readOnly": true },
-        "provMetadata": { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
+          "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
         "postalInfo": {
           "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/postalInfo", "unevaluatedProperties": false },
+          "additionalProperties": { "$ref": "#/$defs/postalInfo" },
           "minProperties": 1,
           "maxProperties": 2
         },
         "voice": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/phoneNumber" }
         },
         "fax": {
           "type": "array",
-          "items": { "$ref": "#/$defs/phoneNumber", "unevaluatedProperties": false }
+          "items": { "$ref": "#/$defs/phoneNumber" }
         },
         "email": {
           "type": "array",
           "items": { "type": "string", "format": "email" }
         },
-        "authInfo":  { "$ref": "#/$defs/authInfo", "unevaluatedProperties": false },
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
         "disclose":  { "type": "object" }
       },
       "required": ["@type", "id", "provMetadata", "postalInfo"]
@@ -1166,7 +1158,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.reference": {
       "type": "object",
@@ -1195,14 +1186,13 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.create": {
       "type": "object",
       "properties": {
         "@type":    { "type": "string", "const": "host" },
         "hostName": { "type": "string", "format": "hostname" },
-        "dns":      { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false }
+        "dns":      { "$ref": "#/$defs/dnsData" }
       },
       "required": ["@type", "hostName"]
     }
@@ -1216,20 +1206,19 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.read": {
       "type": "object",
       "properties": {
         "@type":         { "type": "string", "const": "host", "readOnly": true },
         "hostName":      { "type": "string", "format": "hostname" },
-        "provMetadata":  { "$ref": "#/$defs/provMetadata", "unevaluatedProperties": false },
+        "provMetadata":  { "$ref": "#/$defs/provMetadata" },
         "status": {
           "type": "array",
-          "items": { "$ref": "#/$defs/status", "unevaluatedProperties": false },
+          "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "dns":           { "$ref": "#/$defs/dnsData", "unevaluatedProperties": false }
+        "dns":           { "$ref": "#/$defs/dnsData" }
       },
       "required": ["@type", "hostName", "provMetadata"]
     }
@@ -1243,7 +1232,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.reference": {
       "type": "object",

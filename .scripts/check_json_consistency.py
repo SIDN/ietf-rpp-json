@@ -236,10 +236,77 @@ def build_combined_schema(schema_entries: list) -> dict:
     return combined
 
 
+def inject_unevaluated_properties(schema: dict, in_defs: bool = False) -> dict:
+    """
+    Recursively inject `"unevaluatedProperties": false` into schema nodes that
+    describe objects, following Rule 19 semantics for JSON Schema 2020-12.
+
+    Injection rules:
+    - `unevaluatedProperties: false` is added to the schema node itself when:
+        * the node has `properties`, `patternProperties`, `type: object`,
+          `$ref`, `allOf`, `anyOf`, or `oneOf` — i.e. it is an object schema
+          or a composition that resolves to one.
+        * the node does NOT already have `additionalProperties` or
+          `unevaluatedProperties` set.
+    - `$defs` entries are NOT injected directly — injection happens at the
+      use-site (the node that carries the `$ref`), not inside the definition.
+    - Sub-schemas inside `properties` and `patternProperties` ARE recursed into
+      so that nested object schemas also get the injection at their own level.
+    - Branches inside `allOf`/`anyOf`/`oneOf`/`not`/`if`/`then`/`else` are
+      recursed into for their nested `properties`, but the injection keyword
+      belongs on the *parent* node (the one with the combining keyword), not
+      inside the branches.
+
+    Boolean schemas (True/False) are returned unchanged.
+    """
+    if not isinstance(schema, dict):
+        return schema
+
+    result = {}
+    for key, value in schema.items():
+        if key in ("allOf", "anyOf", "oneOf", "prefixItems"):
+            # Recurse into each branch for deeper nesting, but do NOT inject
+            # unevaluatedProperties inside branches — it lives on this node.
+            result[key] = [inject_unevaluated_properties(s, in_defs=True) for s in value] if isinstance(value, list) else value
+        elif key in ("not", "if", "then", "else", "contains"):
+            result[key] = inject_unevaluated_properties(value, in_defs=True) if isinstance(value, dict) else value
+        elif key in ("properties", "patternProperties", "dependentSchemas"):
+            # Each property schema is a use-site: inject there as needed.
+            result[key] = {k: inject_unevaluated_properties(v, in_defs=False) for k, v in value.items()} if isinstance(value, dict) else value
+        elif key == "$defs":
+            # Definitions: recurse but treat them like branches (no direct injection).
+            result[key] = {k: inject_unevaluated_properties(v, in_defs=True) for k, v in value.items()} if isinstance(value, dict) else value
+        elif key in ("items", "additionalProperties", "unevaluatedItems"):
+            # Each of these is a use-site schema: recurse with injection enabled.
+            result[key] = inject_unevaluated_properties(value, in_defs=False) if isinstance(value, dict) else value
+        else:
+            result[key] = value
+
+    if not in_defs:
+        # Determine whether this node acts as an object schema (directly or via composition).
+        is_object_schema = (
+            result.get("type") == "object"
+            or "properties" in result
+            or "patternProperties" in result
+            or "$ref" in result
+            or "allOf" in result
+            or "anyOf" in result
+            or "oneOf" in result
+        )
+        already_constrained = "additionalProperties" in result or "unevaluatedProperties" in result
+        if is_object_schema and not already_constrained:
+            result["unevaluatedProperties"] = False
+
+    return result
+
+
 def make_validator(schema_fragment: dict, combined_schema: dict) -> Draft202012Validator:
     """
     Build a Draft202012Validator for `schema_fragment` with access to all
     $defs from `combined_schema` for resolving $ref pointers.
+
+    Per Rule 19, every object schema at every level is enriched with
+    `"unevaluatedProperties": false` before validation.
     """
     # Embed the combined $defs into the schema fragment so all cross-refs resolve.
     # We must not mutate the originals, so merge into a fresh dict.
@@ -248,7 +315,9 @@ def make_validator(schema_fragment: dict, combined_schema: dict) -> Draft202012V
     # The schema_fragment's own $defs take priority (override)
     merged_defs.update(schema_fragment.get("$defs", {}))
     merged["$defs"] = merged_defs
-    merged["unevaluatedProperties"] = False
+
+    # Recursively inject unevaluatedProperties: false at every object schema level.
+    merged = inject_unevaluated_properties(merged)
     merged["$schema"] = "https://json-schema.org/draft/2020-12/schema"
 
     return Draft202012Validator(merged)
