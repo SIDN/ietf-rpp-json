@@ -154,7 +154,7 @@ Rule 4: A data element with cardinality `1+` (one or more) MUST be represented a
   "properties": {
     "postalInfo": {
       "type": "array",
-      "items": { "$ref": "#/$defs/postalInfo" },
+      "items": { "$ref": "#/$defs/postalInfo"},
       "minItems": 1
     }
   },
@@ -320,6 +320,7 @@ Example: contact postal info (LabelledComposition[Contact Object]):
                     "type": "PERSON",
                     "name": "John Doe",
                     "org": "Example Inc.",
+                    "blah": "ffo",
                     "addr": {
                         "@type": "postalData",
                         "street": [
@@ -397,7 +398,9 @@ Example (Transfer Status enum):
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
 
-Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
+Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use `"additionalProperties": true` to allow for free key definition.
+
+<!-- Implementation of this is a nightmare, because one as to take care to put unevaluatedProperties: false on top level of allOf/anyOf branches, but not in the branches themselves. See inject_unevaluated_properties() function in the verification script. -->
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -579,7 +582,7 @@ All `rdata` property names MUST be written in camelCase and all values MUST use 
         "name":  { "type": "string" },
         "class": { "type": "string" },
         "type":  { "type": "string" },
-        "rdata": { "type": "object" }
+        "rdata": { "type": "object", "unevaluatedProperties": true }
       },
       "required": ["@type", "name", "type", "rdata"]
     }
@@ -775,7 +778,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.create": {
       "type": "object",
@@ -817,7 +819,6 @@ Create request for Domain Object schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create.domain",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.create.domain": {
       "allOf": [
@@ -839,7 +840,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "transferProcess.read": {
       "type": "object",
@@ -857,7 +857,7 @@ Read response schema (read-write and read-only properties):
           "readOnly": true
         },
         "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true},
         "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
         "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
         "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
@@ -865,6 +865,27 @@ Read response schema (read-write and read-only properties):
       "required": [
         "@type", "transferDir", "trStatus", "reqClientId",
         "requestDate", "actClientId", "actionDate"
+      ]
+    }
+  }
+}
+```
+
+Read response for Domain Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read.domain",
+  "$defs": {
+    "transferProcess.read.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.read" },
+        {
+          "properties": {
+            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+          }
+        }
       ]
     }
   }
@@ -887,7 +908,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "restoreProcess.create": {
       "type": "object",
@@ -907,7 +927,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "restoreProcess.read": {
       "type": "object",
@@ -943,7 +962,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.create": {
       "type": "object",
@@ -982,7 +1000,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.read": {
       "type": "object",
@@ -1032,7 +1049,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/domainObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "domainObject.reference": {
       "type": "object",
@@ -1058,7 +1074,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.create": {
       "type": "object",
@@ -1098,7 +1113,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.read": {
       "type": "object",
@@ -1144,7 +1158,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/contactObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "contactObject.reference": {
       "type": "object",
@@ -1173,7 +1186,6 @@ Create request schema (create-only and read-write properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.create",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.create": {
       "type": "object",
@@ -1194,7 +1206,6 @@ Read response schema (read-write and read-only properties):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.read",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.read": {
       "type": "object",
@@ -1221,7 +1232,6 @@ Reference schema (identifier only):
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/hostObject.reference",
-  "unevaluatedProperties": false,
   "$defs": {
     "hostObject.reference": {
       "type": "object",
@@ -1325,62 +1335,21 @@ Example domain read response:
     "nameservers": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ],
-            "dns": {
-                "@type": "dnsData",
-                "records": [
-                    {
-                        "@type": "dnsRecord",
-                        "name": "@",
-                        "type": "ns",
-                        "rdata": { "nsdname": "ns1.example.example." }
-                    },
-                    {
-                        "@type": "dnsRecord",
-                        "name": "ns1.example.example.",
-                        "type": "a",
-                        "rdata": { "address": "192.0.2.1" }
-                    }
-                ]
-            }
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLENET-REP",
-                "spClientId": "ClientZ"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "subordinateHosts": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns2.example.example",
-            "provMetadata": {
-                "@type": "provMetadata",
-                "repositoryId": "NS2EXAMPLE-REP",
-                "spClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
@@ -2095,6 +2064,10 @@ TODO
 TODO
 
 # Change History
+
+## Version 01 to 02
+
+- Adjust rule 19 and all schemas to match it.
 
 ## Version 00 to 01
 
