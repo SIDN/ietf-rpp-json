@@ -865,31 +865,7 @@ This document uses JSContact [@!RFC9553] Card version 2.0 for the JSON represent
 
 #### JSContact Profile for RPP
 
-Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, aligned with the approach described in [@I-D.ietf-regext-rdap-jscontact] for RDAP.
-
-The following JSContact Card properties are used in the RPP profile:
-
-- **`@type`**: MUST be `"Card"`.
-- **`version`**: MUST be `"2.0"`.
-- **`kind`**: MUST be `"individual"` for an individual or `"org"` for an organisation.
-- **`language`**: SHOULD be set when `localizations` are specified.
-- **`name`**: SHOULD include the `full` property. In EPP Compatibility Profile, `name.full` MUST be provided. The `name.components` array MAY be included; each `NameComponent` MUST contain only `kind` and `value`, with `kind` restricted to `"given"` or `"surname"`.
-- **`organizations`**: Each map entry MUST contain only the `name` property.
-- **`addresses`**: Each `Address` entry MUST include at least one of `full`, `components`, or `countryCode`. Each `AddressComponent` MUST contain only `kind` and `value`, with `kind` restricted to `"name"` (street), `"locality"` (city), `"region"` (state/province), `"postcode"`, or `"country"` (country name). `countryCode` MUST be a valid ISO 3166-1 alpha-2 code.
-- **`phones`**: Each `Phone` entry MUST include `number`. The `features` property MAY be included; allowed `PhoneFeature` values are `"voice"` and `"fax"`. When `features` is absent, the phone number is treated as a voice number.
-- **`emails`**: Each `EmailAddress` entry MUST contain only the `address` property.
-- **`links`**: Each `Link` entry MUST include `uri`. The `kind` property MAY be included and MUST be `"contact"` when provided.
-- **`localizations`**: MAY be provided. All localizations MUST be fully expanded (nested PatchObject-style keys are not allowed).
-
-Map keys MUST conform to the JSContact `Id` type (Section 1.4.1 of [@!RFC9553]) and SHOULD remain stable. For EPP Compatibility Profile conformance, the following map keys MUST be used:
-
-- `"org"` in the `organizations` map for the primary organisation.
-- `"addr"` in the `addresses` map for the primary postal address.
-- `"email"` in the `emails` map for the primary email address.
-- `"voice"` in the `phones` map for the primary voice phone number.
-- `"fax"` in the `phones` map for the fax phone number.
-
-When both an internationalised (`int`) and a localised (`loc`) version of postal address data exist (EPP Compatibility Profile), the internationalised version MUST be represented as the main Card properties, and the localised version MUST be placed in the `localizations` map keyed by an appropriate BCP 47 language tag.
+Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, see [TODO: ref to RPP JSContact profile here: https://github.com/SIDN/ietf-rpp-jscontact-profile].
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
