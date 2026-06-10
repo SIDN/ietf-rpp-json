@@ -568,7 +568,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ### JSContact Card Object
 
-The Contact Data Object uses JSContact [@!RFC9553] Card version 2.0 to represent contact information.  The `contact` component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.
+The Contact Data Object uses version 2.0 of JSContact [@!RFC9982] to represent contact information.  The `contact` component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -861,7 +861,7 @@ Read response schema (read-write and read-only properties):
 
 ### Contact Data Object
 
-This document uses JSContact [@!RFC9553] Card version 2.0 for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
+This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
 
 #### JSContact Profile for RPP
 
@@ -1954,13 +1954,3 @@ TODO
   <seriesInfo name="DOI" value="10.17487/RFC3915"/>
 </reference>
 
-<reference anchor="RFC9553" target="https://www.rfc-editor.org/rfc/rfc9553">
-  <front>
-    <title>JSContact: A JSON Representation of Contact Data</title>
-    <author initials="R." surname="Stepanek" fullname="Robert Stepanek"/>
-    <author initials="M." surname="Loffredo" fullname="Mario Loffredo"/>
-    <date year="2024" month="05"/>
-  </front>
-  <seriesInfo name="RFC" value="9553"/>
-  <seriesInfo name="DOI" value="10.17487/RFC9553"/>
-</reference>

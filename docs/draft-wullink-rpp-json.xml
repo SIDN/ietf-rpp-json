@@ -161,13 +161,13 @@ document are to be interpreted as described in <xref target="RFC2119"></xref>.</
 <sourcecode type="json"><![CDATA[{
   "type": "object",
   "properties": {
-    "postalInfo": {
+    "records": {
       "type": "array",
-      "items": { "$ref": "#/$defs/postalInfo" },
+      "items": { "$ref": "#/$defs/dnsRecord" },
       "minItems": 1
     }
   },
-  "required": ["postalInfo"]
+  "required": ["records"]
 }
 ]]>
 </sourcecode>
@@ -293,23 +293,21 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="labelled-composition"><name>Labelled Composition</name>
 <t>A <tt>LabelledComposition[Type]</tt> is a parent-child relationship where each embedded child carries a string label. Multiple instances with the same label are allowed.</t>
 <t>Rule 11: <tt>LabelledComposition[Type]</tt> with cardinality <tt>0+</tt> MUST be represented as a JSON array of embedded objects. Each object in the array MUST contain a <tt>label</tt> property alongside the data elements of the composed type.</t>
-<t>Example: contact postal info (LabelledComposition[Postal Info Object]):</t>
+<t>Example: remarks (LabelledComposition[Remark Object]):</t>
 
-<sourcecode type="json"><![CDATA["addresses": [
+<sourcecode type="json"><![CDATA["remarks": [
     {
-        "label": "int",
+        "label": "public",
         "object": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "addr": {
-                "@type": "postalAddress",
-                "street": ["123 Example Dr."],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
-            }
+            "@type": "remark",
+            "description": "This domain is used for test purposes."
+        }
+    },
+    {
+        "label": "private",
+        "object": {
+            "@type": "remark",
+            "description": "Internal note for the sponsoring client."
         }
     }
 ]
@@ -320,21 +318,16 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="dictionary-composition"><name>Dictionary Composition</name>
 <t>A <tt>DictionaryComposition[Type]</tt> is a parent-child relationship where each embedded child carries a unique string label used as a dictionary key.</t>
 <t>Rule 12: <tt>DictionaryComposition[Type]</tt> MUST be represented as a JSON object where each key is the unique label and the corresponding value is the fully embedded child object.</t>
-<t>Example: contact postal info (DictionaryComposition[Postal Info Object]):</t>
+<t>Example: remarks keyed by scope (DictionaryComposition[Remark Object]):</t>
 
-<sourcecode type="json"><![CDATA["addresses": {
-    "int": {
-        "@type": "postalInfo",
-        "type": "PERSON",
-        "name": "John Doe",
-        "addr": {
-            "@type": "postalAddress",
-            "street": ["123 Example Dr."],
-            "city": "Dulles",
-            "sp": "VA",
-            "pc": "20166-6503",
-            "cc": "US"
-        }
+<sourcecode type="json"><![CDATA["remarks": {
+    "public": {
+        "@type": "remark",
+        "description": "This domain is used for test purposes."
+    },
+    "private": {
+        "@type": "remark",
+        "description": "Internal note for the sponsoring client."
     }
 }
 ]]>
@@ -561,61 +554,107 @@ A Aggregation represents a relationship between two independent objects, where o
 </sourcecode>
 </section>
 
-<section anchor="postal-address-object"><name>Postal Address Object</name>
+<section anchor="jscontact-card-object"><name>JSContact Card Object</name>
+<t>The Contact Data Object uses version 2.0 of JSContact <xref target="RFC9982"></xref> to represent contact information.  The <tt>contact</tt> component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.</t>
 <t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
 <ul spacing="compact">
-<li><tt>cc</tt> MUST be a valid two-character country code from <xref target="ISO3166-1"></xref>. The JSON Schema pattern enforces uppercase alpha-2 format.</li>
-<li>In EPP Compatibility Profile, <tt>city</tt> and <tt>cc</tt> MUST be provided.</li>
+<li><tt>addresses[*].countryCode</tt> MUST be a valid two-character ISO 3166-1 <xref target="ISO3166-1"></xref> alpha-2 code when present.</li>
+<li><tt>localizations</tt> MUST be fully expanded; nested PatchObject-style keys (e.g., <tt>&quot;addresses/addr/full&quot;</tt>) are NOT allowed.</li>
+<li>When <tt>phones[*].features</tt> is absent, the number MUST be treated as a voice number.</li>
 </ul>
 
 <sourcecode type="json"><![CDATA[{
   "$defs": {
-    "postalAddress": {
+    "contact": {
       "type": "object",
       "properties": {
-        "@type": { "type": "string", "const": "postalAddress" },
-        "street": {
-          "type": "array",
-          "items": { "type": "string" }
+        "@type":    { "type": "string", "const": "Card" },
+        "version":  { "type": "string", "const": "2.0" },
+        "kind":     { "type": "string", "enum": ["individual", "org"] },
+        "language": { "type": "string" },
+        "name": {
+          "type": "object",
+          "properties": {
+            "full": { "type": "string" },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind":  { "type": "string", "enum": ["given", "surname"] },
+                  "value": { "type": "string" }
+                },
+                "required": ["kind", "value"]
+              }
+            }
+          }
         },
-        "city":  { "type": "string" },
-        "sp":    { "type": "string" },
-        "pc":    { "type": "string" },
-        "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
-      },
-      "required": ["@type"]
-    }
-  }
-}
-]]>
-</sourcecode>
-</section>
-
-<section anchor="postal-info-object"><name>Postal Info Object</name>
-<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
-
-<ul spacing="compact">
-<li><tt>name</tt> MAY be required by implementations when <tt>type</tt> is &quot;PERSON&quot;. In EPP Compatibility Profile, <tt>name</tt> MUST be provided.</li>
-<li><tt>org</tt> MAY be required by implementations when <tt>type</tt> is &quot;ORG&quot;.</li>
-<li>In EPP Compatibility Profile, <tt>addr</tt> MUST be provided.</li>
-</ul>
-
-<sourcecode type="json"><![CDATA[{
-  "$defs": {
-    "postalInfo": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "postalInfo" },
-        "type": {
-          "type": "string",
-          "enum": ["PERSON", "ORG"]
+        "organizations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
         },
-        "name": { "type": "string" },
-        "org":  { "type": "string" },
-        "addr": { "$ref": "#/$defs/postalAddress" }
+        "addresses": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "full":        { "type": "string" },
+              "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind":  { "type": "string", "enum": ["name", "locality", "region", "postcode", "country"] },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["kind", "value"]
+                }
+              }
+            }
+          }
+        },
+        "phones": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "number":   { "type": "string" },
+              "features": { "type": "object" }
+            },
+            "required": ["number"]
+          }
+        },
+        "emails": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "address": { "type": "string", "format": "email" }
+            },
+            "required": ["address"]
+          }
+        },
+        "links": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "uri":  { "type": "string", "format": "uri" },
+              "kind": { "type": "string", "const": "contact" }
+            },
+            "required": ["uri"]
+          }
+        },
+        "localizations": { "type": "object" }
       },
-      "required": ["@type"]
+      "required": ["@type", "version"]
     }
   }
 }
@@ -812,10 +851,17 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="contact-data-object"><name>Contact Data Object</name>
+<t>This document uses version 2.0 of JSContact <xref target="RFC9982"></xref> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <tt>Card</tt> object embedded in the <tt>card</tt> property of the contact JSON object.</t>
+
+<section anchor="jscontact-profile-for-rpp"><name>JSContact Profile for RPP</name>
+<t>Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, see [TODO: ref to RPP JSContact profile here: <eref target="https://github.com/SIDN/ietf-rpp-jscontact-profile">https://github.com/SIDN/ietf-rpp-jscontact-profile</eref>].</t>
 <t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
 <ul spacing="compact">
-<li><tt>postalInfo</tt> keys MUST be either &quot;int&quot; (internationalised, all-ASCII) or &quot;loc&quot; (localised, MAY use non-ASCII characters). At most one entry of each key is allowed.</li>
+<li><tt>card.name.full</tt> MUST be provided in EPP Compatibility Profile.</li>
+<li><tt>card.addresses.addr</tt> MUST be provided in EPP Compatibility Profile, containing at least <tt>countryCode</tt> and a <tt>&quot;locality&quot;</tt> kind component.</li>
+<li><tt>card.emails.email.address</tt> MUST be provided in EPP Compatibility Profile.</li>
+<li><tt>card.addresses[*].countryCode</tt> MUST be a valid two-character ISO 3166-1 <xref target="ISO3166-1"></xref> alpha-2 code when present.</li>
 </ul>
 <t>Create request schema (create-only and read-write properties):</t>
 
@@ -823,30 +869,12 @@ A Aggregation represents a relationship between two independent objects, where o
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "contact" },
-    "id": { "type": "string" },
-    "postalInfo": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
+    "@type":  { "type": "string", "const": "contact" },
+    "id":     { "type": "string" },
+    "card":   { "$ref": "#/$defs/jscontact_card" },
+    "authInfo": { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["@type", "id", "postalInfo"],
+  "required": ["@type", "id", "card"],
   "unevaluatedProperties": false
 }
 ]]>
@@ -857,40 +885,23 @@ A Aggregation represents a relationship between two independent objects, where o
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "@type": { "type": "string", "const": "contact", "readOnly": true },
-    "id": { "type": "string", "readOnly": true },
-    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
+    "@type":  { "type": "string", "const": "contact", "readOnly": true },
+    "id":     { "type": "string", "readOnly": true },
+    "provMetadata": { "$ref": "#/$defs/provMetadata" },
     "status": {
       "type": "array",
       "items": { "$ref": "#/$defs/status" },
       "readOnly": true
     },
-    "postalInfo": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-      "minProperties": 1,
-      "maxProperties": 2
-    },
-    "voice": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "fax": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/phoneNumber" }
-    },
-    "email": {
-      "type": "array",
-      "items": { "type": "string", "format": "email" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "disclose":  { "type": "object" }
+    "card":   { "$ref": "#/$defs/jscontact_card" },
+    "authInfo": { "$ref": "#/$defs/authInfo" }
   },
-  "required": ["@type", "id", "provisioningMetadata", "postalInfo"],
+  "required": ["@type", "id", "provMetadata", "card"],
   "unevaluatedProperties": false
 }
 ]]>
 </sourcecode>
+</section>
 </section>
 
 <section anchor="host-data-object"><name>Host Data Object</name>
@@ -1335,30 +1346,42 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": [
-                    "123 Example Dr.",
-                    "Suite 100"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
                 ],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" },
+            "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
     },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"],
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1370,38 +1393,50 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
-        "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": [
-                    "123 Example Dr.",
-                    "Suite 100"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
                 ],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" },
+            "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ]]>
 </sourcecode>
@@ -1413,43 +1448,139 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
-        "repositoryId": "JD1234-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2000-01-15T09:00:00.0Z"
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "postalInfo": {
-        "int": {
-            "@type": "postalInfo",
-            "type": "PERSON",
-            "name": "John Doe",
-            "org": "Example Inc.",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
             "addr": {
-                "@type": "postalAddress",
-                "street": ["123 Example Dr.", "Suite 100"],
-                "city": "Dulles",
-                "sp": "VA",
-                "pc": "20166-6503",
-                "cc": "US"
+                "components": [
+                    { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                    { "kind": "locality", "value": "Dulles" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20166-6503" },
+                    { "kind": "country",  "value": "United States" }
+                ],
+                "countryCode": "US"
             }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5555" }
+        },
+        "emails": {
+            "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ]]>
 </sourcecode>
 </section>
 
 <section anchor="update-1"><name>Update</name>
-<t>TBD</t>
+<t>Example contact update request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "contact",
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "456 New Street, Suite 200" },
+                    { "kind": "locality", "value": "Reston" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20190" },
+                    { "kind": "country",  "value": "United States" }
+                ],
+                "countryCode": "US"
+            }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe-new@example.example" }
+        }
+    }
+}
+]]>
+</sourcecode>
+<t>Example contact update response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "contact",
+    "id": "jd1234",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repoId": "JD1234-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2025-06-01T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "card": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "individual",
+        "name": {
+            "full": "John Doe",
+            "components": [
+                { "kind": "given",   "value": "John" },
+                { "kind": "surname", "value": "Doe" }
+            ]
+        },
+        "organizations": {
+            "org": { "name": "Example Inc." }
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "456 New Street, Suite 200" },
+                    { "kind": "locality", "value": "Reston" },
+                    { "kind": "region",   "value": "VA" },
+                    { "kind": "postcode", "value": "20190" },
+                    { "kind": "country",  "value": "United States" }
+                ],
+                "countryCode": "US"
+            }
+        },
+        "phones": {
+            "voice": { "number": "tel:+1-703-555-5556" }
+        },
+        "emails": {
+            "email": { "address": "jdoe-new@example.example" }
+        }
+    }
+}
+]]>
+</sourcecode>
 </section>
 
 <section anchor="delete-1"><name>Delete</name>
@@ -1795,6 +1926,7 @@ A Aggregation represents a relationship between two independent objects, where o
 </reference>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5730.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9982.xml"/>
 </references>
 <references><name>Informative References</name>
 <reference anchor="JSON-SCHEMA" target="https://json-schema.org/draft/2020-12/json-schema-core">
