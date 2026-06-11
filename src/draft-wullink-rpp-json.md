@@ -97,11 +97,11 @@ RPP primitive types MUST be represented in JSON as follows:
 | RPP Primitive Type | JSON Type   | Notes                                                                          |
 |--------------------|-------------|--------------------------------------------------------------------------------|
 | String             | `string`    | Unicode character sequence                                                     |
-| Integer            | `integer`   | Whole number, positive or negative                                             |
+| Integer            | `number`    | Whole number, positive or negative                                             |
 | Boolean            | `boolean`   | `true` or `false`                                                              |
-| Decimal            | `number`    | Base-10 fractional value                                                       |
-| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                             |
-| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`           |
+| Decimal            | `string`    | Base-10 fractional value with exact representation within a defined precision. Number is encoded into string same as `"number"` in [@!RFC8259] without exponent part `"ext"`. |
+| Date               | `string`    | Full-date as per [@!RFC3339], e.g. `"2025-10-27"`                              |
+| Timestamp          | `string`    | Date-time in UTC as per [@!RFC3339], e.g. `"2025-10-27T09:42:51Z"`             |
 | URL                | `string`    | Uniform Resource Locator as per [@!RFC1738]                                    |
 | Binary             | `string`    | Base64-encoded binary data                                                     |
 
@@ -186,7 +186,7 @@ Rule 7: Data elements with mutability `read-write` have no additional annotation
 The RPP data model defines several association types between objects, the following rules specify their JSON representations.
 A Aggregation represents a relationship between two independent objects, where one object references another. A Composition represents a parent-child relationship where the child object is embedded within the parent object and cannot exist independently.
 
-## Labelled associations
+### Labelled associations
 
 Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included  alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
 
@@ -223,21 +223,29 @@ A `Composition[Type]` represents a parent-child relationship where the child's l
             {
                 "@type": "host",
                 "hostName": "ns1.name.example",
-                "provisioningMetadata": {
-                    "@type": "provisioningMetadata",
+                "provMetadata": {
+                    "@type": "provMetadata",
                     "repositoryId": "NS1EXAMPLE-REP",
-                    "sponsoringClientId": "ClientX"
+                    "spClientId": "ClientX"
                 },
                 "status": [ { "@type": "status", "label": "ok" } ],
-                "dns": [
-                    {
-                        "@type": "dnsResourceRecord",
-                        "hostNamelabel": "ns1.name.example",
-                        "type": "A",
-                        "data": "192.0.2.1",
-                        "ttl": 3600
-                    }
-                ]
+                "dns": {
+                    "@type": "dnsData",
+                    "records": [
+                        {
+                            "@type": "dnsRecord",
+                            "name": "@",
+                            "type": "ns",
+                            "rdata": { "nsdname": "ns1.name.example." }
+                        },
+                        {
+                            "@type": "dnsRecord",
+                            "name": "ns1.name.example.",
+                            "type": "a",
+                            "rdata": { "address": "192.0.2.1" }
+                        }
+                    ]
+                }
             }
         ]
 }
@@ -286,7 +294,7 @@ Example: domain contacts keyed by unique role (DictionaryAggregation[Contact Obj
     },
     "tech": {
         "@type": "contact",
-        "id": "ABC-8014"
+        "id": "ABC-8014"  
     }
 }
 ```
@@ -356,7 +364,7 @@ Rule 17: Enumeration constraints on string fields MUST be expressed using the `"
 Example (Transfer Status enum):
 
 ```json
-"transferStatus": {
+"trStatus": {
     "type": "string",
     "enum": ["pending", "clientApproved", "clientCancelled",
              "clientRejected", "serverApproved", "serverCancelled"]
@@ -366,7 +374,9 @@ Example (Transfer Status enum):
 Rule 18: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
 
-Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use `"additionalProperties": false` if the schema is intended to be extended, However, root schemas MUST use `"unevaluatedProperties": false` to prevent the presence of undeclared properties in JSON subschemas.
+Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use `"additionalProperties": true` to allow for free key definition.
+
+<!-- Implementation of this is a nightmare, because one as to take care to put unevaluatedProperties: false on top level of allOf/anyOf branches, but not in the branches themselves. See inject_unevaluated_properties() function in the verification script. -->
 
 Rule 20: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
@@ -374,12 +384,12 @@ Example (Domain Name Data Object):
 
 ```json
 {
-  "@type": "domainName",
-  "name": "example.example"
+    "@type": "domainName",
+    "name": "example.example"
 }
 ```
 
-Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authorisationInformation` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authorisationInformation` object in the JSON body with an appropriate error response.
+Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authInfo` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authInfo` object in the JSON body with an appropriate error response.
 
 ### RPP Profiles and Validation
 
@@ -391,7 +401,7 @@ This section provides normative JSON Schema definitions for RPP component object
 
 <!-- TODO: can we say normative for json schema definitions? -->
 
-## Common Component Schemas
+## Common Data Types Schemas
 
 This section defines shared data types that are based on the primitive data types above and are re-used across multiple data object definitions. 
 
@@ -437,6 +447,8 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 }
 ```
 
+## Component Objects Schemas
+
 ### Period Object
 
 ```json
@@ -466,26 +478,26 @@ In JSON, a Phone Number MUST be represented as a `string` value conforming to th
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
-- `updatingClientId` and `updateDate` MUST NOT be present if the object has never been modified.
-- `transferDate` MUST NOT be present if the object has never been transferred.
+- `upClientId` and `upDate` MUST NOT be present if the object has never been modified.
+- `trDate` MUST NOT be present if the object has never been transferred.
 - In EPP Compatibility Profile, `repositoryId` MUST be provided.
 
 ```json
 {
   "$defs": {
-    "provisioningMetadata": {
+    "provMetadata": {
       "type": "object",
       "properties": {
-        "@type":              { "type": "string", "const": "provisioningMetadata", "readOnly": true },
-        "repositoryId":       { "type": "string", "readOnly": true },
-        "sponsoringClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "creatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "creationDate":       { "type": "string", "format": "date-time", "readOnly": true },
-        "updatingClientId":   { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "updateDate":         { "type": "string", "format": "date-time", "readOnly": true },
-        "transferDate":       { "type": "string", "format": "date-time", "readOnly": true }
+        "@type":       { "type": "string", "const": "provMetadata", "readOnly": true },
+        "repositoryId": { "type": "string", "readOnly": true },
+        "spClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "crClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "crDate":      { "type": "string", "format": "date-time", "readOnly": true },
+        "upClientId":  { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "upDate":      { "type": "string", "format": "date-time", "readOnly": true },
+        "trDate":      { "type": "string", "format": "date-time", "readOnly": true }
       },
-      "required": ["@type", "sponsoringClientId"]
+      "required": ["@type", "spClientId"]
     }
   }
 }
@@ -516,28 +528,98 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-### DNS Resource Record
+### DNS Resource Record Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
-- `hostNamelabel` MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs and relative host names are allowed.
-- `type` MUST be a valid string representation of a DNS resource record type as defined in [@!RFC1035]. Allowed values MAY be further constrained by server policy.
-- `data` MUST be a syntactically valid resource record data value for the given `type` in zone file string representation.
-- `ttl` value range MAY be constrained by server policy.
+- `name` MUST be a syntactically valid DNS host name in zone file string representation. Both absolute FQDNs (with trailing dot) and relative host names are allowed, as well as the `@` symbol representing the domain name itself.
+- `type` MUST be a valid string representation of a DNS resource record type as defined in [@!RFC1035]. Values MUST be converted to lower case. Allowed values MAY be further constrained by server policy.
+- In EPP Compatibility Profile ([@!RFC5732]), the following record types MUST be supported: `ns`, `a`, and `aaaa`. With DNSSEC Extension [@RFC5910], `ds` and `dnskey` MUST additionally be supported.
+- `class`, if present, MUST be chosen from Section 3.2.4 (CLASS values) of [@!RFC1035]. A client SHOULD omit this element; the server MUST assume `IN` as the default.
+- The fields within `rdata` MUST match the expected structure for the given record type (see RDATA structures below).
+
+RDATA structures required in EPP Compatibility Profile:
+
+- NS records ([@!RFC1035], Section 3.3.11): `nsdname`
+- A records ([@!RFC1035], Section 3.4.1): `address`
+- AAAA records ([@RFC3596], Section 2.2): `address`
+- DS records ([@RFC4034], Section 5, with DNSSEC Extension): `keyTag`, `algorithm`, `digestType`, `digest`
+- DNSKEY records ([@RFC4034], Section 2, with DNSSEC Extension): `flags`, `protocol`, `algorithm`, `publicKey`
+
+All `rdata` property names MUST be written in camelCase and all values MUST use the string data type.
 
 ```json
 {
   "$defs": {
-    "dnsResourceRecord": {
+    "dnsRecord": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "dnsResourceRecord" },
-        "hostNamelabel": { "type": "string", "format": "hostname" },
-        "type":          { "type": "string" },
-        "data":          { "type": "string" },
-        "ttl":           { "type": "integer" }
+        "@type": { "type": "string", "const": "dnsRecord" },
+        "name":  { "type": "string" },
+        "class": { "type": "string" },
+        "type":  { "type": "string" },
+        "rdata": { "type": "object", "unevaluatedProperties": true }
       },
-      "required": ["@type", "hostNamelabel", "type", "data", "ttl"]
+      "required": ["@type", "name", "type", "rdata"]
+    }
+  }
+}
+```
+
+### DNS Operational Controls Object
+
+The DNS Operational Controls Object contains operational control parameters that a client MAY use to influence server-side DNS behaviour for a set of DNS records. A server MAY ignore these values, e.g. for policy reasons. This structure is aligned with [@I-D.simmen-rpp-dns-data].
+
+```json
+{
+  "$defs": {
+    "dnsControls": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "dnsControls" },
+        "ttl": {
+          "type": "object",
+            "propertyNames": {
+              "pattern": "^[a-z]+$"
+            },
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "maxSigLifetime": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z]+$"
+          },
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+### DNS Data Object
+
+The DNS Data Object is a container for DNS resource records and associated operational controls for a provisioned object. This structure groups DNS records together with control parameters that influence server-side DNS behaviour. It is aligned with [@I-D.simmen-rpp-dns-data].
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- In EPP Compatibility Profile with DNSSEC Extension [@RFC5910], records of type `ds` and `dnskey` MUST be supported in addition to `ns`, `a`, and `aaaa`. A server MUST support either `ds` or `dnskey` or both. If provided with only `dnskey`, a server MUST calculate the DS record.
+
+```json
+{
+  "$defs": {
+    "dnsData": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "dnsData" },
+        "records": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dnsRecord" }
+        },
+        "controls": { "$ref": "#/$defs/dnsControls" }
+      },
+      "required": ["@type"]
     }
   }
 }
@@ -553,10 +635,10 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 ```json
 {
   "$defs": {
-    "authorisationInformation": {
+    "authInfo": {
       "type": "object",
       "properties": {
-        "@type":    { "type": "string", "const": "authorisationInformation" },
+        "@type":    { "type": "string", "const": "authInfo" },
         "method":   { "type": "string" },
         "authdata": { "type": "string" }
       },
@@ -673,71 +755,6 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-### Transfer Data Object
-
-```json
-{
-  "$defs": {
-    "transferData": {
-      "type": "object",
-      "properties": {
-        "@type": { "type": "string", "const": "transferData", "readOnly": true },
-        "transferStatus": {
-          "type": "string",
-          "enum": ["pending", "clientApproved", "clientCancelled",
-                   "clientRejected", "serverApproved", "serverCancelled"],
-          "readOnly": true
-        },
-        "transferDirection": {
-          "type": "string",
-          "enum": ["pull", "push"],
-          "readOnly": true
-        },
-        "requestingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "requestDate":        { "type": "string", "format": "date-time", "readOnly": true },
-        "actingClientId":     { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-        "actionDate":         { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": [
-        "@type", "transferStatus", "transferDirection", "requestingClientId",
-        "requestDate", "actingClientId", "actionDate"
-      ]
-    }
-  }
-}
-```
-
-### Restore Data Object
-
-The Restore Data Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as the output of all restore operations.
-
-The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
-
-* `requestDate` MUST NOT be present if no restore request has been submitted yet.
-* `reportDate` MUST NOT be present if no restore report has been accepted yet.
-* `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
-
-```json
-{
-  "$defs": {
-    "restoreData": {
-      "type": "object",
-      "properties": {
-        "@type":         { "type": "string", "const": "restoreData", "readOnly": true },
-        "restoreStatus": {
-          "type": "string",
-          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
-          "readOnly": true
-        },
-        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
-        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
-        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": ["@type", "restoreStatus"]
-    }
-  }
-}
-```
 
 ### Restore Report Object
 
@@ -756,7 +773,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
     "restoreReport": {
       "type": "object",
       "properties": {
-        "@type":         { "type": "string", "const": "restoreReport", "readOnly": true },
+        "@type":         { "type": "string", "const": "restoreReport" },
         "preData":       { "type": "string" },
         "postData":      { "type": "string" },
         "deleteTime":    { "type": "string", "format": "date-time" },
@@ -776,11 +793,187 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-## Resource Object Schemas
+## Process Object Schemas
 
-Resource objects represent the main entities managed by RPP: domain names, contacts, and hosts. Each resource object has a corresponding root JSON Schema definition that specifies its properties, required fields, and constraints.
+### Transfer Process Object
 
-### Domain Name Data Object
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create",
+  "$defs": {
+    "transferProcess.create": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess"},
+            "transferDir": {
+              "type": "string",
+              "const": "push"
+            },
+            "gainingClientId": { "$ref": "#/$defs/clientIdentifier" }
+          },
+          "required": [
+            "@type", "transferDir", "gainingClientId"
+          ]
+        },
+        {
+          "properties": {
+            "@type": { "type": "string", "const": "transferProcess" },
+            "transferDir": {
+              "type": "string",
+              "const": "pull"
+            }
+          },
+          "required": [
+            "@type", "transferDir"
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+Create request for Domain Object schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create.domain",
+  "$defs": {
+    "transferProcess.create.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.create" },
+        {
+          "properties": {
+            "transferPeriod": { "$ref": "#/$defs/period" }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read",
+  "$defs": {
+    "transferProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "transferProcess", "readOnly": true },
+        "trStatus": {
+          "type": "string",
+          "enum": ["pending", "clientApproved", "clientCancelled",
+                    "clientRejected", "serverApproved", "serverCancelled"],
+          "readOnly": true
+        },
+        "transferDir": {
+          "type": "string",
+          "enum": ["pull", "push"],
+          "readOnly": true
+        },
+        "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true},
+        "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
+        "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+        "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": [
+        "@type", "transferDir", "trStatus", "reqClientId",
+        "requestDate", "actClientId", "actionDate"
+      ]
+    }
+  }
+}
+```
+
+Read response for Domain Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read.domain",
+  "$defs": {
+    "transferProcess.read.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.read" },
+        {
+          "properties": {
+            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### Restore Process Object
+
+The Restore Process Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as a response for all restore operations.
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+* `requestDate` MUST NOT be present if no restore request has been submitted yet.
+* `reportDate` MUST NOT be present if no restore report has been accepted yet.
+* `reportDueDate` MUST NOT be present when `restoreStatus` is not `"pendingRestore"`.
+
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.create",
+  "$defs": {
+    "restoreProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreProcess" },
+        "restoreReport": { "$ref": "#/$defs/restoreReport" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/restoreProcess.read",
+  "$defs": {
+    "restoreProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "restoreProcess", "readOnly": true },
+        "restoreStatus": {
+          "type": "string",
+          "enum": ["pendingRestore", "restored", "rgpPendingDelete"],
+          "readOnly": true
+        },
+        "requestDate":   { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDate":    { "type": "string", "format": "date-time", "readOnly": true },
+        "reportDueDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "restoreStatus"]
+    }
+  }
+}
+```
+
+
+## Domain Name Data Object
 
 The Domain Name Data Object represents a domain name and its associated provisioning data.
 
@@ -793,28 +986,36 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type": { "type": "string", "const": "domainName" },
-    "name": { "type": "string" },
-    "registrant": { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    },
-    "authorisationInformation": { "$ref": "#/$defs/authInfo" },
-    "period":   { "$ref": "#/$defs/period" }
-  },
-  "required": ["@type", "name"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.create",
+  "$defs": {
+    "domainObject.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "domainName" },
+        "name": { "type": "string", "writeOnly": true },
+        "registrant": { "$ref": "#/$defs/contactObject.reference" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type", "name"]
+    }
+  }
 }
 ```
 
@@ -823,39 +1024,66 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":                 { "type": "string", "const": "domainName", "readOnly": true },
-    "name":                  { "type": "string", "readOnly": true },
-    "provisioningMetadata":  { "$ref": "#/$defs/provisioningMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "registrant":  { "type": "string" },
-    "contacts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/contact" }
-    },
-    "nameservers": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" }
-    },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
-    },
-    "subordinateHosts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/host" },
-      "readOnly": true
-    },
-    "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-    "authorisationInformation":   { "$ref": "#/$defs/authInfo" }
-  },
-  "required": ["@type", "name", "provisioningMetadata"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/domainObject.read",
+  "$defs": {
+    "domainObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "registrant":  { "$ref": "#/$defs/contactObject.reference" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "subordinateHosts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" },
+          "readOnly": true
+        },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
+        "authInfo":  { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "name", "provMetadata"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/domainObject.reference",
+  "$defs": {
+    "domainObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "name":        { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "name"]
+    }
+  }
 }
 ```
 
@@ -914,7 +1142,9 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
-### Host Data Object
+
+
+## Host Data Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -926,17 +1156,18 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":    { "type": "string", "const": "host" },
-    "hostName": { "type": "string", "format": "hostname" },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
+  "$ref": "#/$defs/hostObject.create",
+  "$defs": {
+    "hostObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":    { "type": "string", "const": "host" },
+        "hostName": { "type": "string", "format": "hostname" },
+        "dns":      { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName"]
     }
-  },
-  "required": ["@type", "hostName"],
-  "unevaluatedProperties": false
+  }
 }
 ```
 
@@ -945,25 +1176,49 @@ Read response schema (read-write and read-only properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":    { "type": "string", "const": "host", "readOnly": true },
-    "hostName": { "type": "string", "format": "hostname" },
-    "provisioningMetadata": { "$ref": "#/$defs/provisioningMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "dns": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/dnsResourceRecord" }
+  "$ref": "#/$defs/hostObject.read",
+  "$defs": {
+    "hostObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname" },
+        "provMetadata":  { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "dns":           { "$ref": "#/$defs/dnsData" }
+      },
+      "required": ["@type", "hostName", "provMetadata"]
     }
-  },
-  "required": ["@type", "hostName", "provisioningMetadata"],
-  "unevaluatedProperties": false
+  }
 }
 ```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/hostObject.reference",
+  "$defs": {
+    "hostObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "host", "readOnly": true },
+        "hostName":      { "type": "string", "format": "hostname", "readOnly": true }
+      },
+      "required": ["@type", "hostName"]
+    }
+  }
+}
+```
+
+## Organisation Data Object
+
+TBD
 
 # Examples
 
@@ -988,13 +1243,13 @@ Example domain create request:
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1007,12 +1262,12 @@ Example domain create response from a server with RGP support:
 {
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" },
@@ -1030,80 +1285,47 @@ Example domain read response:
 {
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "1999-12-03T09:00:00.0Z",
-        "transferDate": "2000-04-08T09:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "1999-12-03T09:00:00.0Z",
+        "trDate": "2000-04-08T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "jd1234",
+    "registrant": { "@type": "contact", "id": "jd1234" },
     "contacts": [
-        { "label": "admin", "id": "sh8013" },
-        { "label": "tech",  "id": "sh8013" }
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
     ],
     "nameservers": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ],
-            "dns": [
-                {
-                    "@type": "dnsResourceRecord",
-                    "hostNamelabel": "ns1.example.example.",
-                    "type": "A",
-                    "data": "192.0.2.1",
-                    "ttl": 3600
-                }
-            ]
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
-                "repositoryId": "NS1EXAMPLENET-REP",
-                "sponsoringClientId": "ClientZ"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "subordinateHosts": [
         {
             "@type": "host",
-            "hostName": "ns1.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
-                "repositoryId": "NS1EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns1.example.example"
         },
         {
             "@type": "host",
-            "hostName": "ns2.example.example",
-            "provisioningMetadata": {
-                "@type": "provisioningMetadata",
-                "repositoryId": "NS2EXAMPLE-REP",
-                "sponsoringClientId": "ClientX"
-            },
-            "status": [ { "@type": "status", "label": "ok" } ]
+            "hostName": "ns2.example.example"
         }
     ],
     "expiryDate": "2005-04-03T22:00:00.0Z",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
     }
@@ -1117,9 +1339,9 @@ Example domain update request (read-write properties):
 ```json
 {
     "@type": "domainName",
-    "registrant": "sh8013",
-    "authorisationInformation": {
-        "@type": "authorisationInformation",
+    "registrant": { "@type": "contact", "id": "sh8013" },
+    "authInfo": {
+        "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2BARfoo"
     }
@@ -1132,19 +1354,19 @@ Example domain update response:
 {
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z",
-        "updatingClientId": "ClientX",
-        "updateDate": "2000-01-15T09:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2000-01-15T09:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "registrant": "sh8013"
+    "registrant": { "@type": "contact", "id": "sh8013" }
 }
 ```
 
@@ -1158,10 +1380,10 @@ Example domain delete response (minimal, server may return full representation):
 {
     "@type": "domainName",
     "name": "example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "EXAMPLE1-REP",
-        "sponsoringClientId": "ClientX"
+        "spClientId": "ClientX"
     }
 }
 ```
@@ -1201,7 +1423,8 @@ Example domain transfer request (pull transfer)
 
 ```json
 {
-    "transferDirection": "pull",
+    "@type": "transferProcess",
+    "transferDir": "pull",
     "transferPeriod": {
         "@type": "period",
         "value": 1,
@@ -1210,16 +1433,16 @@ Example domain transfer request (pull transfer)
 }
 ```
 
-Example domain transfer response (Transfer Data Object):
+Example domain transfer response (Transfer Process Object):
 
 ```json
 {
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
@@ -1227,16 +1450,16 @@ Example domain transfer response (Transfer Data Object):
 
 ### Transfer Query
 
-Example domain transfer query response (Transfer Data Object):
+Example domain transfer query response (Transfer Process Object):
 
 ```json
 {
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-06T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
@@ -1244,21 +1467,23 @@ Example domain transfer query response (Transfer Data Object):
 
 ### Transfer Cancel / Reject / Approve
 
-Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The `trStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
 ### Restore Request
 
 Example domain restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+    "@type": "restoreProcess"
+}
 ```
 
-Example domain restore response (Restore Data Object, server requires a report):
+Example domain restore response (Restore Process Object, server requires a report):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
@@ -1269,7 +1494,7 @@ Example domain restore request with inline restore report (single-step; object r
 
 ```json
 {
-    "@type": "domainName",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1285,11 +1510,11 @@ Example domain restore request with inline restore report (single-step; object r
 }
 ```
 
-Example domain restore response with inline report (Restore Data Object, immediately restored):
+Example domain restore response with inline report (Restore Process Object, immediately restored):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
@@ -1302,7 +1527,7 @@ Example domain restore report request:
 
 ```json
 {
-    "@type": "domainName",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Domain example.example was registered on 2024-01-15 with registrant jd1234.",
@@ -1318,11 +1543,11 @@ Example domain restore report request:
 }
 ```
 
-Example domain restore report response (Restore Data Object):
+Example domain restore report response (Restore Process Object):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1333,26 +1558,22 @@ Example domain restore report response (Restore Data Object):
 
 The Restore Query operation takes no request body (Parameters: None).
 
-```json
-{}
-```
-
-Example domain restore query response (Restore Data Object, object in `pendingRestore` state):
+Example domain restore query response (Restore Process Object, object in `pendingRestore` state):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
 ```
 
-Example domain restore query response (Restore Data Object, object restored):
+Example domain restore query response (Restore Process Object, object restored):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1618,45 +1839,46 @@ Example contact transfer request (pull transfer)
 
 ```json
 {
-    "transferDirection": "pull"
+    "@type": "transferProcess", 
+    "transferDir": "pull"
 }
 ```
 
-Example contact transfer response (Transfer Data Object):
+Example contact transfer response (Transfer Process Object):
 
 ```json
 {
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-08T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
 ```
 
 ### Transfer Query
 
-Example contact transfer query response (Transfer Data Object):
+Example contact transfer query response (Transfer Process Object):
 
 ```json
 {
-    "@type": "transferData",
-    "transferStatus": "pending",
-    "transferDirection": "pull",
-    "requestingClientId": "ClientX",
+    "@type": "transferProcess",
+    "trStatus": "pending",
+    "transferDir": "pull",
+    "reqClientId": "ClientX",
     "requestDate": "2000-06-06T22:00:00.0Z",
-    "actingClientId": "ClientY",
+    "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z"
 }
 ```
 
 ### Transfer Cancel / Reject / Approve
 
-Transfer cancel, reject, and approve responses return the Transfer Data Object. The response structure is the same as the Transfer Query response above. The `transferStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The `trStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
-Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Data Object, as contacts do not have registration periods.
+Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Process Object, as contacts do not have registration periods.
 
 ## Host
 
@@ -1668,22 +1890,29 @@ Example host create request:
 {
     "@type": "host",
     "hostName": "ns1.example.example",
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        },
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "AAAA",
-            "data": "2001:db8::1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "a",
+                "rdata": { "address": "192.0.2.1" }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "aaaa",
+                "rdata": { "address": "2001:db8::1" }
+            }
+        ]
+    }
 }
 ```
 
@@ -1693,32 +1922,39 @@ Example host create response:
 {
     "@type": "host",
     "hostName": "ns1.example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientX",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        },
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "AAAA",
-            "data": "2001:db8::1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "a",
+                "rdata": { "address": "192.0.2.1" }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "aaaa",
+                "rdata": { "address": "2001:db8::1" }
+            }
+        ]
+    }
 }
 ```
 
@@ -1730,25 +1966,33 @@ Example host read response:
 {
     "@type": "host",
     "hostName": "ns1.example.example",
-    "provisioningMetadata": {
-        "@type": "provisioningMetadata",
+    "provMetadata": {
+        "@type": "provMetadata",
         "repositoryId": "NS1EXAMPLE-REP",
-        "sponsoringClientId": "ClientX",
-        "creatingClientId": "ClientY",
-        "creationDate": "1999-04-03T22:00:00.0Z"
+        "spClientId": "ClientX",
+        "crClientId": "ClientY",
+        "crDate": "1999-04-03T22:00:00.0Z"
     },
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "192.0.2.1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "a",
+                "rdata": { "address": "192.0.2.1" }
+            }
+        ]
+    }
 }
 ```
 
@@ -1760,15 +2004,23 @@ Example host update request:
 {
     "@type": "host",
     "hostName": "ns1.example.example",
-    "dns": [
-        {
-            "@type": "dnsResourceRecord",
-            "hostNamelabel": "ns1.example.example.",
-            "type": "A",
-            "data": "198.51.100.1",
-            "ttl": 3600
-        }
-    ]
+    "dns": {
+        "@type": "dnsData",
+        "records": [
+            {
+                "@type": "dnsRecord",
+                "name": "@",
+                "type": "ns",
+                "rdata": { "nsdname": "ns1.example.example." }
+            },
+            {
+                "@type": "dnsRecord",
+                "name": "ns1.example.example.",
+                "type": "a",
+                "rdata": { "address": "198.51.100.1" }
+            }
+        ]
+    }
 }
 ```
 
@@ -1781,14 +2033,16 @@ The host delete operation takes the host name as the resource identifier. No req
 Example host restore request (without inline report; object transitions to `pendingRestore` state):
 
 ```json
-{}
+{
+  "@type": "restoreProcess"
+}
 ```
 
-Example host restore request response (Restore Data Object, server requires a report):
+Example host restore request response (Restore Process Object, server requires a report):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
@@ -1799,7 +2053,7 @@ Example host restore request with inline restore report (single-step; object res
 
 ```json
 {
-    "@type": "host",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
@@ -1815,11 +2069,11 @@ Example host restore request with inline restore report (single-step; object res
 }
 ```
 
-Example host restore response with inline report (Restore Data Object, immediately restored):
+Example host restore response with inline report (Restore Process Object, immediately restored):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
@@ -1832,7 +2086,7 @@ Example host restore report request:
 
 ```json
 {
-    "@type": "host",
+    "@type": "restoreProcess",
     "restoreReport": {
         "@type": "restoreReport",
         "preData": "Host ns1.example.example was registered on 2024-01-15 by ClientX.",
@@ -1848,11 +2102,11 @@ Example host restore report request:
 }
 ```
 
-Example host restore report response (Restore Data Object):
+Example host restore report response (Restore Process Object):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1863,22 +2117,22 @@ Example host restore report response (Restore Data Object):
 
 The Restore Query operation takes no request body (Parameters: None).
 
-Example host restore query response (Restore Data Object, object in `pendingRestore` state):
+Example host restore query response (Restore Process Object, object in `pendingRestore` state):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
 ```
 
-Example host restore query response (Restore Data Object, object restored):
+Example host restore query response (Restore Process Object, object restored):
 
 ```json
 {
-    "@type": "restoreData",
+    "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
@@ -1902,6 +2156,10 @@ TODO
 TODO
 
 # Change History
+
+## Version 01 to 02
+
+- Adjust rule 19 and all schemas to match it.
 
 ## Version 00 to 01
 
