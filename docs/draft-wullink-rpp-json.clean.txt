@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 13 December 2026                                          DENIC
-                                                            11 June 2026
+Expires: 14 December 2026                                          DENIC
+                                                            12 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 December 2026.
+   This Internet-Draft will expire on 14 December 2026.
 
 Copyright Notice
 
@@ -234,7 +234,7 @@ Table of Contents
    2020-12 [JSON-SCHEMA], and where not provided with a $schema keyword,
    the following default applies:
 
-   "$schema": "https://json-schema.org/draft/2020-12/schema"
+     "$schema": "https://json-schema.org/draft/2020-12/schema"
 
 4.  JSON Representation Rules
 
@@ -982,7 +982,7 @@ Table of Contents
 
    {
      "$defs": {
-       "contact": {
+       "Card": {
          "type": "object",
          "properties": {
            "@type":    { "type": "string", "const": "Card" },
@@ -1042,7 +1042,12 @@ Table of Contents
                "type": "object",
                "properties": {
                  "number":   { "type": "string" },
-                 "features": { "type": "object" }
+                 "features": {
+                   "type": "object",
+                   "additionalProperties": {
+                     "type": "boolean"
+                   }
+                 }
                },
                "required": ["number"]
              }
@@ -1387,6 +1392,57 @@ Table of Contents
      }
    }
 
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/domainObject.update",
+     "$defs": {
+       "domainObject.update": {
+         "type": "object",
+         "properties": {
+           "@type": { "type": "string", "const": "domainName" },
+           "registrant": { "$ref": "#/$defs/contactObject.reference" },
+           "contacts": {
+             "type": "array",
+             "items": {
+               "type": "object",
+               "properties": {
+                 "label": { "type": "string" },
+                 "object": { "$ref": "#/$defs/contactObject.reference" }
+               },
+               "required": ["label", "object"]
+              }
+           },
+           "nameservers": {
+             "type": "array",
+             "items": { "$ref": "#/$defs/hostObject.reference" }
+           },
+           "dns":    { "$ref": "#/$defs/dnsData" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+   Renew minimal response schema (only expire date):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/domainObject.renewResponse",
+     "$defs": {
+       "domainObject.renewResponse": {
+         "type": "object",
+         "properties": {
+           "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+           "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+         },
+         "required": ["@type", "expiryDate"]
+       }
+     }
+   }
+
    Reference schema (identifier only):
 
    {
@@ -1435,36 +1491,82 @@ Table of Contents
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "type": "object",
-     "properties": {
-       "@type":  { "type": "string", "const": "contact" },
-       "id":     { "type": "string" },
-       "card":   { "$ref": "#/$defs/jscontact_card" },
-       "authInfo": { "$ref": "#/$defs/authInfo" }
-     },
-     "required": ["@type", "id", "card"],
-     "unevaluatedProperties": false
+     "$ref": "#/$defs/contactObject.create",
+     "$defs": {
+       "contactObject.create": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact" },
+           "id":     { "type": "string" },
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type", "id", "card"],
+         "unevaluatedProperties": false
+       }
+     }
+   }
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/contactObject.create",
+     "$defs": {
+       "contactObject.create": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact" },
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type", "card"],
+         "unevaluatedProperties": false
+       }
+     }
    }
 
    Read response schema (read-write and read-only properties):
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "type": "object",
-     "properties": {
-       "@type":  { "type": "string", "const": "contact", "readOnly": true },
-       "id":     { "type": "string", "readOnly": true },
-       "provMetadata": { "$ref": "#/$defs/provMetadata" },
-       "status": {
-         "type": "array",
-         "items": { "$ref": "#/$defs/status" },
-         "readOnly": true
-       },
-       "card":   { "$ref": "#/$defs/jscontact_card" },
-       "authInfo": { "$ref": "#/$defs/authInfo" }
-     },
-     "required": ["@type", "id", "provMetadata", "card"],
-     "unevaluatedProperties": false
+     "$ref": "#/$defs/contactObject.read",
+     "$defs": {
+       "contactObject.read": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact", "readOnly": true },
+           "id":     { "type": "string", "readOnly": true },
+           "provMetadata": { "$ref": "#/$defs/provMetadata" },
+           "status": {
+             "type": "array",
+             "items": { "$ref": "#/$defs/status" },
+             "readOnly": true
+           },
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type", "id", "provMetadata", "card"],
+         "unevaluatedProperties": false
+       }
+     }
+   }
+
+   Reference schema (identifier only):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/contactObject.reference",
+     "$defs": {
+       "contactObject.reference": {
+         "type": "object",
+         "properties": {
+           "@type":         { "type": "string", "const": "contact", "readOnly": true },
+           "id":            { "type": "string", "readOnly": true }
+         },
+         "required": ["@type", "id"]
+       }
+     }
    }
 
 5.5.  Host Data Object
@@ -1709,6 +1811,7 @@ Table of Contents
    Example domain renew request:
 
    {
+       "@type": "domainName.renew",
        "currentExpiryDate": "2005-04-03T22:00:00.0Z",
        "renewalPeriod": {
            "@type": "period",
@@ -1721,7 +1824,6 @@ Table of Contents
 
    {
        "@type": "domainName",
-       "name": "example.example",
        "expiryDate": "2010-04-03T22:00:00.0Z"
    }
 
@@ -1937,7 +2039,7 @@ Table of Contents
        "id": "jd1234",
        "provMetadata": {
            "@type": "provMetadata",
-           "repoId": "JD1234-REP",
+           "repositoryId": "JD1234-REP",
            "spClientId": "ClientX",
            "crClientId": "ClientX",
            "crDate": "1999-04-03T22:00:00.0Z"
@@ -1990,7 +2092,7 @@ Table of Contents
        "id": "jd1234",
        "provMetadata": {
            "@type": "provMetadata",
-           "repoId": "JD1234-REP",
+           "repositoryId": "JD1234-REP",
            "spClientId": "ClientX",
            "crClientId": "ClientX",
            "crDate": "1999-04-03T22:00:00.0Z",
@@ -2072,7 +2174,7 @@ Table of Contents
        "id": "jd1234",
        "provMetadata": {
            "@type": "provMetadata",
-           "repoId": "JD1234-REP",
+           "repositoryId": "JD1234-REP",
            "spClientId": "ClientX",
            "crClientId": "ClientX",
            "crDate": "1999-04-03T22:00:00.0Z",

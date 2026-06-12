@@ -82,8 +82,8 @@ JSON is case sensitive. Unless stated otherwise, JSON specifications and example
 
 All JSON Schema definitions in this document use JSON Schema draft 2020-12 [@?JSON-SCHEMA], and where not provided with a `$schema` keyword, the following default applies:
 
-```json
-"$schema": "https://json-schema.org/draft/2020-12/schema"
+```
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
 ```
 
 # JSON Representation Rules
@@ -661,7 +661,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 ```json
 {
   "$defs": {
-    "contact": {
+    "Card": {
       "type": "object",
       "properties": {
         "@type":    { "type": "string", "const": "Card" },
@@ -721,7 +721,12 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
             "type": "object",
             "properties": {
               "number":   { "type": "string" },
-              "features": { "type": "object" }
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
             },
             "required": ["number"]
           }
@@ -1068,6 +1073,61 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/domainObject.update",
+  "$defs": {
+    "domainObject.update": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "domainName" },
+        "registrant": { "$ref": "#/$defs/contactObject.reference" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        },
+        "nameservers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/hostObject.reference" }
+        },
+        "dns":    { "$ref": "#/$defs/dnsData" },
+        "authInfo": { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Renew minimal response schema (only expire date):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/domainObject.renewResponse",
+  "$defs": {
+    "domainObject.renewResponse": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type", "expiryDate"]
+    }
+  }
+}
+```
+
 Reference schema (identifier only):
 
 ```json
@@ -1107,41 +1167,91 @@ Create request schema (create-only and read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":  { "type": "string", "const": "contact" },
-    "id":     { "type": "string" },
-    "card":   { "$ref": "#/$defs/jscontact_card" },
-    "authInfo": { "$ref": "#/$defs/authInfo" }
-  },
-  "required": ["@type", "id", "card"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/contactObject.create",
+  "$defs": {
+    "contactObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "contact" },
+        "id":     { "type": "string" },
+        "card":   { "$ref": "#/$defs/Card" },
+        "authInfo": { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "id", "card"],
+      "unevaluatedProperties": false
+    }
+  }
 }
 ```
+
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.create",
+  "$defs": {
+    "contactObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "contact" },
+        "card":   { "$ref": "#/$defs/Card" },
+        "authInfo": { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "card"],
+      "unevaluatedProperties": false
+    }
+  }
+}
+```
+
 
 Read response schema (read-write and read-only properties):
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "@type":  { "type": "string", "const": "contact", "readOnly": true },
-    "id":     { "type": "string", "readOnly": true },
-    "provMetadata": { "$ref": "#/$defs/provMetadata" },
-    "status": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/status" },
-      "readOnly": true
-    },
-    "card":   { "$ref": "#/$defs/jscontact_card" },
-    "authInfo": { "$ref": "#/$defs/authInfo" }
-  },
-  "required": ["@type", "id", "provMetadata", "card"],
-  "unevaluatedProperties": false
+  "$ref": "#/$defs/contactObject.read",
+  "$defs": {
+    "contactObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "contact", "readOnly": true },
+        "id":     { "type": "string", "readOnly": true },
+        "provMetadata": { "$ref": "#/$defs/provMetadata" },
+        "status": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status" },
+          "readOnly": true
+        },
+        "card":   { "$ref": "#/$defs/Card" },
+        "authInfo": { "$ref": "#/$defs/authInfo" }
+      },
+      "required": ["@type", "id", "provMetadata", "card"],
+      "unevaluatedProperties": false
+    }
+  }
 }
 ```
 
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.reference",
+  "$defs": {
+    "contactObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "contact", "readOnly": true },
+        "id":            { "type": "string", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
 
 
 ## Host Data Object
@@ -1396,6 +1506,7 @@ Example domain renew request:
 
 ```json
 {
+    "@type": "domainName.renew",
     "currentExpiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
         "@type": "period",
@@ -1410,7 +1521,6 @@ Example domain renew response:
 ```json
 {
     "@type": "domainName",
-    "name": "example.example",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ```
@@ -1640,7 +1750,7 @@ Example contact create response:
     "id": "jd1234",
     "provMetadata": {
         "@type": "provMetadata",
-        "repoId": "JD1234-REP",
+        "repositoryId": "JD1234-REP",
         "spClientId": "ClientX",
         "crClientId": "ClientX",
         "crDate": "1999-04-03T22:00:00.0Z"
@@ -1695,7 +1805,7 @@ Example contact read response:
     "id": "jd1234",
     "provMetadata": {
         "@type": "provMetadata",
-        "repoId": "JD1234-REP",
+        "repositoryId": "JD1234-REP",
         "spClientId": "ClientX",
         "crClientId": "ClientX",
         "crDate": "1999-04-03T22:00:00.0Z",
@@ -1781,7 +1891,7 @@ Example contact update response:
     "id": "jd1234",
     "provMetadata": {
         "@type": "provMetadata",
-        "repoId": "JD1234-REP",
+        "repositoryId": "JD1234-REP",
         "spClientId": "ClientX",
         "crClientId": "ClientX",
         "crDate": "1999-04-03T22:00:00.0Z",
