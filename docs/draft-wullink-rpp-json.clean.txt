@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 14 December 2026                                          DENIC
-                                                            12 June 2026
+Expires: 17 December 2026                                          DENIC
+                                                            15 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 14 December 2026.
+   This Internet-Draft will expire on 17 December 2026.
 
 Copyright Notice
 
