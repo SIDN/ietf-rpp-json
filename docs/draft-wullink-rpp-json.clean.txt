@@ -5,12 +5,12 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 17 December 2026                                          DENIC
-                                                            15 June 2026
+Expires: 18 December 2026                                          DENIC
+                                                            16 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
-                       draft-wullink-rpp-json-01
+                       draft-wullink-rpp-json-02
 
 Abstract
 
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 December 2026.
+   This Internet-Draft will expire on 18 December 2026.
 
 Copyright Notice
 
@@ -2080,7 +2080,10 @@ Table of Contents
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       }
+       },
+       "voice": ["+1.7035555555"],
+       "fax": ["+1.7035555556"],
+       "email": ["jdoe@example.example"]
    }
 
 6.2.2.  Read
@@ -2134,7 +2137,9 @@ Table of Contents
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       }
+       },
+       "voice": ["+1.7035555555"],
+       "email": ["jdoe@example.example"]
    }
 
 6.2.3.  Update
@@ -2558,9 +2563,9 @@ Table of Contents
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-04, 12 June 2026,
+              draft-kowalik-rpp-data-objects-03, 2 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-04>.
+              data-objects-03>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol

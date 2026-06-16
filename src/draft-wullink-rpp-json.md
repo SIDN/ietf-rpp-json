@@ -10,7 +10,7 @@ TocDepth = 4
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-wullink-rpp-json-01"
+value = "draft-wullink-rpp-json-02"
 stream = "IETF"
 status = "standard"
 
@@ -1791,7 +1791,10 @@ Example contact create response:
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    }
+    },
+    "voice": ["+1.7035555555"],
+    "fax": ["+1.7035555556"],
+    "email": ["jdoe@example.example"]
 }
 ```
 
@@ -1847,7 +1850,9 @@ Example contact read response:
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    }
+    },
+    "voice": ["+1.7035555555"],
+    "email": ["jdoe@example.example"]
 }
 ```
 
@@ -2321,4 +2326,3 @@ TODO
   <seriesInfo name="RFC" value="3915"/>
   <seriesInfo name="DOI" value="10.17487/RFC3915"/>
 </reference>
-

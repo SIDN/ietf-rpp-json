@@ -5,12 +5,12 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 17 December 2026                                          DENIC
-                                                            15 June 2026
+Expires: 18 December 2026                                          DENIC
+                                                            16 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
-                       draft-wullink-rpp-json-01
+                       draft-wullink-rpp-json-02
 
 Abstract
 
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 December 2026.
+   This Internet-Draft will expire on 18 December 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 1]
+Wullink & Kowalik       Expires 18 December 2026                [Page 1]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 2]
+Wullink & Kowalik       Expires 18 December 2026                [Page 2]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -131,10 +131,10 @@ Internet-Draft                JSON for RPP                     June 2026
        6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  47
        6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  50
        6.2.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  51
-       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  52
+       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  53
        6.2.5.  Transfer Request  . . . . . . . . . . . . . . . . . .  53
        6.2.6.  Transfer Query  . . . . . . . . . . . . . . . . . . .  53
-       6.2.7.  Transfer Cancel / Reject / Approve  . . . . . . . . .  53
+       6.2.7.  Transfer Cancel / Reject / Approve  . . . . . . . . .  54
      6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  54
        6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  54
        6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  55
@@ -165,7 +165,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 3]
+Wullink & Kowalik       Expires 18 December 2026                [Page 3]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -221,7 +221,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 4]
+Wullink & Kowalik       Expires 18 December 2026                [Page 4]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -277,7 +277,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 5]
+Wullink & Kowalik       Expires 18 December 2026                [Page 5]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -333,7 +333,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 6]
+Wullink & Kowalik       Expires 18 December 2026                [Page 6]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -389,7 +389,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 7]
+Wullink & Kowalik       Expires 18 December 2026                [Page 7]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -445,7 +445,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 8]
+Wullink & Kowalik       Expires 18 December 2026                [Page 8]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -501,7 +501,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026                [Page 9]
+Wullink & Kowalik       Expires 18 December 2026                [Page 9]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -557,7 +557,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 10]
+Wullink & Kowalik       Expires 18 December 2026               [Page 10]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -613,7 +613,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 11]
+Wullink & Kowalik       Expires 18 December 2026               [Page 11]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -669,7 +669,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 12]
+Wullink & Kowalik       Expires 18 December 2026               [Page 12]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -725,7 +725,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 13]
+Wullink & Kowalik       Expires 18 December 2026               [Page 13]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -781,7 +781,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 14]
+Wullink & Kowalik       Expires 18 December 2026               [Page 14]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -837,7 +837,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 15]
+Wullink & Kowalik       Expires 18 December 2026               [Page 15]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -893,7 +893,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 16]
+Wullink & Kowalik       Expires 18 December 2026               [Page 16]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -949,7 +949,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 17]
+Wullink & Kowalik       Expires 18 December 2026               [Page 17]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1005,7 +1005,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 18]
+Wullink & Kowalik       Expires 18 December 2026               [Page 18]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1061,7 +1061,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 19]
+Wullink & Kowalik       Expires 18 December 2026               [Page 19]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1117,7 +1117,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 20]
+Wullink & Kowalik       Expires 18 December 2026               [Page 20]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1173,7 +1173,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 21]
+Wullink & Kowalik       Expires 18 December 2026               [Page 21]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1229,7 +1229,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 22]
+Wullink & Kowalik       Expires 18 December 2026               [Page 22]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1285,7 +1285,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 23]
+Wullink & Kowalik       Expires 18 December 2026               [Page 23]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1341,7 +1341,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 24]
+Wullink & Kowalik       Expires 18 December 2026               [Page 24]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1397,7 +1397,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 25]
+Wullink & Kowalik       Expires 18 December 2026               [Page 25]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1453,7 +1453,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 26]
+Wullink & Kowalik       Expires 18 December 2026               [Page 26]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1509,7 +1509,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 27]
+Wullink & Kowalik       Expires 18 December 2026               [Page 27]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1565,7 +1565,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 28]
+Wullink & Kowalik       Expires 18 December 2026               [Page 28]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1621,7 +1621,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 29]
+Wullink & Kowalik       Expires 18 December 2026               [Page 29]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1677,7 +1677,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 30]
+Wullink & Kowalik       Expires 18 December 2026               [Page 30]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1733,7 +1733,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 31]
+Wullink & Kowalik       Expires 18 December 2026               [Page 31]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1789,7 +1789,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 32]
+Wullink & Kowalik       Expires 18 December 2026               [Page 32]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1845,7 +1845,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 33]
+Wullink & Kowalik       Expires 18 December 2026               [Page 33]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1901,7 +1901,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 34]
+Wullink & Kowalik       Expires 18 December 2026               [Page 34]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -1957,7 +1957,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 35]
+Wullink & Kowalik       Expires 18 December 2026               [Page 35]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2013,7 +2013,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 36]
+Wullink & Kowalik       Expires 18 December 2026               [Page 36]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2069,7 +2069,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 37]
+Wullink & Kowalik       Expires 18 December 2026               [Page 37]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2125,7 +2125,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 38]
+Wullink & Kowalik       Expires 18 December 2026               [Page 38]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2181,7 +2181,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 39]
+Wullink & Kowalik       Expires 18 December 2026               [Page 39]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2237,7 +2237,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 40]
+Wullink & Kowalik       Expires 18 December 2026               [Page 40]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2293,7 +2293,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 41]
+Wullink & Kowalik       Expires 18 December 2026               [Page 41]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2349,7 +2349,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 42]
+Wullink & Kowalik       Expires 18 December 2026               [Page 42]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2405,7 +2405,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 43]
+Wullink & Kowalik       Expires 18 December 2026               [Page 43]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2461,7 +2461,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 44]
+Wullink & Kowalik       Expires 18 December 2026               [Page 44]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2517,7 +2517,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 45]
+Wullink & Kowalik       Expires 18 December 2026               [Page 45]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2573,7 +2573,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 46]
+Wullink & Kowalik       Expires 18 December 2026               [Page 46]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2629,7 +2629,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 47]
+Wullink & Kowalik       Expires 18 December 2026               [Page 47]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2685,7 +2685,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 48]
+Wullink & Kowalik       Expires 18 December 2026               [Page 48]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -2736,15 +2736,19 @@ Internet-Draft                JSON for RPP                     June 2026
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       }
-   }
+       },
+       "voice": ["+1.7035555555"],
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 49]
+Wullink & Kowalik       Expires 18 December 2026               [Page 49]
 
 Internet-Draft                JSON for RPP                     June 2026
 
+
+       "fax": ["+1.7035555556"],
+       "email": ["jdoe@example.example"]
+   }
 
 6.2.2.  Read
 
@@ -2790,22 +2794,24 @@ Internet-Draft                JSON for RPP                     June 2026
                    ],
                    "countryCode": "US"
                }
-           },
-           "phones": {
-               "voice": { "number": "tel:+1-703-555-5555" }
-           },
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 50]
+Wullink & Kowalik       Expires 18 December 2026               [Page 50]
 
 Internet-Draft                JSON for RPP                     June 2026
 
 
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5555" }
+           },
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       }
+       },
+       "voice": ["+1.7035555555"],
+       "email": ["jdoe@example.example"]
    }
 
 6.2.3.  Update
@@ -2840,6 +2846,18 @@ Internet-Draft                JSON for RPP                     June 2026
 
    Example contact update response:
 
+
+
+
+
+
+
+
+Wullink & Kowalik       Expires 18 December 2026               [Page 51]
+
+Internet-Draft                JSON for RPP                     June 2026
+
+
    {
        "@type": "contact",
        "id": "jd1234",
@@ -2850,14 +2868,6 @@ Internet-Draft                JSON for RPP                     June 2026
            "crClientId": "ClientX",
            "crDate": "1999-04-03T22:00:00.0Z",
            "upClientId": "ClientX",
-
-
-
-Wullink & Kowalik       Expires 17 December 2026               [Page 51]
-
-Internet-Draft                JSON for RPP                     June 2026
-
-
            "upDate": "2025-06-01T10:00:00.0Z"
        },
        "status": [
@@ -2896,23 +2906,20 @@ Internet-Draft                JSON for RPP                     June 2026
                "email": { "address": "jdoe-new@example.example" }
            }
        }
+
+
+
+Wullink & Kowalik       Expires 18 December 2026               [Page 52]
+
+Internet-Draft                JSON for RPP                     June 2026
+
+
    }
 
 6.2.4.  Delete
 
    The contact delete operation takes the contact identifier as the
    resource identifier.  No request body is required.
-
-
-
-
-
-
-
-Wullink & Kowalik       Expires 17 December 2026               [Page 52]
-
-Internet-Draft                JSON for RPP                     June 2026
-
 
 6.2.5.  Transfer Request
 
@@ -2953,6 +2960,16 @@ Internet-Draft                JSON for RPP                     June 2026
        "actionDate": "2000-06-11T22:00:00.0Z"
    }
 
+
+
+
+
+
+Wullink & Kowalik       Expires 18 December 2026               [Page 53]
+
+Internet-Draft                JSON for RPP                     June 2026
+
+
 6.2.7.  Transfer Cancel / Reject / Approve
 
    Transfer cancel, reject, and approve responses return the Transfer
@@ -2960,15 +2977,6 @@ Internet-Draft                JSON for RPP                     June 2026
    Query response above.  The trStatus value reflects the outcome of the
    operation (e.g. "clientCancelled", "clientRejected", or
    "clientApproved").
-
-
-
-
-
-Wullink & Kowalik       Expires 17 December 2026               [Page 53]
-
-Internet-Draft                JSON for RPP                     June 2026
-
 
    Note: Unlike domain transfers, contact transfers do not include an
    expiryDate field in the Transfer Process Object, as contacts do not
@@ -3013,15 +3021,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-
-
-
-
-
-
-
-
-Wullink & Kowalik       Expires 17 December 2026               [Page 54]
+Wullink & Kowalik       Expires 18 December 2026               [Page 54]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3077,7 +3077,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 55]
+Wullink & Kowalik       Expires 18 December 2026               [Page 55]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3133,7 +3133,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 56]
+Wullink & Kowalik       Expires 18 December 2026               [Page 56]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3189,7 +3189,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 57]
+Wullink & Kowalik       Expires 18 December 2026               [Page 57]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3245,7 +3245,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 58]
+Wullink & Kowalik       Expires 18 December 2026               [Page 58]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3301,7 +3301,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 59]
+Wullink & Kowalik       Expires 18 December 2026               [Page 59]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3333,9 +3333,9 @@ Internet-Draft                JSON for RPP                     June 2026
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-04, 12 June 2026,
+              draft-kowalik-rpp-data-objects-03, 2 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-04>.
+              data-objects-03>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol
@@ -3357,7 +3357,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 60]
+Wullink & Kowalik       Expires 18 December 2026               [Page 60]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3413,7 +3413,7 @@ Internet-Draft                JSON for RPP                     June 2026
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 61]
+Wullink & Kowalik       Expires 18 December 2026               [Page 61]
 
 Internet-Draft                JSON for RPP                     June 2026
 
@@ -3469,4 +3469,4 @@ Authors' Addresses
 
 
 
-Wullink & Kowalik       Expires 17 December 2026               [Page 62]
+Wullink & Kowalik       Expires 18 December 2026               [Page 62]
