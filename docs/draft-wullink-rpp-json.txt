@@ -10,7 +10,7 @@ Expires: 18 December 2026                                          DENIC
 
 
               JSON for Restful Provisioning Protocol (RPP)
-                       draft-wullink-rpp-json-01
+                       draft-wullink-rpp-json-02
 
 Abstract
 
@@ -3167,9 +3167,9 @@ Internet-Draft                JSON for RPP                     June 2026
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-03, 2 March 2026,
+              draft-kowalik-rpp-data-objects-04, 12 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-03>.
+              data-objects-04>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol

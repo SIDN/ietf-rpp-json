@@ -10,23 +10,24 @@
 <meta content="
        This document defines the rules for representing the RESTful Provisioning Protocol (RPP) data objects, as defined in  , using the JavaScript Object Notation (JSON) Data Interchange Format  . It specifies how RPP primitive types, common data types, component objects, resource objects, and associations are mapped to JSON and JSON Schema, and provides normative JSON Schema definitions and worked examples for domain name, contact, and host data objects. 
     " name="description">
-<meta content="xml2rfc 3.34.0" name="generator">
-<meta content="draft-wullink-rpp-json-01" name="ietf.draft">
+<meta content="xml2rfc 3.26.0" name="generator">
+<meta content="draft-wullink-rpp-json-02" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.0
-    Python 3.14.5
-    ConfigArgParse 1.7.5
+  xml2rfc 3.26.0
+    Python 3.10.12
+    ConfigArgParse 1.7
     google-i18n-address 3.1.1
-    intervaltree 3.2.1
-    Jinja2 3.1.6
-    lxml 6.1.1
-    natsort 8.4.0
-    platformdirs 4.10.0
-    pycountry 26.2.16
-    PyYAML 6.0.3
-    requests 2.34.2
-    wcwidth 0.8.1
-    weasyprint 69.0
+    intervaltree 3.1.0
+    Jinja2 3.1.5
+    lxml 5.3.0
+    platformdirs 4.3.6
+    pycountry 24.6.1
+    pydyf 0.9.0
+    PyYAML 6.0.2
+    requests 2.32.3
+    setuptools 75.8.0
+    wcwidth 0.2.13
+    weasyprint 61.2
 -->
 <link href="draft-wullink-rpp-json.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -44,9 +45,9 @@
 */
 
 /* fonts */
-@import url('https://static.ietf.org/fonts/noto-sans/import.css'); /* Sans-serif */
-@import url('https://static.ietf.org/fonts/noto-serif/import.css'); /* Serif (print) */
-@import url('https://static.ietf.org/fonts/roboto-mono/import.css'); /* Monospace */
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans'); /* Sans-serif */
+@import url('https://fonts.googleapis.com/css?family=Noto+Serif'); /* Serif (print) */
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono'); /* Monospace */
 
 :root {
   --font-sans: 'Noto Sans', Arial, Helvetica, sans-serif;
@@ -159,12 +160,6 @@ div {
 }
 svg {
   display: block;
-}
-@media print {
-  svg {
-    max-height: 850px;
-    max-width: 660px;
-  }
 }
 svg[font-family~="serif" i], svg [font-family~="serif" i] {
   font-family: var(--font-serif);
@@ -1188,7 +1183,6 @@ dl > dd > dl {
 /* This should match the element list in writer.text.TextWriter.render_dl() */
 dd > div.artwork:first-child,
 dd > aside:first-child,
-dd > blockquote:first-child,
 dd > figure:first-child,
 dd > ol:first-child,
 dd > div.sourcecode:first-child,
@@ -1212,6 +1206,7 @@ li > p:last-of-type:only-child {
 <link href="rfc-local.css" rel="stylesheet" type="text/css">
 </head>
 <body class="xml2rfc">
+<script src="metadata.min.js"></script>
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
@@ -1230,7 +1225,7 @@ li > p:last-of-type:only-child {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-wullink-rpp-json-01</dd>
+<dd class="internet-draft">draft-wullink-rpp-json-02</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-06-16" class="published">16 June 2026</time>
@@ -1628,7 +1623,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
 <p id="section-3-3">All JSON Schema definitions in this document use JSON Schema draft 2020-12 <span>[<a href="#JSON-SCHEMA" class="cite xref">JSON-SCHEMA</a>]</span>, and where not provided with a <code>$schema</code> keyword, the following default applies:<a href="#section-3-3" class="pilcrow">¶</a></p>
 <div class="lang-json sourcecode" id="section-3-4">
 <pre>"$schema": "https://json-schema.org/draft/2020-12/schema"
-
 </pre><a href="#section-3-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1735,7 +1729,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
   },
   "required": ["name"]
 }
-
 </pre><a href="#section-4.2-3" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-4">Rule 2: A data element with cardinality <code>0-1</code> (zero or one) MUST be represented as an optional JSON property. The element MUST NOT be listed under <code>required</code> in the corresponding JSON Schema. When absent, the element MUST be omitted from the JSON object (not represented as <code>null</code>).<a href="#section-4.2-4" class="pilcrow">¶</a></p>
@@ -1746,7 +1739,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     "expiryDate": { "type": "string", "format": "date-time" }
   }
 }
-
 </pre><a href="#section-4.2-5" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-6">Rule 3: A data element with cardinality <code>0+</code> (zero or more) MUST be represented as an optional JSON array. When no values are present, the property MUST be omitted or represented as an empty array.<a href="#section-4.2-6" class="pilcrow">¶</a></p>
@@ -1760,7 +1752,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     }
   }
 }
-
 </pre><a href="#section-4.2-7" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-8">Rule 4: A data element with cardinality <code>1+</code> (one or more) MUST be represented as a required JSON array with <code>"minItems": 1</code> and the element MUST be listed under <code>required</code> in the corresponding JSON Schema.<a href="#section-4.2-8" class="pilcrow">¶</a></p>
@@ -1776,7 +1767,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
   },
   "required": ["postalInfo"]
 }
-
 </pre><a href="#section-4.2-9" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1795,7 +1785,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     "readOnly": true
   }
 }
-
 </pre><a href="#section-4.3-3" class="pilcrow">¶</a>
 </div>
 <p id="section-4.3-4">Rule 6: Data elements with mutability <code>create-only</code> MUST be annotated with <code>"writeOnly": true</code> in the JSON Schema for request schemas, and excluded from update request schemas. Servers MUST reject requests that attempt to modify a <code>create-only</code> element after object creation.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
@@ -1834,7 +1823,6 @@ A Aggregation represents a relationship between two independent objects, where o
         { "@type": "host", "hostName": "ns2.name.example" }
     ]
 }
-
 </pre><a href="#section-4.4.2-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1879,7 +1867,6 @@ A Aggregation represents a relationship between two independent objects, where o
             }
         ]
 }
-
 </pre><a href="#section-4.4.3-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1909,7 +1896,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
      }
 ]
-
 </pre><a href="#section-4.4.4-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1933,7 +1919,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "id": "ABC-8014"
     }
 }
-
 </pre><a href="#section-4.4.5-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1979,7 +1964,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 ]
-
 </pre><a href="#section-4.4.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2011,7 +1995,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ...
     }
 }
-
 </pre><a href="#section-4.4.7-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2042,7 +2025,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "enum": ["pending", "clientApproved", "clientCancelled",
              "clientRejected", "serverApproved", "serverCancelled"]
 }
-
 </pre><a href="#section-4.6-5" class="pilcrow">¶</a>
 </div>
 <p id="section-4.6-6">Rule 18: Each JSON Schema definition for an RPP object MUST include a <code>"required"</code> array listing all data elements with cardinality <code>1</code> or <code>1+</code>.<a href="#section-4.6-6" class="pilcrow">¶</a></p>
@@ -2054,7 +2036,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "@type": "domainName",
     "name": "example.example"
 }
-
 </pre><a href="#section-4.6-10" class="pilcrow">¶</a>
 </div>
 <p id="section-4.6-11">Rule 21: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <code>authInfo</code> object in the JSON request body. Instead, the client MUST convey the authorization information using the <code>RPP-Authorization</code> HTTP request header as defined in <span>[<a href="#I-D.wullink-rpp-core" class="cite xref">I-D.wullink-rpp-core</a>]</span>. Servers MUST reject any request that includes an <code>authInfo</code> object in the JSON body with an appropriate error response.<a href="#section-4.6-11" class="pilcrow">¶</a></p>
@@ -2108,7 +2089,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.1.2-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2129,7 +2109,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.1.3-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2167,7 +2146,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.1-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2207,7 +2185,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.2-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2243,7 +2220,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.3-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2299,7 +2275,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.4-6" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2336,7 +2311,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.5-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2369,7 +2343,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2401,7 +2374,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.7-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2439,7 +2411,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.8-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2479,7 +2450,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.9-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2526,7 +2496,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.10-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2581,7 +2550,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3.1-3">Create request for Domain Object schema (create-only and read-write properties):<a href="#section-5.3.1-3" class="pilcrow">¶</a></p>
@@ -2602,7 +2570,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.1-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3.1-5">Read response schema (read-write and read-only properties):<a href="#section-5.3.1-5" class="pilcrow">¶</a></p>
@@ -2639,7 +2606,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.1-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3.1-7">Read response for Domain Object schema (read-write and read-only properties):<a href="#section-5.3.1-7" class="pilcrow">¶</a></p>
@@ -2660,7 +2626,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.1-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2699,7 +2664,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.2-5" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3.2-6">Read response schema (read-write and read-only properties):<a href="#section-5.3.2-6" class="pilcrow">¶</a></p>
@@ -2725,7 +2689,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.3.2-7" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2779,7 +2742,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-5" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-6">Read response schema (read-write and read-only properties):<a href="#section-5.4-6" class="pilcrow">¶</a></p>
@@ -2828,7 +2790,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-7" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-8">Reference schema (identifier only):<a href="#section-5.4-8" class="pilcrow">¶</a></p>
@@ -2847,7 +2808,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-9" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2899,7 +2859,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.5-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5-5">Read response schema (read-write and read-only properties):<a href="#section-5.5-5" class="pilcrow">¶</a></p>
@@ -2944,7 +2903,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.5-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5-7">Reference schema (identifier only):<a href="#section-5.5-7" class="pilcrow">¶</a></p>
@@ -2963,7 +2921,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.5-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2998,7 +2955,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5.6-5">Read response schema (read-write and read-only properties):<a href="#section-5.6-5" class="pilcrow">¶</a></p>
@@ -3024,7 +2980,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5.6-7">Reference schema (identifier only):<a href="#section-5.6-7" class="pilcrow">¶</a></p>
@@ -3043,7 +2998,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3099,7 +3053,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2fooBAR"
     }
 }
-
 </pre><a href="#section-6.1.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.1-3">Example domain create response from a server with RGP support:<a href="#section-6.1.1-3" class="pilcrow">¶</a></p>
@@ -3120,7 +3073,6 @@ A Aggregation represents a relationship between two independent objects, where o
     ],
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.1.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3180,7 +3132,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2fooBAR"
     }
 }
-
 </pre><a href="#section-6.1.2-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3201,7 +3152,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2BARfoo"
     }
 }
-
 </pre><a href="#section-6.1.3-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.3-3">Example domain update response:<a href="#section-6.1.3-3" class="pilcrow">¶</a></p>
@@ -3223,7 +3173,6 @@ A Aggregation represents a relationship between two independent objects, where o
     ],
     "registrant": { "@type": "contact", "id": "sh8013" }
 }
-
 </pre><a href="#section-6.1.3-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3245,7 +3194,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "spClientId": "ClientX"
     }
 }
-
 </pre><a href="#section-6.1.4-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3266,7 +3214,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "unit": "y"
     }
 }
-
 </pre><a href="#section-6.1.5-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.5-4">Example domain renew response:<a href="#section-6.1.5-4" class="pilcrow">¶</a></p>
@@ -3276,7 +3223,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "name": "example.example",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.1.5-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3298,7 +3244,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "unit": "y"
     }
 }
-
 </pre><a href="#section-6.1.6-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.6-4">Example domain transfer response (Transfer Process Object):<a href="#section-6.1.6-4" class="pilcrow">¶</a></p>
@@ -3313,7 +3258,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actionDate": "2000-06-13T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.1.6-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3335,7 +3279,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actionDate": "2000-06-11T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.1.7-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3358,7 +3301,6 @@ A Aggregation represents a relationship between two independent objects, where o
 <pre>{
     "@type": "restoreProcess"
 }
-
 </pre><a href="#section-6.1.9-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.9-3">Example domain restore response (Restore Process Object, server requires a report):<a href="#section-6.1.9-3" class="pilcrow">¶</a></p>
@@ -3369,7 +3311,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.1.9-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.9-5">Example domain restore request with inline restore report (single-step; object restored immediately):<a href="#section-6.1.9-5" class="pilcrow">¶</a></p>
@@ -3389,7 +3330,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.1.9-6" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.9-7">Example domain restore response with inline report (Restore Process Object, immediately restored):<a href="#section-6.1.9-7" class="pilcrow">¶</a></p>
@@ -3400,7 +3340,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.1.9-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3427,7 +3366,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.1.10-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.10-3">Example domain restore report response (Restore Process Object):<a href="#section-6.1.10-3" class="pilcrow">¶</a></p>
@@ -3438,7 +3376,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.1.10-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3457,7 +3394,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.1.11-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.11-4">Example domain restore query response (Restore Process Object, object restored):<a href="#section-6.1.11-4" class="pilcrow">¶</a></p>
@@ -3468,7 +3404,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.1.11-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3518,7 +3453,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2fooBAR"
     }
 }
-
 </pre><a href="#section-6.2.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.1-3">Example contact create response:<a href="#section-6.2.1-3" class="pilcrow">¶</a></p>
@@ -3559,7 +3493,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "fax": ["+1.7035555556"],
     "email": ["jdoe@example.example"]
 }
-
 </pre><a href="#section-6.2.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3605,7 +3538,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "voice": ["+1.7035555555"],
     "email": ["jdoe@example.example"]
 }
-
 </pre><a href="#section-6.2.2-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3638,7 +3570,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "@type": "transferProcess",
     "transferDir": "pull"
 }
-
 </pre><a href="#section-6.2.5-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.5-4">Example contact transfer response (Transfer Process Object):<a href="#section-6.2.5-4" class="pilcrow">¶</a></p>
@@ -3652,7 +3583,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.2.5-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3673,7 +3603,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.2.6-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3728,7 +3657,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.1-3">Example host create response:<a href="#section-6.3.1-3" class="pilcrow">¶</a></p>
@@ -3770,7 +3698,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3813,7 +3740,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.2-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3846,7 +3772,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.3-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3869,7 +3794,6 @@ A Aggregation represents a relationship between two independent objects, where o
 <pre>{
   "@type": "restoreProcess"
 }
-
 </pre><a href="#section-6.3.5-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-3">Example host restore request response (Restore Process Object, server requires a report):<a href="#section-6.3.5-3" class="pilcrow">¶</a></p>
@@ -3880,7 +3804,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.5-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-5">Example host restore request with inline restore report (single-step; object restored immediately):<a href="#section-6.3.5-5" class="pilcrow">¶</a></p>
@@ -3900,7 +3823,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.5-6" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-7">Example host restore response with inline report (Restore Process Object, immediately restored):<a href="#section-6.3.5-7" class="pilcrow">¶</a></p>
@@ -3911,7 +3833,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.5-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3938,7 +3859,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.6-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.6-3">Example host restore report response (Restore Process Object):<a href="#section-6.3.6-3" class="pilcrow">¶</a></p>
@@ -3949,7 +3869,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.3.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3968,7 +3887,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.7-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.7-4">Example host restore query response (Restore Process Object, object restored):<a href="#section-6.3.7-4" class="pilcrow">¶</a></p>
@@ -3979,7 +3897,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.3.7-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4070,7 +3987,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <dl class="references">
 <dt id="I-D.kowalik-rpp-data-objects">[I-D.kowalik-rpp-data-objects]</dt>
         <dd>
-<span class="refAuthor">Kowalik, P.</span> and <span class="refAuthor">M. Wullink</span>, <span class="refTitle">"RESTful Provisioning Protocol (RPP) Data Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-kowalik-rpp-data-objects-03</span>, <time datetime="2026-03-02" class="refDate">2 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-03">https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-03</a>&gt;</span>. </dd>
+<span class="refAuthor">Kowalik, P.</span> and <span class="refAuthor">M. Wullink</span>, <span class="refTitle">"RESTful Provisioning Protocol (RPP) Data Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-kowalik-rpp-data-objects-04</span>, <time datetime="2026-06-12" class="refDate">12 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-04">https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-04</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.wullink-rpp-core">[I-D.wullink-rpp-core]</dt>
         <dd>
