@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 13 September 2026                                         DENIC
-                                                           12 March 2026
+Expires: 18 December 2026                                          DENIC
+                                                            16 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 September 2026.
+   This Internet-Draft will expire on 18 December 2026.
 
 Copyright Notice
 
@@ -132,7 +132,8 @@ Table of Contents
    9.  Security Considerations
    10. Acknowledgments
    11. Change History
-     11.1.  Version 00 to 01
+     11.1.  Version 01 to 02
+     11.2.  Version 00 to 01
    12. References
      12.1.  Normative References
      12.2.  Informative References
@@ -335,7 +336,7 @@ Table of Contents
      "properties": {
        "postalInfo": {
          "type": "array",
-         "items": { "$ref": "#/$defs/postalInfo" },
+         "items": { "$ref": "#/$defs/postalInfo"},
          "minItems": 1
        }
      },
@@ -551,6 +552,7 @@ Table of Contents
                        "type": "PERSON",
                        "name": "John Doe",
                        "org": "Example Inc.",
+                       "blah": "ffo",
                        "addr": {
                            "@type": "postalData",
                            "street": [
@@ -636,11 +638,13 @@ Table of Contents
    Rule 18: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
-   Rule 19: JSON Schema definitions for shared RPP objects MUST NOT use
-   "additionalProperties": false if the schema is intended to be
-   extended, However, root schemas MUST use "unevaluatedProperties":
-   false to prevent the presence of undeclared properties in JSON
-   subschemas.
+   Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT
+   use "additionalProperties": false or "unevaluatedProperties": false.
+   However, before validation, schemas on every property level MUST be
+   enriched with "unevaluatedProperties": false property to prevent the
+   presence of undeclared properties in JSON instances.  JSON Schemas
+   for Object type MAY use "additionalProperties": true to allow for
+   free key definition.
 
    Rule 20: Every RPP object representation MUST include a "@type"
    property whose value is the object's identifier as registered in the
@@ -879,7 +883,7 @@ Table of Contents
            "name":  { "type": "string" },
            "class": { "type": "string" },
            "type":  { "type": "string" },
-           "rdata": { "type": "object" }
+           "rdata": { "type": "object", "unevaluatedProperties": true }
          },
          "required": ["@type", "name", "type", "rdata"]
        }
@@ -1091,7 +1095,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/transferProcess.create",
-     "unevaluatedProperties": false,
      "$defs": {
        "transferProcess.create": {
          "type": "object",
@@ -1132,7 +1135,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/transferProcess.create.domain",
-     "unevaluatedProperties": false,
      "$defs": {
        "transferProcess.create.domain": {
          "allOf": [
@@ -1152,7 +1154,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/transferProcess.read",
-     "unevaluatedProperties": false,
      "$defs": {
        "transferProcess.read": {
          "type": "object",
@@ -1170,7 +1171,7 @@ Table of Contents
              "readOnly": true
            },
            "gainingClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
-           "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
+           "reqClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true},
            "requestDate": { "type": "string", "format": "date-time", "readOnly": true },
            "actClientId": { "$ref": "#/$defs/clientIdentifier", "readOnly": true },
            "actionDate":  { "type": "string", "format": "date-time", "readOnly": true }
@@ -1178,6 +1179,26 @@ Table of Contents
          "required": [
            "@type", "transferDir", "trStatus", "reqClientId",
            "requestDate", "actClientId", "actionDate"
+         ]
+       }
+     }
+   }
+
+   Read response for Domain Object schema (read-write and read-only
+   properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.read.domain",
+     "$defs": {
+       "transferProcess.read.domain": {
+         "allOf": [
+           { "$ref": "#/$defs/transferProcess.read" },
+           {
+             "properties": {
+               "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+             }
+           }
          ]
        }
      }
@@ -1204,7 +1225,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/restoreProcess.create",
-     "unevaluatedProperties": false,
      "$defs": {
        "restoreProcess.create": {
          "type": "object",
@@ -1222,7 +1242,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/restoreProcess.read",
-     "unevaluatedProperties": false,
      "$defs": {
        "restoreProcess.read": {
          "type": "object",
@@ -1260,7 +1279,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/domainObject.create",
-     "unevaluatedProperties": false,
      "$defs": {
        "domainObject.create": {
          "type": "object",
@@ -1297,7 +1315,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/domainObject.read",
-     "unevaluatedProperties": false,
      "$defs": {
        "domainObject.read": {
          "type": "object",
@@ -1345,7 +1362,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/domainObject.reference",
-     "unevaluatedProperties": false,
      "$defs": {
        "domainObject.reference": {
          "type": "object",
@@ -1372,7 +1388,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/contactObject.create",
-     "unevaluatedProperties": false,
      "$defs": {
        "contactObject.create": {
          "type": "object",
@@ -1410,7 +1425,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/contactObject.read",
-     "unevaluatedProperties": false,
      "$defs": {
        "contactObject.read": {
          "type": "object",
@@ -1454,7 +1468,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/contactObject.reference",
-     "unevaluatedProperties": false,
      "$defs": {
        "contactObject.reference": {
          "type": "object",
@@ -1482,7 +1495,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/hostObject.create",
-     "unevaluatedProperties": false,
      "$defs": {
        "hostObject.create": {
          "type": "object",
@@ -1501,7 +1513,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/hostObject.read",
-     "unevaluatedProperties": false,
      "$defs": {
        "hostObject.read": {
          "type": "object",
@@ -1526,7 +1537,6 @@ Table of Contents
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
      "$ref": "#/$defs/hostObject.reference",
-     "unevaluatedProperties": false,
      "$defs": {
        "hostObject.reference": {
          "type": "object",
@@ -1627,62 +1637,21 @@ Table of Contents
        "nameservers": [
            {
                "@type": "host",
-               "hostName": "ns1.example.example",
-               "provMetadata": {
-                   "@type": "provMetadata",
-                   "repositoryId": "NS1EXAMPLE-REP",
-                   "spClientId": "ClientX"
-               },
-               "status": [ { "@type": "status", "label": "ok" } ],
-               "dns": {
-                   "@type": "dnsData",
-                   "records": [
-                       {
-                           "@type": "dnsRecord",
-                           "name": "@",
-                           "type": "ns",
-                           "rdata": { "nsdname": "ns1.example.example." }
-                       },
-                       {
-                           "@type": "dnsRecord",
-                           "name": "ns1.example.example.",
-                           "type": "a",
-                           "rdata": { "address": "192.0.2.1" }
-                       }
-                   ]
-               }
+               "hostName": "ns1.example.example"
            },
            {
                "@type": "host",
-               "hostName": "ns1.example.example",
-               "provMetadata": {
-                   "@type": "provMetadata",
-                   "repositoryId": "NS1EXAMPLENET-REP",
-                   "spClientId": "ClientZ"
-               },
-               "status": [ { "@type": "status", "label": "ok" } ]
+               "hostName": "ns2.example.example"
            }
        ],
        "subordinateHosts": [
            {
                "@type": "host",
-               "hostName": "ns1.example.example",
-               "provMetadata": {
-                   "@type": "provMetadata",
-                   "repositoryId": "NS1EXAMPLE-REP",
-                   "spClientId": "ClientX"
-               },
-               "status": [ { "@type": "status", "label": "ok" } ]
+               "hostName": "ns1.example.example"
            },
            {
                "@type": "host",
-               "hostName": "ns2.example.example",
-               "provMetadata": {
-                   "@type": "provMetadata",
-                   "repositoryId": "NS2EXAMPLE-REP",
-                   "spClientId": "ClientX"
-               },
-               "status": [ { "@type": "status", "label": "ok" } ]
+               "hostName": "ns2.example.example"
            }
        ],
        "expiryDate": "2005-04-03T22:00:00.0Z",
@@ -2362,7 +2331,13 @@ Table of Contents
 
 11.  Change History
 
-11.1.  Version 00 to 01
+11.1.  Version 01 to 02
+
+   -  Sync JSON schemas and examples with the RPP Data Objects
+   -  Added RGP schemas and examples
+   -  Adjust rule 19 and all schemas to match it.
+
+11.2.  Version 00 to 01
 
    -  Updated all examples and schemas to be based on RPP Data Object
       and no longer on EPP XML schemas.  (Issue #15)
@@ -2386,9 +2361,9 @@ Table of Contents
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol
               (RPP)", Work in Progress, Internet-Draft, draft-wullink-
-              rpp-core-04, 2 March 2026,
+              rpp-core-05, 15 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-wullink-rpp-
-              core-04>.
+              core-05>.
 
    [ISO3166-1]
               International Organization for Standardization, "Codes for

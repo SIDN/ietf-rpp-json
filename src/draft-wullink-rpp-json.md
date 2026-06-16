@@ -2067,6 +2067,8 @@ TODO
 
 ## Version 01 to 02
 
+- Sync JSON schemas and examples with the RPP Data Objects
+- Added RGP schemas and examples
 - Adjust rule 19 and all schemas to match it.
 
 ## Version 00 to 01
