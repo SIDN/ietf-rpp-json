@@ -10,7 +10,7 @@ TocDepth = 4
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-wullink-rpp-json-01"
+value = "draft-wullink-rpp-json-02"
 stream = "IETF"
 status = "standard"
 
