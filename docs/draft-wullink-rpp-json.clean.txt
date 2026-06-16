@@ -1511,9 +1511,9 @@ Table of Contents
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/contactObject.create",
+     "$ref": "#/$defs/contactObject.update",
      "$defs": {
-       "contactObject.create": {
+       "contactObject.update": {
          "type": "object",
          "properties": {
            "@type":  { "type": "string", "const": "contact" },
@@ -2080,10 +2080,7 @@ Table of Contents
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
-       "fax": ["+1.7035555556"],
-       "email": ["jdoe@example.example"]
+       }
    }
 
 6.2.2.  Read
@@ -2137,9 +2134,7 @@ Table of Contents
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
-       "email": ["jdoe@example.example"]
+       }
    }
 
 6.2.3.  Update

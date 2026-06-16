@@ -1189,9 +1189,9 @@ Update request schema (read-write properties):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/contactObject.create",
+  "$ref": "#/$defs/contactObject.update",
   "$defs": {
-    "contactObject.create": {
+    "contactObject.update": {
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
@@ -1791,10 +1791,7 @@ Example contact create response:
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ```
 
@@ -1850,9 +1847,7 @@ Example contact read response:
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ```
 

@@ -1129,9 +1129,9 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/contactObject.create",
+  "$ref": "#/$defs/contactObject.update",
   "$defs": {
-    "contactObject.create": {
+    "contactObject.update": {
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
@@ -1689,10 +1689,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "fax": ["+1.7035555556"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ]]></sourcecode>
 </section>
@@ -1747,9 +1744,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "emails": {
             "email": { "address": "jdoe@example.example" }
         }
-    },
-    "voice": ["+1.7035555555"],
-    "email": ["jdoe@example.example"]
+    }
 }
 ]]></sourcecode>
 </section>

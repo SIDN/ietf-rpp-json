@@ -131,10 +131,10 @@ Internet-Draft                JSON for RPP                     June 2026
        6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  47
        6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  50
        6.2.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  51
-       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  53
+       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  52
        6.2.5.  Transfer Request  . . . . . . . . . . . . . . . . . .  53
        6.2.6.  Transfer Query  . . . . . . . . . . . . . . . . . . .  53
-       6.2.7.  Transfer Cancel / Reject / Approve  . . . . . . . . .  54
+       6.2.7.  Transfer Cancel / Reject / Approve  . . . . . . . . .  53
      6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  54
        6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  54
        6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  55
@@ -1984,9 +1984,9 @@ Internet-Draft                JSON for RPP                     June 2026
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/contactObject.create",
+     "$ref": "#/$defs/contactObject.update",
      "$defs": {
-       "contactObject.create": {
+       "contactObject.update": {
          "type": "object",
          "properties": {
            "@type":  { "type": "string", "const": "contact" },
@@ -2736,8 +2736,8 @@ Internet-Draft                JSON for RPP                     June 2026
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
+       }
+   }
 
 
 
@@ -2745,10 +2745,6 @@ Wullink & Kowalik       Expires 18 December 2026               [Page 49]
 
 Internet-Draft                JSON for RPP                     June 2026
 
-
-       "fax": ["+1.7035555556"],
-       "email": ["jdoe@example.example"]
-   }
 
 6.2.2.  Read
 
@@ -2794,6 +2790,10 @@ Internet-Draft                JSON for RPP                     June 2026
                    ],
                    "countryCode": "US"
                }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5555" }
+           },
 
 
 
@@ -2802,16 +2802,10 @@ Wullink & Kowalik       Expires 18 December 2026               [Page 50]
 Internet-Draft                JSON for RPP                     June 2026
 
 
-           },
-           "phones": {
-               "voice": { "number": "tel:+1-703-555-5555" }
-           },
            "emails": {
                "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
-       "email": ["jdoe@example.example"]
+       }
    }
 
 6.2.3.  Update
@@ -2846,18 +2840,6 @@ Internet-Draft                JSON for RPP                     June 2026
 
    Example contact update response:
 
-
-
-
-
-
-
-
-Wullink & Kowalik       Expires 18 December 2026               [Page 51]
-
-Internet-Draft                JSON for RPP                     June 2026
-
-
    {
        "@type": "contact",
        "id": "jd1234",
@@ -2868,6 +2850,14 @@ Internet-Draft                JSON for RPP                     June 2026
            "crClientId": "ClientX",
            "crDate": "1999-04-03T22:00:00.0Z",
            "upClientId": "ClientX",
+
+
+
+Wullink & Kowalik       Expires 18 December 2026               [Page 51]
+
+Internet-Draft                JSON for RPP                     June 2026
+
+
            "upDate": "2025-06-01T10:00:00.0Z"
        },
        "status": [
@@ -2906,6 +2896,16 @@ Internet-Draft                JSON for RPP                     June 2026
                "email": { "address": "jdoe-new@example.example" }
            }
        }
+   }
+
+6.2.4.  Delete
+
+   The contact delete operation takes the contact identifier as the
+   resource identifier.  No request body is required.
+
+
+
+
 
 
 
@@ -2913,13 +2913,6 @@ Wullink & Kowalik       Expires 18 December 2026               [Page 52]
 
 Internet-Draft                JSON for RPP                     June 2026
 
-
-   }
-
-6.2.4.  Delete
-
-   The contact delete operation takes the contact identifier as the
-   resource identifier.  No request body is required.
 
 6.2.5.  Transfer Request
 
@@ -2960,6 +2953,13 @@ Internet-Draft                JSON for RPP                     June 2026
        "actionDate": "2000-06-11T22:00:00.0Z"
    }
 
+6.2.7.  Transfer Cancel / Reject / Approve
+
+   Transfer cancel, reject, and approve responses return the Transfer
+   Process Object.  The response structure is the same as the Transfer
+   Query response above.  The trStatus value reflects the outcome of the
+   operation (e.g. "clientCancelled", "clientRejected", or
+   "clientApproved").
 
 
 
@@ -2969,14 +2969,6 @@ Wullink & Kowalik       Expires 18 December 2026               [Page 53]
 
 Internet-Draft                JSON for RPP                     June 2026
 
-
-6.2.7.  Transfer Cancel / Reject / Approve
-
-   Transfer cancel, reject, and approve responses return the Transfer
-   Process Object.  The response structure is the same as the Transfer
-   Query response above.  The trStatus value reflects the outcome of the
-   operation (e.g. "clientCancelled", "clientRejected", or
-   "clientApproved").
 
    Note: Unlike domain transfers, contact transfers do not include an
    expiryDate field in the Transfer Process Object, as contacts do not
@@ -3017,6 +3009,14 @@ Internet-Draft                JSON for RPP                     June 2026
    }
 
    Example host create response:
+
+
+
+
+
+
+
+
 
 
 
