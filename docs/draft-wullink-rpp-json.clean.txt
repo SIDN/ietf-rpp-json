@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 18 December 2026                                          DENIC
-                                                            16 June 2026
+Expires: 19 December 2026                                          DENIC
+                                                            17 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 18 December 2026.
+   This Internet-Draft will expire on 19 December 2026.
 
 Copyright Notice
 
@@ -73,8 +73,9 @@ Table of Contents
        4.4.6.  Labelled Composition
        4.4.7.  Dictionary Composition
      4.5.  Object Identifier Rules
-     4.6.  JSON Schema Definition Rules
-       4.6.1.  RPP Profiles and Validation
+     4.6.  External Type Embedding Rules
+     4.7.  JSON Schema Definition Rules
+       4.7.1.  RPP Profiles and Validation
    5.  JSON Schema Definitions
      5.1.  Common Data Types Schemas
        5.1.1.  Identifier
@@ -88,14 +89,14 @@ Table of Contents
        5.2.5.  DNS Operational Controls Object
        5.2.6.  DNS Data Object
        5.2.7.  Authorisation Information Object
-       5.2.8.  Postal Address Object
-       5.2.9.  Postal Info Object
-       5.2.10. Restore Report Object
+       5.2.8.  JSContact Card Object
+       5.2.9.  Restore Report Object
      5.3.  Process Object Schemas
        5.3.1.  Transfer Process Object
        5.3.2.  Restore Process Object
      5.4.  Domain Name Data Object
      5.5.  Contact Data Object
+       5.5.1.  JSContact Profile for RPP
      5.6.  Host Data Object
      5.7.  Organisation Data Object
    6.  Examples
@@ -234,7 +235,7 @@ Table of Contents
    2020-12 [JSON-SCHEMA], and where not provided with a $schema keyword,
    the following default applies:
 
-   "$schema": "https://json-schema.org/draft/2020-12/schema"
+     "$schema": "https://json-schema.org/draft/2020-12/schema"
 
 4.  JSON Representation Rules
 
@@ -334,13 +335,13 @@ Table of Contents
    {
      "type": "object",
      "properties": {
-       "postalInfo": {
+       "records": {
          "type": "array",
-         "items": { "$ref": "#/$defs/postalInfo"},
+         "items": { "$ref": "#/$defs/dnsRecord" },
          "minItems": 1
        }
      },
-     "required": ["postalInfo"]
+     "required": ["records"]
    }
 
 4.3.  Mutability Rules
@@ -538,37 +539,21 @@ Table of Contents
    array MUST contain a label property alongside the data elements of
    the composed type.
 
-   Example: contact postal info (LabelledComposition[Contact Object]):
+   Example: remarks (LabelledComposition[Remark Object]):
 
-   "contacts": [
+   "remarks": [
        {
-           "label": "admin",
+           "label": "public",
            "object": {
-               "@type": "contact",
-               "id": "jd1234",
-               "postalInfo": {
-                   "int": {
-                       "@type": "postalInfo",
-                       "type": "PERSON",
-                       "name": "John Doe",
-                       "org": "Example Inc.",
-                       "blah": "ffo",
-                       "addr": {
-                           "@type": "postalData",
-                           "street": [
-                               "123 Example Dr.",
-                               "Suite 100"
-                           ],
-                           "city": "Dulles",
-                           "sp": "VA",
-                           "pc": "20166-6503",
-                           "cc": "US"
-                       }
-                   }
-               },
-               "voice": ["+1.7035555555"],
-               "fax": ["+1.7035555556"],
-               "email": ["jdoe@example.example"]
+               "@type": "remark",
+               "description": "This domain is used for test purposes."
+           }
+       },
+       {
+           "label": "private",
+           "object": {
+               "@type": "remark",
+               "description": "Internal note for the sponsoring client."
            }
        }
    ]
@@ -583,25 +568,17 @@ Table of Contents
    object where each key is the unique label and the corresponding value
    is the fully embedded child object.
 
-   Example: contact postal info (DictionaryComposition[Postal Info
+   Example: remarks keyed by scope (DictionaryComposition[Remark
    Object]):
 
-   "addresses": {
-       "int": {
-           "@type": "postalInfo",
-           "type": "PERSON",
-           "name": "John Doe",
-           "addr": {
-               "@type": "postalData",
-               "street": ["123 Example Dr."],
-               "city": "Dulles",
-               "sp": "VA",
-               "pc": "20166-6503",
-               "cc": "US"
-           }
+   "remarks": {
+       "public": {
+           "@type": "remark",
+           "description": "This domain is used for test purposes."
        },
-       "loc": {
-           ...
+       "private": {
+           "@type": "remark",
+           "description": "Internal note for the sponsoring client."
        }
    }
 
@@ -616,15 +593,36 @@ Table of Contents
    composition), all data elements of the object MUST be represented as
    properties of a JSON object according to the rules of this section.
 
-4.6.  JSON Schema Definition Rules
+4.6.  External Type Embedding Rules
 
-   Rule 15: Each RPP component object and resource object MUST have a
+   RPP data objects may include data elements whose types are defined by
+   external specifications (e.g., JSContact in [RFC9553]).  When
+   embedding a value of an externally defined type into a JSON
+   representation, the following rules apply, in order of preference:
+
+   Rule 15: If the external type has a native JSON representation (i.e.,
+   the external specification defines how the type is represented using
+   the JSON format), the value MUST be embedded as a valid JSON element
+   using the native JSON representation defined by that specification.
+
+   Rule 16: If the external type does not have a native JSON
+   representation but has a native UTF-8 encoded text representation,
+   the value MUST be embedded as a JSON string using the UTF-8 encoding.
+
+   Rule 17: If the external type has neither a native JSON nor a native
+   UTF-8 text representation, the binary representation of the value
+   MUST be Base64-encoded ([RFC4648], Section 4) and embedded as a JSON
+   string.
+
+4.7.  JSON Schema Definition Rules
+
+   Rule 18: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
    placed in the $defs keyword of the JSON Schema document.
 
-   Rule 16: Identifier fields MUST use "type": "string" in JSON Schema.
+   Rule 19: Identifier fields MUST use "type": "string" in JSON Schema.
 
-   Rule 17: Enumeration constraints on string fields MUST be expressed
+   Rule 20: Enumeration constraints on string fields MUST be expressed
    using the "enum" keyword in JSON Schema.
 
    Example (Transfer Status enum):
@@ -635,10 +633,10 @@ Table of Contents
                 "clientRejected", "serverApproved", "serverCancelled"]
    }
 
-   Rule 18: Each JSON Schema definition for an RPP object MUST include a
+   Rule 21: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
-   Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT
+   Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT
    use "additionalProperties": false or "unevaluatedProperties": false.
    However, before validation, schemas on every property level MUST be
    enriched with "unevaluatedProperties": false property to prevent the
@@ -646,7 +644,7 @@ Table of Contents
    for Object type MAY use "additionalProperties": true to allow for
    free key definition.
 
-   Rule 20: Every RPP object representation MUST include a "@type"
+   Rule 23: Every RPP object representation MUST include a "@type"
    property whose value is the object's identifier as registered in the
    IANA RPP Data Object Registry.  This property enables identification
    and allows clients and servers to unambiguously determine the type of
@@ -663,7 +661,7 @@ Table of Contents
        "name": "example.example"
    }
 
-   Rule 21: When a transfer request or other operation requires
+   Rule 24: When a transfer request or other operation requires
    authorization information (e.g., EPP-style authinfo), the client MUST
    NOT include the authInfo object in the JSON request body.  Instead,
    the client MUST convey the authorization information using the RPP-
@@ -672,7 +670,7 @@ Table of Contents
    includes an authInfo object in the JSON body with an appropriate
    error response.
 
-4.6.1.  RPP Profiles and Validation
+4.7.1.  RPP Profiles and Validation
 
    RPP profiles, such as the EPP Compatibility Profile defined in
    [I-D.kowalik-rpp-data-objects], may impose additional constraints on
@@ -987,65 +985,124 @@ Table of Contents
      }
    }
 
-5.2.8.  Postal Address Object
+5.2.8.  JSContact Card Object
+
+   The Contact Data Object uses version 2.0 of JSContact [RFC9982] to
+   represent contact information.  The contact component object is
+   defined below according to the RPP JSContact profile described in the
+   Contact Data Object section.
 
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
 
-   -  cc MUST be a valid two-character country code from [ISO3166-1].
-      The JSON Schema pattern enforces uppercase alpha-2 format.
-   -  In EPP Compatibility Profile, city and cc MUST be provided.
+   -  addresses[*].countryCode MUST be a valid two-character ISO 3166-1
+      [ISO3166-1] alpha-2 code when present.
+   -  localizations MUST be fully expanded; nested PatchObject-style
+      keys (e.g., "addresses/addr/full") are NOT allowed.
+   -  When phones[*].features is absent, the number MUST be treated as a
+      voice number.
 
    {
      "$defs": {
-       "postalData": {
+       "Card": {
          "type": "object",
          "properties": {
-           "@type": { "type": "string", "const": "postalData" },
-           "street": {
-             "type": "array",
-             "items": { "type": "string" }
+           "@type":    { "type": "string", "const": "Card" },
+           "version":  { "type": "string", "const": "2.0" },
+           "kind":     { "type": "string", "enum": ["individual", "org"] },
+           "language": { "type": "string" },
+           "name": {
+             "type": "object",
+             "properties": {
+               "full": { "type": "string" },
+               "components": {
+                 "type": "array",
+                 "items": {
+                   "type": "object",
+                   "properties": {
+                     "kind":  { "type": "string", "enum": ["given", "surname"] },
+                     "value": { "type": "string" }
+                   },
+                   "required": ["kind", "value"]
+                 }
+               }
+             }
            },
-           "city":  { "type": "string" },
-           "sp":    { "type": "string" },
-           "pc":    { "type": "string" },
-           "cc":    { "type": "string", "pattern": "^[A-Z]{2}$" }
+           "organizations": {
+             "type": "object",
+             "additionalProperties": {
+               "type": "object",
+               "properties": {
+                 "name": { "type": "string" }
+               }
+             }
+           },
+           "addresses": {
+             "type": "object",
+             "additionalProperties": {
+               "type": "object",
+               "properties": {
+                 "full":        { "type": "string" },
+                 "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+                 "components": {
+                   "type": "array",
+                   "items": {
+                     "type": "object",
+                     "properties": {
+                       "kind":  { "type": "string", "enum": ["name", "locality", "region", "postcode", "country"] },
+                       "value": { "type": "string" }
+                     },
+                     "required": ["kind", "value"]
+                   }
+                 }
+               }
+             }
+           },
+           "phones": {
+             "type": "object",
+             "additionalProperties": {
+               "type": "object",
+               "properties": {
+                 "number":   { "type": "string" },
+                 "features": {
+                   "type": "object",
+                   "additionalProperties": {
+                     "type": "boolean"
+                   }
+                 }
+               },
+               "required": ["number"]
+             }
+           },
+           "emails": {
+             "type": "object",
+             "additionalProperties": {
+               "type": "object",
+               "properties": {
+                 "address": { "type": "string", "format": "email" }
+               },
+               "required": ["address"]
+             }
+           },
+           "links": {
+             "type": "object",
+             "additionalProperties": {
+               "type": "object",
+               "properties": {
+                 "uri":  { "type": "string", "format": "uri" },
+                 "kind": { "type": "string", "const": "contact" }
+               },
+               "required": ["uri"]
+             }
+           },
+           "localizations": { "type": "object" }
          },
-         "required": ["@type"]
+         "required": ["@type", "version"]
        }
      }
    }
 
-5.2.9.  Postal Info Object
-
-   The following constraints cannot be expressed in JSON Schema and MUST
-   be enforced by implementations:
-
-   -  name MAY be required by implementations when type is "PERSON".  In
-      EPP Compatibility Profile, name MUST be provided.
-   -  org MAY be required by implementations when type is "ORG".
-   -  In EPP Compatibility Profile, addr MUST be provided.
-
-   {
-     "$defs": {
-       "postalInfo": {
-         "type": "object",
-         "properties": {
-           "@type": { "type": "string", "const": "postalInfo" },
-           "type": {
-             "type": "string",
-             "enum": ["PERSON", "ORG"]
-           },
-           "name": { "type": "string" },
-           "org":  { "type": "string" },
-           "addr": { "$ref": "#/$defs/postalData" }
-         },
-         "required": ["@type"]
-       }
-     }
-   }
-
-5.2.10.  Restore Report Object
+5.2.9.  Restore Report Object
 
    The Restore Report Object contains the redemption grace period
    restore report submitted by the sponsoring client as required by the
@@ -1357,6 +1414,57 @@ Table of Contents
      }
    }
 
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/domainObject.update",
+     "$defs": {
+       "domainObject.update": {
+         "type": "object",
+         "properties": {
+           "@type": { "type": "string", "const": "domainName" },
+           "registrant": { "$ref": "#/$defs/contactObject.reference" },
+           "contacts": {
+             "type": "array",
+             "items": {
+               "type": "object",
+               "properties": {
+                 "label": { "type": "string" },
+                 "object": { "$ref": "#/$defs/contactObject.reference" }
+               },
+               "required": ["label", "object"]
+              }
+           },
+           "nameservers": {
+             "type": "array",
+             "items": { "$ref": "#/$defs/hostObject.reference" }
+           },
+           "dns":    { "$ref": "#/$defs/dnsData" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+   Renew minimal response schema (only expire date):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/domainObject.renewResponse",
+     "$defs": {
+       "domainObject.renewResponse": {
+         "type": "object",
+         "properties": {
+           "@type":       { "type": "string", "const": "domainName", "readOnly": true },
+           "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+         },
+         "required": ["@type", "expiryDate"]
+       }
+     }
+   }
+
    Reference schema (identifier only):
 
    {
@@ -1376,12 +1484,30 @@ Table of Contents
 
 5.5.  Contact Data Object
 
+   This document uses version 2.0 of JSContact [RFC9982] for the JSON
+   representation of Contact Data Object contact information.  The
+   contact's name, postal address, phone numbers, email addresses, and
+   other contact details are encapsulated in a JSContact Card object
+   embedded in the card property of the contact JSON object.
+
+5.5.1.  JSContact Profile for RPP
+
+   Since JSContact is a general-purpose representation of contact data,
+   this document defines a restricted usage profile for use within RPP,
+   see [TODO: ref to RPP JSContact profile here:
+   https://github.com/SIDN/ietf-rpp-jscontact-profile
+   (https://github.com/SIDN/ietf-rpp-jscontact-profile)].
+
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
 
-   -  postalInfo keys MUST be either "int" (internationalised, all-
-      ASCII) or "loc" (localised, MAY use non-ASCII characters).  At
-      most one entry of each key is allowed.
+   -  card.name.full MUST be provided in EPP Compatibility Profile.
+   -  card.addresses.addr MUST be provided in EPP Compatibility Profile,
+      containing at least countryCode and a "locality" kind component.
+   -  card.emails.email.address MUST be provided in EPP Compatibility
+      Profile.
+   -  card.addresses[*].countryCode MUST be a valid two-character ISO
+      3166-1 [ISO3166-1] alpha-2 code when present.
 
    Create request schema (create-only and read-write properties):
 
@@ -1392,30 +1518,32 @@ Table of Contents
        "contactObject.create": {
          "type": "object",
          "properties": {
-           "@type": { "type": "string", "const": "contact" },
-           "id": { "type": "string", "writeOnly": true },
-           "postalInfo": {
-             "type": "object",
-             "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-             "minProperties": 1,
-             "maxProperties": 2
-           },
-           "voice": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/phoneNumber" }
-           },
-           "fax": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/phoneNumber" }
-           },
-           "email": {
-             "type": "array",
-             "items": { "type": "string", "format": "email" }
-           },
-           "authInfo":  { "$ref": "#/$defs/authInfo" },
-           "disclose":  { "type": "object" }
+           "@type":  { "type": "string", "const": "contact" },
+           "id":     { "type": "string" },
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "postalInfo"]
+         "required": ["@type", "id", "card"],
+         "unevaluatedProperties": false
+       }
+     }
+   }
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/contactObject.update",
+     "$defs": {
+       "contactObject.update": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact" },
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
+         },
+         "required": ["@type", "card"],
+         "unevaluatedProperties": false
        }
      }
    }
@@ -1429,36 +1557,19 @@ Table of Contents
        "contactObject.read": {
          "type": "object",
          "properties": {
-           "@type": { "type": "string", "const": "contact", "readOnly": true },
-           "id": { "type": "string", "readOnly": true },
+           "@type":  { "type": "string", "const": "contact", "readOnly": true },
+           "id":     { "type": "string", "readOnly": true },
            "provMetadata": { "$ref": "#/$defs/provMetadata" },
            "status": {
              "type": "array",
              "items": { "$ref": "#/$defs/status" },
              "readOnly": true
            },
-           "postalInfo": {
-             "type": "object",
-             "additionalProperties": { "$ref": "#/$defs/postalInfo" },
-             "minProperties": 1,
-             "maxProperties": 2
-           },
-           "voice": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/phoneNumber" }
-           },
-           "fax": {
-             "type": "array",
-             "items": { "$ref": "#/$defs/phoneNumber" }
-           },
-           "email": {
-             "type": "array",
-             "items": { "type": "string", "format": "email" }
-           },
-           "authInfo":  { "$ref": "#/$defs/authInfo" },
-           "disclose":  { "type": "object" }
+           "card":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "provMetadata", "postalInfo"]
+         "required": ["@type", "id", "provMetadata", "card"],
+         "unevaluatedProperties": false
        }
      }
    }
@@ -1472,8 +1583,8 @@ Table of Contents
        "contactObject.reference": {
          "type": "object",
          "properties": {
-           "@type": { "type": "string", "const": "contact", "readOnly": true },
-           "id": { "type": "string", "readOnly": true }
+           "@type":         { "type": "string", "const": "contact", "readOnly": true },
+           "id":            { "type": "string", "readOnly": true }
          },
          "required": ["@type", "id"]
        }
@@ -1722,6 +1833,7 @@ Table of Contents
    Example domain renew request:
 
    {
+       "@type": "domainName.renew",
        "currentExpiryDate": "2005-04-03T22:00:00.0Z",
        "renewalPeriod": {
            "@type": "period",
@@ -1734,7 +1846,6 @@ Table of Contents
 
    {
        "@type": "domainName",
-       "name": "example.example",
        "expiryDate": "2010-04-03T22:00:00.0Z"
    }
 
@@ -1902,28 +2013,40 @@ Table of Contents
    {
        "@type": "contact",
        "id": "jd1234",
-       "postalInfo": {
-           "int": {
-               "@type": "postalInfo",
-               "type": "PERSON",
-               "name": "John Doe",
-               "org": "Example Inc.",
+       "card": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "individual",
+           "name": {
+               "full": "John Doe",
+               "components": [
+                   { "kind": "given",   "value": "John" },
+                   { "kind": "surname", "value": "Doe" }
+               ]
+           },
+           "organizations": {
+               "org": { "name": "Example Inc." }
+           },
+           "addresses": {
                "addr": {
-                   "@type": "postalData",
-                   "street": [
-                       "123 Example Dr.",
-                       "Suite 100"
+                   "components": [
+                       { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                       { "kind": "locality", "value": "Dulles" },
+                       { "kind": "region",   "value": "VA" },
+                       { "kind": "postcode", "value": "20166-6503" },
+                       { "kind": "country",  "value": "United States" }
                    ],
-                   "city": "Dulles",
-                   "sp": "VA",
-                   "pc": "20166-6503",
-                   "cc": "US"
+                   "countryCode": "US"
                }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5555" },
+               "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+           },
+           "emails": {
+               "email": { "address": "jdoe@example.example" }
            }
        },
-       "voice": ["+1.7035555555"],
-       "fax": ["+1.7035555556"],
-       "email": ["jdoe@example.example"],
        "authInfo": {
            "@type": "authInfo",
            "method": "authinfo",
@@ -1946,28 +2069,40 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "postalInfo": {
-           "int": {
-               "@type": "postalInfo",
-               "type": "PERSON",
-               "name": "John Doe",
-               "org": "Example Inc.",
+       "card": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "individual",
+           "name": {
+               "full": "John Doe",
+               "components": [
+                   { "kind": "given",   "value": "John" },
+                   { "kind": "surname", "value": "Doe" }
+               ]
+           },
+           "organizations": {
+               "org": { "name": "Example Inc." }
+           },
+           "addresses": {
                "addr": {
-                   "@type": "postalData",
-                   "street": [
-                       "123 Example Dr.",
-                       "Suite 100"
+                   "components": [
+                       { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                       { "kind": "locality", "value": "Dulles" },
+                       { "kind": "region",   "value": "VA" },
+                       { "kind": "postcode", "value": "20166-6503" },
+                       { "kind": "country",  "value": "United States" }
                    ],
-                   "city": "Dulles",
-                   "sp": "VA",
-                   "pc": "20166-6503",
-                   "cc": "US"
+                   "countryCode": "US"
                }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5555" },
+               "fax":   { "features": { "fax": true }, "number": "tel:+1-703-555-5556" }
+           },
+           "emails": {
+               "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
-       "fax": ["+1.7035555556"],
-       "email": ["jdoe@example.example"]
+       }
    }
 
 6.2.2.  Read
@@ -1989,29 +2124,122 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "postalInfo": {
-           "int": {
-               "@type": "postalInfo",
-               "type": "PERSON",
-               "name": "John Doe",
-               "org": "Example Inc.",
+       "card": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "individual",
+           "name": {
+               "full": "John Doe",
+               "components": [
+                   { "kind": "given",   "value": "John" },
+                   { "kind": "surname", "value": "Doe" }
+               ]
+           },
+           "organizations": {
+               "org": { "name": "Example Inc." }
+           },
+           "addresses": {
                "addr": {
-                   "@type": "postalData",
-                   "street": ["123 Example Dr.", "Suite 100"],
-                   "city": "Dulles",
-                   "sp": "VA",
-                   "pc": "20166-6503",
-                   "cc": "US"
+                   "components": [
+                       { "kind": "name",     "value": "123 Example Dr., Suite 100" },
+                       { "kind": "locality", "value": "Dulles" },
+                       { "kind": "region",   "value": "VA" },
+                       { "kind": "postcode", "value": "20166-6503" },
+                       { "kind": "country",  "value": "United States" }
+                   ],
+                   "countryCode": "US"
                }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5555" }
+           },
+           "emails": {
+               "email": { "address": "jdoe@example.example" }
            }
-       },
-       "voice": ["+1.7035555555"],
-       "email": ["jdoe@example.example"]
+       }
    }
 
 6.2.3.  Update
 
-   TBD
+   Example contact update request:
+
+   {
+       "@type": "contact",
+       "card": {
+           "@type": "Card",
+           "version": "2.0",
+           "addresses": {
+               "addr": {
+                   "components": [
+                       { "kind": "name",     "value": "456 New Street, Suite 200" },
+                       { "kind": "locality", "value": "Reston" },
+                       { "kind": "region",   "value": "VA" },
+                       { "kind": "postcode", "value": "20190" },
+                       { "kind": "country",  "value": "United States" }
+                   ],
+                   "countryCode": "US"
+               }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5556" }
+           },
+           "emails": {
+               "email": { "address": "jdoe-new@example.example" }
+           }
+       }
+   }
+
+   Example contact update response:
+
+   {
+       "@type": "contact",
+       "id": "jd1234",
+       "provMetadata": {
+           "@type": "provMetadata",
+           "repositoryId": "JD1234-REP",
+           "spClientId": "ClientX",
+           "crClientId": "ClientX",
+           "crDate": "1999-04-03T22:00:00.0Z",
+           "upClientId": "ClientX",
+           "upDate": "2025-06-01T10:00:00.0Z"
+       },
+       "status": [
+           { "@type": "status", "label": "ok" }
+       ],
+       "card": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "individual",
+           "name": {
+               "full": "John Doe",
+               "components": [
+                   { "kind": "given",   "value": "John" },
+                   { "kind": "surname", "value": "Doe" }
+               ]
+           },
+           "organizations": {
+               "org": { "name": "Example Inc." }
+           },
+           "addresses": {
+               "addr": {
+                   "components": [
+                       { "kind": "name",     "value": "456 New Street, Suite 200" },
+                       { "kind": "locality", "value": "Reston" },
+                       { "kind": "region",   "value": "VA" },
+                       { "kind": "postcode", "value": "20190" },
+                       { "kind": "country",  "value": "United States" }
+                   ],
+                   "countryCode": "US"
+               }
+           },
+           "phones": {
+               "voice": { "number": "tel:+1-703-555-5556" }
+           },
+           "emails": {
+               "email": { "address": "jdoe-new@example.example" }
+           }
+       }
+   }
 
 6.2.4.  Delete
 
@@ -2333,8 +2561,6 @@ Table of Contents
 
 11.1.  Version 01 to 02
 
-   -  Sync JSON schemas and examples with the RPP Data Objects
-   -  Added RGP schemas and examples
    -  Adjust rule 19 and all schemas to match it.
 
 11.2.  Version 00 to 01
@@ -2354,9 +2580,9 @@ Table of Contents
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-04, 12 June 2026,
+              draft-kowalik-rpp-data-objects-03, 2 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-04>.
+              data-objects-03>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol
@@ -2398,6 +2624,10 @@ Table of Contents
               DOI 10.17487/RFC3915, September 2004,
               <https://www.rfc-editor.org/rfc/rfc3915>.
 
+   [RFC4648]  Josefsson, S., "The Base16, Base32, and Base64 Data
+              Encodings", RFC 4648, DOI 10.17487/RFC4648, October 2006,
+              <https://www.rfc-editor.org/info/rfc4648>.
+
    [RFC5730]  Hollenbeck, S., "Extensible Provisioning Protocol (EPP)",
               STD 69, RFC 5730, DOI 10.17487/RFC5730, August 2009,
               <https://www.rfc-editor.org/info/rfc5730>.
@@ -2410,6 +2640,16 @@ Table of Contents
               Interchange Format", STD 90, RFC 8259,
               DOI 10.17487/RFC8259, December 2017,
               <https://www.rfc-editor.org/info/rfc8259>.
+
+   [RFC9553]  Stepanek, R. and M. Loffredo, "JSContact: A JSON
+              Representation of Contact Data", RFC 9553,
+              DOI 10.17487/RFC9553, May 2024,
+              <https://www.rfc-editor.org/info/rfc9553>.
+
+   [RFC9982]  Stepanek, R., "JSContact Version 2.0: A JSON
+              Representation of Contact Data", RFC 9982,
+              DOI 10.17487/RFC9982, May 2026,
+              <https://www.rfc-editor.org/info/rfc9982>.
 
 12.2.  Informative References
 
