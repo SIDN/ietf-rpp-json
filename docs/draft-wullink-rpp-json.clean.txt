@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 18 December 2026                                          DENIC
-                                                            16 June 2026
+Expires: 19 December 2026                                          DENIC
+                                                            17 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 18 December 2026.
+   This Internet-Draft will expire on 19 December 2026.
 
 Copyright Notice
 
@@ -73,8 +73,9 @@ Table of Contents
        4.4.6.  Labelled Composition
        4.4.7.  Dictionary Composition
      4.5.  Object Identifier Rules
-     4.6.  JSON Schema Definition Rules
-       4.6.1.  RPP Profiles and Validation
+     4.6.  External Type Embedding Rules
+     4.7.  JSON Schema Definition Rules
+       4.7.1.  RPP Profiles and Validation
    5.  JSON Schema Definitions
      5.1.  Common Data Types Schemas
        5.1.1.  Identifier
@@ -592,15 +593,36 @@ Table of Contents
    composition), all data elements of the object MUST be represented as
    properties of a JSON object according to the rules of this section.
 
-4.6.  JSON Schema Definition Rules
+4.6.  External Type Embedding Rules
 
-   Rule 15: Each RPP component object and resource object MUST have a
+   RPP data objects may include data elements whose types are defined by
+   external specifications (e.g., JSContact in [RFC9553]).  When
+   embedding a value of an externally defined type into a JSON
+   representation, the following rules apply, in order of preference:
+
+   Rule 15: If the external type has a native JSON representation (i.e.,
+   the external specification defines how the type is represented using
+   the JSON format), the value MUST be embedded as a valid JSON element
+   using the native JSON representation defined by that specification.
+
+   Rule 16: If the external type does not have a native JSON
+   representation but has a native UTF-8 encoded text representation,
+   the value MUST be embedded as a JSON string using the UTF-8 encoding.
+
+   Rule 17: If the external type has neither a native JSON nor a native
+   UTF-8 text representation, the binary representation of the value
+   MUST be Base64-encoded ([RFC4648], Section 4) and embedded as a JSON
+   string.
+
+4.7.  JSON Schema Definition Rules
+
+   Rule 18: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
    placed in the $defs keyword of the JSON Schema document.
 
-   Rule 16: Identifier fields MUST use "type": "string" in JSON Schema.
+   Rule 19: Identifier fields MUST use "type": "string" in JSON Schema.
 
-   Rule 17: Enumeration constraints on string fields MUST be expressed
+   Rule 20: Enumeration constraints on string fields MUST be expressed
    using the "enum" keyword in JSON Schema.
 
    Example (Transfer Status enum):
@@ -611,10 +633,10 @@ Table of Contents
                 "clientRejected", "serverApproved", "serverCancelled"]
    }
 
-   Rule 18: Each JSON Schema definition for an RPP object MUST include a
+   Rule 21: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
-   Rule 19: JSON Schema definitions for extendible RPP objects MUST NOT
+   Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT
    use "additionalProperties": false or "unevaluatedProperties": false.
    However, before validation, schemas on every property level MUST be
    enriched with "unevaluatedProperties": false property to prevent the
@@ -622,7 +644,7 @@ Table of Contents
    for Object type MAY use "additionalProperties": true to allow for
    free key definition.
 
-   Rule 20: Every RPP object representation MUST include a "@type"
+   Rule 23: Every RPP object representation MUST include a "@type"
    property whose value is the object's identifier as registered in the
    IANA RPP Data Object Registry.  This property enables identification
    and allows clients and servers to unambiguously determine the type of
@@ -639,7 +661,7 @@ Table of Contents
        "name": "example.example"
    }
 
-   Rule 21: When a transfer request or other operation requires
+   Rule 24: When a transfer request or other operation requires
    authorization information (e.g., EPP-style authinfo), the client MUST
    NOT include the authInfo object in the JSON request body.  Instead,
    the client MUST convey the authorization information using the RPP-
@@ -648,7 +670,7 @@ Table of Contents
    includes an authInfo object in the JSON body with an appropriate
    error response.
 
-4.6.1.  RPP Profiles and Validation
+4.7.1.  RPP Profiles and Validation
 
    RPP profiles, such as the EPP Compatibility Profile defined in
    [I-D.kowalik-rpp-data-objects], may impose additional constraints on
@@ -2602,6 +2624,10 @@ Table of Contents
               DOI 10.17487/RFC3915, September 2004,
               <https://www.rfc-editor.org/rfc/rfc3915>.
 
+   [RFC4648]  Josefsson, S., "The Base16, Base32, and Base64 Data
+              Encodings", RFC 4648, DOI 10.17487/RFC4648, October 2006,
+              <https://www.rfc-editor.org/info/rfc4648>.
+
    [RFC5730]  Hollenbeck, S., "Extensible Provisioning Protocol (EPP)",
               STD 69, RFC 5730, DOI 10.17487/RFC5730, August 2009,
               <https://www.rfc-editor.org/info/rfc5730>.
@@ -2614,6 +2640,11 @@ Table of Contents
               Interchange Format", STD 90, RFC 8259,
               DOI 10.17487/RFC8259, December 2017,
               <https://www.rfc-editor.org/info/rfc8259>.
+
+   [RFC9553]  Stepanek, R. and M. Loffredo, "JSContact: A JSON
+              Representation of Contact Data", RFC 9553,
+              DOI 10.17487/RFC9553, May 2024,
+              <https://www.rfc-editor.org/info/rfc9553>.
 
    [RFC9982]  Stepanek, R., "JSContact Version 2.0: A JSON
               Representation of Contact Data", RFC 9982,
