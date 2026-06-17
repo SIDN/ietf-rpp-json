@@ -1134,6 +1134,7 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
+</section>
 
 <section anchor="contact-data-object"><name>Contact Data Object</name>
 <t>This document uses version 2.0 of JSContact <xref target="RFC9982"></xref> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <tt>Card</tt> object embedded in the <tt>card</tt> property of the contact JSON object.</t>
@@ -1234,7 +1235,6 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-</section>
 </section>
 </section>
 

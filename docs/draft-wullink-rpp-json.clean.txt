@@ -95,10 +95,10 @@ Table of Contents
        5.3.1.  Transfer Process Object
        5.3.2.  Restore Process Object
      5.4.  Domain Name Data Object
-       5.4.1.  Contact Data Object
-         5.4.1.1.  JSContact Profile for RPP
-     5.5.  Host Data Object
-     5.6.  Organisation Data Object
+     5.5.  Contact Data Object
+       5.5.1.  JSContact Profile for RPP
+     5.6.  Host Data Object
+     5.7.  Organisation Data Object
    6.  Examples
      6.1.  Domain Name
        6.1.1.  Create
@@ -1482,7 +1482,7 @@ Table of Contents
      }
    }
 
-5.4.1.  Contact Data Object
+5.5.  Contact Data Object
 
    This document uses version 2.0 of JSContact [RFC9982] for the JSON
    representation of Contact Data Object contact information.  The
@@ -1490,7 +1490,7 @@ Table of Contents
    other contact details are encapsulated in a JSContact Card object
    embedded in the card property of the contact JSON object.
 
-5.4.1.1.  JSContact Profile for RPP
+5.5.1.  JSContact Profile for RPP
 
    Since JSContact is a general-purpose representation of contact data,
    this document defines a restricted usage profile for use within RPP,
@@ -1591,7 +1591,7 @@ Table of Contents
      }
    }
 
-5.5.  Host Data Object
+5.6.  Host Data Object
 
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
@@ -1660,7 +1660,7 @@ Table of Contents
      }
    }
 
-5.6.  Organisation Data Object
+5.7.  Organisation Data Object
 
    TBD
 

@@ -1157,11 +1157,11 @@ Reference schema (identifier only):
 }
 ```
 
-### Contact Data Object
+## Contact Data Object
 
 This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
 
-#### JSContact Profile for RPP
+### JSContact Profile for RPP
 
 Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, see [TODO: ref to RPP JSContact profile here: https://github.com/SIDN/ietf-rpp-jscontact-profile].
 
