@@ -660,7 +660,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ### JSContact Card Object
 
-The Contact Data Object uses version 2.0 of JSContact [@!RFC9982] to represent contact information.  The `contact` component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.
+The Contact Data Object uses version 2.0 of JSContact [@!RFC9982] to represent contact information. The `Contact` object is defined below according to the RPP JSContact Profile [TODO Add Ref].
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -769,7 +769,6 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
   }
 }
 ```
-
 
 ### Restore Report Object
 
@@ -1159,7 +1158,7 @@ Reference schema (identifier only):
 
 ## Contact Data Object
 
-This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
+This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `contactInfo` property.
 
 ### JSContact Profile for RPP
 
@@ -1184,10 +1183,10 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
         "id":     { "type": "string" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "card"],
+      "required": ["@type", "id", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1205,10 +1204,10 @@ Update request schema (read-write properties):
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1234,10 +1233,10 @@ Read response schema (read-write and read-only properties):
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1710,7 +1709,7 @@ Example contact create request:
 {
     "@type": "contact",
     "id": "jd1234",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1768,7 +1767,7 @@ Example contact create response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1825,7 +1824,7 @@ Example contact read response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1868,7 +1867,7 @@ Example contact update request:
 ```json
 {
     "@type": "contact",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "addresses": {
@@ -1911,7 +1910,7 @@ Example contact update response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
