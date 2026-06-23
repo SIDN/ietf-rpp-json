@@ -1139,7 +1139,7 @@ Renew minimal response schema (only expire date):
 
 ### Transfer
 
-Create request for Domain Object schema (create-only and read-write properties):
+Create request for Domain Transfer Process Object schema (create-only and read-write properties):
 
 ```json
 {
