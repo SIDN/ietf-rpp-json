@@ -1160,7 +1160,7 @@ Create request for Domain Transfer Process Object schema (create-only and read-w
 }
 ```
 
-Read response for Domain Object schema (read-write and read-only properties):
+Read response for Domain Transfer Process Object schema (read-write and read-only properties):
 
 ```json
 {
