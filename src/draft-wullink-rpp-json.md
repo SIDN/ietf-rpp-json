@@ -1183,7 +1183,7 @@ Read response for Domain Object schema (read-write and read-only properties):
 
 Both Approve and Delete (Cancel) operations have no request body, the server can identify the transfer process to be approved or cancelled based on the request URL and the authenticated client's permissions.
 
-Delete (Cancel) response Domain Object schema (read-write and read-only properties):
+Delete (Cancel) response Domain Transfer Process Object schema (read-write and read-only properties):
 
 ```json
 {
