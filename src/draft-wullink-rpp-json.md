@@ -909,7 +909,7 @@ Reject request schema:
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.reject",
   "$defs": {
-    "transferProcess.reject.request": {
+    "transferProcess.reject": {
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "transferProcess" },
@@ -1742,7 +1742,7 @@ Example domain transfer reject request
 
 ```json
 {
-    "@type": "transferProcess.reject",
+    "@type": "transferProcess",
     "reason": "Client rejected the transfer request."
 }
 ```
@@ -2164,7 +2164,7 @@ Example Contact Transfer Reject request
 
 ```json
 {
-    "@type": "transferProcess.reject",
+    "@type": "transferProcess",
     "reason": "Client rejected the transfer request."
 }
 ```
