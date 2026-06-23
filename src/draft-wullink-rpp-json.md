@@ -1197,7 +1197,7 @@ Delete (Cancel) response Domain Object schema (read-write and read-only properti
 }
 ```
 
-Approve response Domain Object schema (read-write and read-only properties):
+Approve response Domain Transfer Process Object schema (read-write and read-only properties):
 
 ```json
 {
