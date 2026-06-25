@@ -1381,7 +1381,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 - `id` MUST be a server-unique identifier conforming to the Identifier syntax.
 - `status` MUST always contain at least one value. `pendingCreate`, `ok`, `hold`, and `terminated` are mutually exclusive. `ok` MAY only be combined with `linked`.
-- `parentId`, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.
+- `parent`, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.
 - `contacts` keys MUST be contact type values registered in the IANA "EPP Organisation Contact Types" registry ([@!RFC8543]).
 
 Create request schema (create-only and read-write properties):
@@ -1401,12 +1401,19 @@ Create request schema (create-only and read-write properties):
           "additionalProperties": { "$ref": "#/$defs/organisationRole" },
           "minProperties": 1
         },
-        "parentId":    { "$ref": "#/$defs/organisationObject.reference" },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
         "contactInfo": { "$ref": "#/$defs/Card" },
-        "contacts":    {
-          "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/contactObject.reference" }
-        }     
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        }
       },
       "required": ["@type", "id", "roles"]      
     }
@@ -1467,11 +1474,18 @@ Update request schema (read-write properties):
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/organisationRole" }
         },
-        "parentId":    { "$ref": "#/$defs/identifier" },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
         "contactInfo": { "$ref": "#/$defs/Card" },
-        "contacts":    {
-          "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/contactObject.reference" }
+        "contacts": {
+            "type": "array",
+            "items": { 
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "object": { "$ref": "#/$defs/contactObject.reference" }
+              },
+              "required": ["label", "object"]
+            }
         },
         "status": {
               "type": "array",
@@ -1533,16 +1547,17 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type":  { "type": "string", "const": "user" },
         "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
-        "name":   { "type": "string" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
         "status": {
           "type": "array",
           "items": {
             "type": "string",
             "enum": ["active", "suspended", "deactivated", "pending"]
           }
-        }
+        },
+        "description":  { "type": "string", "const": "user" }
       },
-      "required": ["@type", "organisationId", "name"]
+      "required": ["@type", "organisationId", "details"]
     }
   }
 }
@@ -1561,16 +1576,17 @@ Read response schema (read-write and read-only properties):
         "@type":  { "type": "string", "const": "user", "readOnly": true },
         "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
         "userId": { "$ref": "#/$defs/identifier", "readOnly": true },
-        "name":   { "type": "string" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
         "status": {
           "type": "array",
           "items": {
             "type": "string",
             "enum": ["active", "suspended", "deactivated", "pending"]
           }
-        }
+        },
+        "description":  { "type": "string", "const": "user" }
       },
-      "required": ["@type", "userId"]
+      "required": ["@type", "userId", "details", "status"]
     }
   }
 }
@@ -1587,7 +1603,7 @@ Update request schema (read-write properties):
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "user" },
-        "name":   { "type": "string" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
         "status": {
           "type": "array",
           "items": {
@@ -2557,7 +2573,7 @@ Example organisation create request:
             "roleId": "1234"
         }
     },
-    "parentId": { "@type": "organisation", "id": "ORG-9999" },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
     "contactInfo": {
         "@type": "Card",
         "version": "2.0",
@@ -2581,16 +2597,10 @@ Example organisation create request:
             "email": { "address": "registrar@example.example" }
         }
     },
-    "contacts": {
-        "admin": {
-            "@type": "contact",
-            "id": "CID-1001"
-        },
-        "tech": {
-            "@type": "contact",
-            "id": "CID-1002"
-        }
-    }
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ]
 }
 ```
 
@@ -2617,7 +2627,7 @@ Example organisation create response:
             "roleId": "1234"
         }
     },
-    "parentId": { "@type": "organisation", "id": "ORG-9999" },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
     "contactInfo": {
         "@type": "Card",
         "version": "2.0",
@@ -2641,16 +2651,10 @@ Example organisation create response:
             "email": { "address": "registrar@example.example" }
         }
     },
-    "contacts": {
-        "admin": {
-            "@type": "contact",
-            "id": "CID-1001"
-        },
-        "tech": {
-            "@type": "contact",
-            "id": "CID-1002"
-        }
-    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
     "users": {
         "admin": {
             "@type": "user",
@@ -2687,7 +2691,7 @@ Example organisation read response:
             "roleId": "1234"
         }
     },
-    "parentId": { "@type": "organisation", "id": "ORG-9999" },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
     "contactInfo": {
         "@type": "Card",
         "version": "2.0",
@@ -2711,16 +2715,10 @@ Example organisation read response:
             "email": { "address": "registrar@example.example" }
         }
     },
-    "contacts": {
-        "admin": {
-            "@type": "contact",
-            "id": "CID-1001"
-        },
-        "tech": {
-            "@type": "contact",
-            "id": "CID-1002"
-        }
-    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
     "users": {
         "admin": {
             "@type": "user",
@@ -2747,20 +2745,10 @@ Example organisation update request:
     "status": [
         { "@type": "status", "label": "clientLinkProhibited" }
     ],
-    "contacts": {
-        "admin": {
-            "@type": "contact",
-            "id": "CID-2001"
-        },
-        "tech": {
-            "@type": "contact",
-            "id": "CID-1002"
-        },
-        "billing": {
-            "@type": "contact",
-            "id": "CID-3001"
-        }
-    }
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-2001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-2002" } }
+    ]
 }
 ```
 
@@ -2788,8 +2776,7 @@ Example user create request:
 ```json
 {
     "@type": "user",
-    "organisationId": { "@type": "organisation", "id": "ORG-12345" },
-    "name": "Example User",
+    "details": { "@type": "contact", "id": "USER-1234" },
     "status": ["active"]
 }
 ```
@@ -2799,9 +2786,8 @@ Example user create response:
 ```json
 {
     "@type": "user",
-    "organisationId": { "@type": "organisation", "id": "ORG-12345" },
     "userId": "UID-5001",
-    "name": "Example User",
+    "details": { "@type": "contact", "id": "USER-1234" },
     "status": ["active"]
 }
 ```
@@ -2815,7 +2801,7 @@ Example user read response:
     "@type": "user",
     "organisationId": { "@type": "organisation", "id": "ORG-12345" },
     "userId": "UID-5001",
-    "name": "Example User",
+    "details": { "@type": "contact", "id": "USER-1234" },
     "status": ["active"]
 }
 ```
