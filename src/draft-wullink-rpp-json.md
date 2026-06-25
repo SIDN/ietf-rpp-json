@@ -1439,17 +1439,17 @@ Read response schema (read-write and read-only properties):
               "items": { "$ref": "#/$defs/status" },
               "readOnly": true
             },
-             "users": {
+            "users": {
+              "type": "array",
+              "items": { 
                 "type": "object",
-                "additionalProperties": {
-                  "type": "object",
-                  "properties": {
-                    "@type":  { "type": "string", "const": "user" },
-                    "userId": { "$ref": "#/$defs/identifier" }
-                  },
-                  "required": ["@type", "userId"]
-                }
+                "properties": {
+                  "label": { "type": "string" },
+                  "object": { "$ref": "#/$defs/userObject.reference" }
+                },
+                "required": ["label", "object"]
               }
+            }
           },
           "required": ["provMetadata", "status"]
         }
@@ -1493,14 +1493,14 @@ Update request schema (read-write properties):
               "readOnly": true
         },
         "users":       {
-          "type": "object",
-          "additionalProperties": {
+          "type": "array",
+          "items": { 
             "type": "object",
             "properties": {
-              "@type":  { "type": "string", "const": "user" },
-              "userId": { "$ref": "#/$defs/identifier" }
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/userObject.reference" }
             },
-            "required": ["@type", "userId"]
+            "required": ["label", "object"]
           }
         }
       },
@@ -1629,9 +1629,9 @@ Reference schema (identifier only):
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "user", "readOnly": true },
-        "userId": { "$ref": "#/$defs/identifier", "readOnly": true }
+        "id": { "$ref": "#/$defs/identifier", "readOnly": true }
       },
-      "required": ["@type", "userId"]
+      "required": ["@type", "id"]
     }
   }
 }
@@ -2655,12 +2655,9 @@ Example organisation create response:
         { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
         { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
     ],
-    "users": {
-        "admin": {
-            "@type": "user",
-            "userId": "UID-5001"
-        }
-    }
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
 }
 ```
 
@@ -2719,12 +2716,9 @@ Example organisation read response:
         { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
         { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
     ],
-    "users": {
-        "admin": {
-            "@type": "user",
-            "userId": "UID-5001"
-        }
-    }
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
 }
 ```
 
@@ -2828,7 +2822,7 @@ Example user reference (used when referencing a user from an organisation object
 ```json
 {
     "@type": "user",
-    "userId": "UID-5001"
+    "id": "UID-5001"
 }
 ```
 
