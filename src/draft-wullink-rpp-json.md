@@ -1473,6 +1473,11 @@ Update request schema (read-write properties):
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/contactObject.reference" }
         },
+        "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+        },
         "users":       {
           "type": "object",
           "additionalProperties": {
@@ -2739,6 +2744,9 @@ Example organisation update request:
             "roleId": "1234"
         }
     },
+    "status": [
+        { "@type": "status", "label": "clientLinkProhibited" }
+    ],
     "contacts": {
         "admin": {
             "@type": "contact",
