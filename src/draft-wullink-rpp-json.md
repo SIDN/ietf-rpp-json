@@ -809,6 +809,47 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ## Process Object Schemas
 
+### Renew Process Object
+
+Renew request schema (create-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.create",
+  "$defs": {
+    "renewProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "renewProcess" },
+        "expiryDate":    { "type": "string", "format": "date-time" },
+        "renewalPeriod": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Renew response schema (read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.read",
+  "$defs": {
+    "renewProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type":      { "type": "string", "const": "renewProcess", "readOnly": true },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
 ### Transfer Process Object
 
 Create request schema (create-only and read-write properties):
@@ -1118,24 +1159,37 @@ Update request schema (read-write properties):
 }
 ```
 
-Renew minimal response schema (only expire date):
+### Renew
+
+Renew request schema (create-only properties):
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/domainObject.renewResponse",
+  "$ref": "#/$defs/renewProcess.create.domain",
   "$defs": {
-    "domainObject.renewResponse": {
-      "type": "object",
-      "properties": {
-        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": ["@type", "expiryDate"]
+    "renewProcess.create.domain": {
+       "$ref": "#/$defs/renewProcess.create"
     }
   }
 }
 ```
+
+Renew response schema (read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.read.domain",
+  "$defs": {
+    "renewProcess.read.domain": {
+      "$ref": "#/$defs/renewProcess.read"
+    }
+  }
+}
+```
+
+### Reference
 
 Reference schema (identifier only):
 
@@ -1509,14 +1563,14 @@ Example domain delete response (minimal, server may return full representation):
 
 ### Renew
 
-The renew operation accepts a transient `currentExpiryDate` parameter for validation and an optional `renewalPeriod`.
+The renew operation creates a Renew Process Object. The optional `expiryDate` in the request is the *current* expiry date, sent by the client for server-side validation to prevent duplicate renewals. The response returns a Renew Process Object containing the *new* expiry date.
 
 Example domain renew request:
 
 ```json
 {
-    "@type": "domainName.renew",
-    "currentExpiryDate": "2005-04-03T22:00:00.0Z",
+    "@type": "renewProcess",
+    "expiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
         "@type": "period",
         "value": 5,
@@ -1529,7 +1583,7 @@ Example domain renew response:
 
 ```json
 {
-    "@type": "domainName",
+    "@type": "renewProcess",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ```
@@ -2275,6 +2329,10 @@ TODO
 TODO
 
 # Change History
+
+## Version 02 to 03
+
+- Added schema and examples for the Renew Process Object. (Issue #45)
 
 ## Version 01 to 02
 
