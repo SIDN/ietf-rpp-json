@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 19 December 2026                                          DENIC
-                                                            17 June 2026
+Expires: 28 December 2026                                          DENIC
+                                                            26 June 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 December 2026.
+   This Internet-Draft will expire on 28 December 2026.
 
 Copyright Notice
 
@@ -74,8 +74,9 @@ Table of Contents
        4.4.7.  Dictionary Composition
      4.5.  Object Identifier Rules
      4.6.  External Type Embedding Rules
-     4.7.  JSON Schema Definition Rules
-       4.7.1.  RPP Profiles and Validation
+     4.7.  Process Data Embedding Rules
+     4.8.  JSON Schema Definition Rules
+       4.8.1.  RPP Profiles and Validation
    5.  JSON Schema Definitions
      5.1.  Common Data Types Schemas
        5.1.1.  Identifier
@@ -92,8 +93,9 @@ Table of Contents
        5.2.8.  JSContact Card Object
        5.2.9.  Restore Report Object
      5.3.  Process Object Schemas
-       5.3.1.  Transfer Process Object
-       5.3.2.  Restore Process Object
+       5.3.1.  Create Process Object
+       5.3.2.  Transfer Process Object
+       5.3.3.  Restore Process Object
      5.4.  Domain Name Data Object
      5.5.  Contact Data Object
        5.5.1.  JSContact Profile for RPP
@@ -102,16 +104,17 @@ Table of Contents
    6.  Examples
      6.1.  Domain Name
        6.1.1.  Create
-       6.1.2.  Read
-       6.1.3.  Update
-       6.1.4.  Delete
-       6.1.5.  Renew
-       6.1.6.  Transfer Request
-       6.1.7.  Transfer Query
-       6.1.8.  Transfer Cancel / Reject / Approve
-       6.1.9.  Restore Request
-       6.1.10. Restore Report
-       6.1.11. Restore Query
+       6.1.2.  Create Process Data
+       6.1.3.  Read
+       6.1.4.  Update
+       6.1.5.  Delete
+       6.1.6.  Renew
+       6.1.7.  Transfer Request
+       6.1.8.  Transfer Query
+       6.1.9.  Transfer Cancel / Reject / Approve
+       6.1.10. Restore Request
+       6.1.11. Restore Report
+       6.1.12. Restore Query
      6.2.  Contact
        6.2.1.  Create
        6.2.2.  Read
@@ -614,15 +617,53 @@ Table of Contents
    MUST be Base64-encoded ([RFC4648], Section 4) and embedded as a JSON
    string.
 
-4.7.  JSON Schema Definition Rules
+4.7.  Process Data Embedding Rules
 
-   Rule 18: Each RPP component object and resource object MUST have a
+   As defined in [I-D.wullink-rpp-core], a uniform interface operation
+   MAY require process data in addition to the object representation
+   data.  This section defines how such process data MUST be represented
+   in JSON when transmitted together with the object representation in a
+   single request body.
+
+   Rule 18: When a uniform interface operation requires both object data
+   and process data in the request body, the process data MUST be
+   embedded under a top-level "@process" JSON object.  The "@process"
+   object MUST be a valid JSON representation of the process object,
+   including the "@type" property set to the process object's registered
+   identifier, following the same convention as Rule 25 for RPP object
+   representations.  Only one process object MAY be embedded per
+   request.
+
+   Example: a domain create request body carrying a two-year
+   registration period as process data embedded in a "createProcess"
+   process object:
+
+   {
+       "@type": "domainName",
+       "name": "example.example",
+       "nameservers": [
+           { "@type": "host", "hostName": "ns1.example.example" },
+           { "@type": "host", "hostName": "ns2.example.example" }
+       ],
+       "@process": {
+           "@type": "createProcess",
+           "period": {
+               "@type": "period",
+               "value": 2,
+               "unit": "y"
+           }
+       }
+   }
+
+4.8.  JSON Schema Definition Rules
+
+   Rule 20: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
    placed in the $defs keyword of the JSON Schema document.
 
-   Rule 19: Identifier fields MUST use "type": "string" in JSON Schema.
+   Rule 21: Identifier fields MUST use "type": "string" in JSON Schema.
 
-   Rule 20: Enumeration constraints on string fields MUST be expressed
+   Rule 22: Enumeration constraints on string fields MUST be expressed
    using the "enum" keyword in JSON Schema.
 
    Example (Transfer Status enum):
@@ -633,10 +674,10 @@ Table of Contents
                 "clientRejected", "serverApproved", "serverCancelled"]
    }
 
-   Rule 21: Each JSON Schema definition for an RPP object MUST include a
+   Rule 23: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
-   Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT
+   Rule 24: JSON Schema definitions for extendible RPP objects MUST NOT
    use "additionalProperties": false or "unevaluatedProperties": false.
    However, before validation, schemas on every property level MUST be
    enriched with "unevaluatedProperties": false property to prevent the
@@ -644,7 +685,7 @@ Table of Contents
    for Object type MAY use "additionalProperties": true to allow for
    free key definition.
 
-   Rule 23: Every RPP object representation MUST include a "@type"
+   Rule 25: Every RPP object representation MUST include a "@type"
    property whose value is the object's identifier as registered in the
    IANA RPP Data Object Registry.  This property enables identification
    and allows clients and servers to unambiguously determine the type of
@@ -661,7 +702,7 @@ Table of Contents
        "name": "example.example"
    }
 
-   Rule 24: When a transfer request or other operation requires
+   Rule 26: When a transfer request or other operation requires
    authorization information (e.g., EPP-style authinfo), the client MUST
    NOT include the authInfo object in the JSON request body.  Instead,
    the client MUST convey the authorization information using the RPP-
@@ -670,7 +711,7 @@ Table of Contents
    includes an authInfo object in the JSON body with an appropriate
    error response.
 
-4.7.1.  RPP Profiles and Validation
+4.8.1.  RPP Profiles and Validation
 
    RPP profiles, such as the EPP Compatibility Profile defined in
    [I-D.kowalik-rpp-data-objects], may impose additional constraints on
@@ -988,9 +1029,8 @@ Table of Contents
 5.2.8.  JSContact Card Object
 
    The Contact Data Object uses version 2.0 of JSContact [RFC9982] to
-   represent contact information.  The contact component object is
-   defined below according to the RPP JSContact profile described in the
-   Contact Data Object section.
+   represent contact information.  The Contact object is defined below
+   according to the RPP JSContact Profile [TODO Add Ref].
 
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
@@ -1145,7 +1185,31 @@ Table of Contents
 
 5.3.  Process Object Schemas
 
-5.3.1.  Transfer Process Object
+5.3.1.  Create Process Object
+
+   The Create Process Object carries the process-specific inputs for a
+   resource creation operation, such as the requested registration
+   period.  It is embedded in the create request body under "@process":
+   { "@type": "createProcess", ... } per Rule 18.
+
+   Create request schema (create-only and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/createProcess.create",
+     "$defs": {
+       "createProcess.create": {
+         "type": "object",
+         "properties": {
+           "@type": { "type": "string", "const": "createProcess" },
+           "period": { "$ref": "#/$defs/period" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.3.2.  Transfer Process Object
 
    Create request schema (create-only and read-write properties):
 
@@ -1261,7 +1325,7 @@ Table of Contents
      }
    }
 
-5.3.2.  Restore Process Object
+5.3.3.  Restore Process Object
 
    The Restore Process Object represents the current state of a restore
    request for an object that has entered the Redemption Grace Period
@@ -1360,7 +1424,7 @@ Table of Contents
            },
            "dns":    { "$ref": "#/$defs/dnsData" },
            "authInfo": { "$ref": "#/$defs/authInfo" },
-           "period": { "$ref": "#/$defs/period" }
+           "@process": { "$ref": "#/$defs/createProcess.create" }
          },
          "required": ["@type", "name"]
        }
@@ -1488,7 +1552,7 @@ Table of Contents
    representation of Contact Data Object contact information.  The
    contact's name, postal address, phone numbers, email addresses, and
    other contact details are encapsulated in a JSContact Card object
-   embedded in the card property of the contact JSON object.
+   embedded in the contactInfo property.
 
 5.5.1.  JSContact Profile for RPP
 
@@ -1520,10 +1584,10 @@ Table of Contents
          "properties": {
            "@type":  { "type": "string", "const": "contact" },
            "id":     { "type": "string" },
-           "card":   { "$ref": "#/$defs/Card" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
            "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "card"],
+         "required": ["@type", "id", "contactInfo"],
          "unevaluatedProperties": false
        }
      }
@@ -1539,10 +1603,10 @@ Table of Contents
          "type": "object",
          "properties": {
            "@type":  { "type": "string", "const": "contact" },
-           "card":   { "$ref": "#/$defs/Card" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
            "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "card"],
+         "required": ["@type", "contactInfo"],
          "unevaluatedProperties": false
        }
      }
@@ -1565,10 +1629,10 @@ Table of Contents
              "items": { "$ref": "#/$defs/status" },
              "readOnly": true
            },
-           "card":   { "$ref": "#/$defs/Card" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
            "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "provMetadata", "card"],
+         "required": ["@type", "id", "provMetadata", "contactInfo"],
          "unevaluatedProperties": false
        }
      }
@@ -1680,11 +1744,6 @@ Table of Contents
    {
        "@type": "domainName",
        "name": "example.example",
-       "period": {
-           "@type": "period",
-           "value": 2,
-           "unit": "y"
-       },
        "nameservers": [
            { "@type": "host", "hostName": "ns1.example.example" },
            { "@type": "host", "hostName": "ns2.example.example" }
@@ -1698,6 +1757,14 @@ Table of Contents
            "@type": "authInfo",
            "method": "authinfo",
            "authdata": "2fooBAR"
+       },
+       "@process": {
+           "@type": "createProcess",
+           "period": {
+               "@type": "period",
+               "value": 2,
+               "unit": "y"
+           }
        }
    }
 
@@ -1720,7 +1787,20 @@ Table of Contents
        "expiryDate": "2001-04-03T22:00:00.0Z"
    }
 
-6.1.2.  Read
+6.1.2.  Create Process Data
+
+   Example create process data for a two-year registration period:
+
+   {
+       "@type": "createProcess",
+       "period": {
+           "@type": "period",
+           "value": 2,
+           "unit": "y"
+       }
+   }
+
+6.1.3.  Read
 
    Example domain read response:
 
@@ -1773,7 +1853,7 @@ Table of Contents
        }
    }
 
-6.1.3.  Update
+6.1.4.  Update
 
    Example domain update request (read-write properties):
 
@@ -1807,7 +1887,7 @@ Table of Contents
        "registrant": { "@type": "contact", "id": "sh8013" }
    }
 
-6.1.4.  Delete
+6.1.5.  Delete
 
    The domain delete operation takes the domain name as the resource
    identifier in the request.  No request body is required.
@@ -1825,7 +1905,7 @@ Table of Contents
        }
    }
 
-6.1.5.  Renew
+6.1.6.  Renew
 
    The renew operation accepts a transient currentExpiryDate parameter
    for validation and an optional renewalPeriod.
@@ -1849,7 +1929,7 @@ Table of Contents
        "expiryDate": "2010-04-03T22:00:00.0Z"
    }
 
-6.1.6.  Transfer Request
+6.1.7.  Transfer Request
 
    Authorization information for the transfer MUST be conveyed using the
    RPP-Authorization HTTP header (see Rule 21), not in the JSON request
@@ -1880,7 +1960,7 @@ Table of Contents
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
 
-6.1.7.  Transfer Query
+6.1.8.  Transfer Query
 
    Example domain transfer query response (Transfer Process Object):
 
@@ -1895,7 +1975,7 @@ Table of Contents
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
 
-6.1.8.  Transfer Cancel / Reject / Approve
+6.1.9.  Transfer Cancel / Reject / Approve
 
    Transfer cancel, reject, and approve responses return the Transfer
    Process Object.  The response structure is the same as the Transfer
@@ -1903,7 +1983,7 @@ Table of Contents
    operation (e.g. "clientCancelled", "clientRejected", or
    "clientApproved").
 
-6.1.9.  Restore Request
+6.1.10.  Restore Request
 
    Example domain restore request (without inline report; object
    transitions to pendingRestore state):
@@ -1951,7 +2031,7 @@ Table of Contents
        "reportDate": "2025-01-20T15:30:00.0Z"
    }
 
-6.1.10.  Restore Report
+6.1.11.  Restore Report
 
    Example domain restore report request:
 
@@ -1980,7 +2060,7 @@ Table of Contents
        "reportDate": "2025-01-22T09:15:00.0Z"
    }
 
-6.1.11.  Restore Query
+6.1.12.  Restore Query
 
    The Restore Query operation takes no request body (Parameters: None).
 
@@ -2013,7 +2093,7 @@ Table of Contents
    {
        "@type": "contact",
        "id": "jd1234",
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2069,7 +2149,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2124,7 +2204,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2165,7 +2245,7 @@ Table of Contents
 
    {
        "@type": "contact",
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "addresses": {
@@ -2206,7 +2286,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2580,9 +2660,9 @@ Table of Contents
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-03, 2 March 2026,
+              draft-kowalik-rpp-data-objects-04, 12 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-03>.
+              data-objects-04>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol

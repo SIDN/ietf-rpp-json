@@ -5,12 +5,12 @@
 Network Working Group                                         P. Kowalik
 Internet-Draft                                                     DENIC
 Intended status: Standards Track                              M. Wullink
-Expires: 3 September 2026                                      SIDN Labs
-                                                            2 March 2026
+Expires: 14 December 2026                                      SIDN Labs
+                                                            12 June 2026
 
 
             RESTful Provisioning Protocol (RPP) Data Objects
-               draft-kowalik-rpp-data-objects-04 (editor)
+             draft-kowalik-rpp-data-objects-05 (editorial)
 
 Abstract
 
@@ -39,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 3 September 2026.
+   This Internet-Draft will expire on 14 December 2026.
 
 Copyright Notice
 
@@ -87,6 +87,7 @@ Table of Contents
        2.5.4.  Transfer Operations
        2.5.5.  Restore Operations
          2.5.5.1.  Redemption Grace Period State Diagram
+       2.5.6.  Renew Operations
      2.6.  EPP Compatibility Profile
    3.  Common Data Types
      3.1.  Identifier
@@ -125,6 +126,9 @@ Table of Contents
          6.2.1.1.  Create (Restore Request)
          6.2.1.2.  Read (Restore Query)
          6.2.1.3.  Report
+     6.3.  Renew Process Object
+       6.3.1.  Operations
+         6.3.1.1.  Create (Renew Request)
    7.  Domain Name Data Object
      7.1.  Object Description
      7.2.  Data Elements
@@ -133,8 +137,10 @@ Table of Contents
        7.3.2.  Read Operation
        7.3.3.  Update Operation
        7.3.4.  Delete Operation
-       7.3.5.  Renew Operation
+       7.3.5.  Renew Operations
+         7.3.5.1.  Renew Create Operation
        7.3.6.  Transfer Operations
+         7.3.6.1.  Transfer Create Operation
        7.3.7.  Restore Operations
    8.  Contact Data Object
      8.1.  Object Description
@@ -622,6 +628,14 @@ Table of Contents
         awaits final purge processing.
    11.  The pending delete period elapses and the object is purged.
    12.  The object is purged and available for re-registration.
+
+2.5.6.  Renew Operations
+
+   Renew operations manage the validity period of a provisioned object.
+   They are specified once in this section as the renewal model is
+   common across all renewable resource objects.  Individual object
+   definitions reference this section and specify any object-specific
+   extensions to the common pattern.
 
 2.6.  EPP Compatibility Profile
 
@@ -1331,7 +1345,7 @@ Table of Contents
          -  Cardinality: 0+
          -  Mutability: read-write
          -  Data Type: String
-         -  Description: The contact's street address.
+         -  Description: Street address.
          -  Constraints: Implementations MAY limit the maximum length of
             entries or character set.
       -  City
@@ -1339,7 +1353,7 @@ Table of Contents
          -  Cardinality: 0-1
          -  Mutability: read-write
          -  Data Type: String
-         -  Description: The contact's city.
+         -  Description: City.
          -  Constraints:
             -  Implementations MAY limit the maximum length of entries
                or character set.
@@ -1350,7 +1364,7 @@ Table of Contents
          -  Cardinality: 0-1
          -  Mutability: read-write
          -  Data Type: String
-         -  Description: The contact's state or province.
+         -  Description: State or province.
          -  Constraints: Implementations MAY limit the maximum length of
             entries or character set.
       -  Postal Code
@@ -1358,7 +1372,7 @@ Table of Contents
          -  Cardinality: 0-1
          -  Mutability: read-write
          -  Data Type: String
-         -  Description: The contact's postal code.
+         -  Description: Postal code.
          -  Constraints:
             -  Implementation MAY limit the maximum length of entries or
                character set.
@@ -1369,7 +1383,7 @@ Table of Contents
          -  Cardinality: 0-1
          -  Mutability: read-write
          -  Data Type: String
-         -  Description: The contact's country code.
+         -  Description: Country code.
          -  Constraints:
             -  The value MUST be a two-character identifier from
                [ISO3166-1].
@@ -1600,7 +1614,7 @@ Table of Contents
 
 6.1.1.1.  Create (Transfer Request)
 
-   -  Identifier: create
+   -  Identifier: transferCreate
 
    The Create operation initiates a transfer by creating a Transfer
    Process Object associated with the provisioned object.  The transfer
@@ -1625,7 +1639,7 @@ Table of Contents
 
 6.1.1.2.  Read (Transfer Query)
 
-   -  Identifier: read
+   -  Identifier: transferRead
 
    The Read operation allows a client to determine the real-time status
    of a pending or recently completed transfer request.
@@ -1643,7 +1657,7 @@ Table of Contents
 
 6.1.1.3.  Delete (Transfer Cancel)
 
-   -  Identifier: delete
+   -  Identifier: transferDelete
 
    The Delete operation allows the initiating client to cancel its own
    pending transfer request.
@@ -1659,7 +1673,7 @@ Table of Contents
 
 6.1.1.4.  Approve
 
-   -  Identifier: approve
+   -  Identifier: transferApprove
 
    The Approve operation allows the appropriate client to accept a
    pending transfer request.
@@ -1677,7 +1691,7 @@ Table of Contents
 
 6.1.1.5.  Reject
 
-   -  Identifier: reject
+   -  Identifier: transferReject
 
    The Reject operation allows the appropriate client to decline a
    pending transfer request.
@@ -1839,6 +1853,59 @@ Table of Contents
       -  Constraints:
          -  In EPP Compatibility Profile, corresponds to op="report" as
             defined in [RFC3915].
+
+6.3.  Renew Process Object
+
+   -  Name: Renew Process Object
+   -  Identifier: renewProcess
+   -  Description: Represents a renew request for a provisioned object.
+      Creating this object initiates a renewal process that extends the
+      registration period of the object.  Reading this object returns
+      the new expiry date if the renewal has been completed.
+   -  Data Elements:
+      -  Expiry Date
+         -  Identifier: expiryDate
+         -  Cardinality: 0-1
+         -  Mutability: read-only
+         -  Data Type: Timestamp
+         -  Description: The current expiry date of the object.  The
+            server MUST validate this against the object's current
+            expiryDate to prevent unintended duplicate renewals.
+
+6.3.1.  Operations
+
+6.3.1.1.  Create (Renew Request)
+
+   -  Identifier: renewCreate
+
+   The renew operation extends the validity period of an existing object
+   by creating a Renew Process Object.
+
+   -  Input:
+
+      -  Owner Data Object reference
+      -  Renew Process Object (create-only and read-write elements)
+
+   -  Output: Full object (read-write and read-only properties), or a
+      minimum set of properties affected by the operation (Expiry Date).
+
+   -  Authorisation:
+
+      -  Only the sponsoring client is authorised to perform this
+         operation.
+
+   In addition, the following transient data element is defined for this
+   operation:
+
+   -  Renewal Period
+      -  Identifier: renewalPeriod
+      -  Cardinality: 0-1
+      -  Data Type: Period Object
+      -  Description: The duration to be added to the object's
+         registration period.  This value is used by the server to
+         calculate the new expiryDate.  The default value MAY be defined
+         by server policy.  The number of units available MAY be subject
+         to limits imposed by the server.
 
 7.  Domain Name Data Object
 
@@ -2018,7 +2085,7 @@ Table of Contents
    -  Registration Period
       -  Identifier: period
       -  Cardinality: 0-1
-      -  Data Type: Period Object.
+      -  Data Type: Period Object
       -  Description: The initial registration period for the domain
          name.  This value is used by the server to calculate the
          initial expiryDate of the object.  This element is not
@@ -2056,6 +2123,8 @@ Table of Contents
          "sub" (subordinate), or "none".  The default value is "all".
 
 7.3.3.  Update Operation
+
+   -  Identifier: update
 
    The Update operation allows a client to modify the read-write data
    elements of an existing Domain Name resource.
@@ -2098,44 +2167,22 @@ Table of Contents
    The error response SHOULD indicate the related subordinate host
    objects.
 
-7.3.5.  Renew Operation
+7.3.5.  Renew Operations
 
-   -  Identifier: renew
+   The Domain Name Data Object supports the renew operations defined in
+   the Section 2.5.6.  The renewal of a domain name changes the expiry
+   date of the domain object.
+
+7.3.5.1.  Renew Create Operation
+
+   -  Identifier: renewCreate
 
    The Renew operation allows a client to extend the validity period of
    an existing Domain Name resource.  The operation targets a specific
    data object identified by its name.
 
    -  Authorisation:
-
       -  Only sponsoring client is authorised to perform this operation
-
-   -  Input: Domain Name
-
-   -  Output: Full object (read-write and read-only properties), or a
-      minimum set of properties affected by the operation (Expiry Date).
-
-   The following transient data elements are defined for this operation:
-
-   -  Current Expiry Date
-
-      -  Identifier: currentExpiryDate
-      -  Cardinality: 1
-      -  Data Type: Timestamp
-      -  Description: The current expiry date of the domain name.  The
-         server MUST validate this against the object's current
-         expiryDate to prevent unintended duplicate renewals.
-
-   -  Renewal Period
-
-      -  Identifier: renewalPeriod
-      -  Cardinality: 0-1
-      -  Data Type: Period Object
-      -  Description: The duration to be added to the object's
-         registration period.  This value is used by the server to
-         calculate the new expiryDate.  The default value MAY be defined
-         by server policy.  The number of units available MAY be subject
-         to limits imposed by the server.
 
 7.3.6.  Transfer Operations
 
@@ -2150,24 +2197,7 @@ Table of Contents
    "example.com" transfer process.
 
    In addition to the common Transfer Process Object elements, the
-   following object-specific create-only data element is defined and can
-   be provided when creating a Transfer Process Object for a domain
-   name:
-
-   -  Transfer Period
-      -  Identifier: transferPeriod
-      -  Cardinality: 0-1
-      -  Mutability: create-only
-      -  Data Type: Period Object
-      -  Description: The number of units to be added to the
-         registration period of the domain object upon successful
-         completion of the transfer.  The number of units available MAY
-         be subject to limits imposed by the server.
-      -  Constraints: (None)
-
-   In addition to the common Transfer Process Object elements, the
-   following object-specific read-only data element is included in the
-   output of domain transfer operations:
+   following object-specific data elements are included:
 
    -  Expiry Date
       -  Identifier: expiryDate
@@ -2181,11 +2211,29 @@ Table of Contents
    Subordinate host objects MUST be transferred implicitly when the
    domain object is transferred.
 
+7.3.6.1.  Transfer Create Operation
+
+   -  Identifier: transferCreate
+
+   In addition, the following transient data element is defined for this
+   operation:
+
+   -  Transfer Period
+      -  Identifier: transferPeriod
+      -  Cardinality: 0-1
+      -  Mutability: create-only
+      -  Data Type: Period Object
+      -  Description: The number of units to be added to the
+         registration period of the domain object upon successful
+         completion of the transfer.  The number of units available MAY
+         be subject to limits imposed by the server.
+      -  Constraints: (None)
+
 7.3.7.  Restore Operations
 
    The Domain Name Data Object supports the restore operations defined
-   in the section.  These operations are OPTIONAL and are only available
-   when the RGP feature is supported.
+   in the Section 2.5.5.  These operations are OPTIONAL and are only
+   available when the RGP feature is supported.
 
    No domain-specific transient data elements extend the common restore
    operations beyond those defined in the Section 2.5.5.
@@ -2196,7 +2244,7 @@ Table of Contents
 
    -  Name: Contact Data Object
    -  Identifier: contact
-   -  Description: A Contact Data Object represents the social
+   -  Description: A Contact Data Object represents the contact
       information for an individual or organisation associated with
       other objects.
 
@@ -2232,8 +2280,7 @@ Table of Contents
       -  Cardinality: 0+
       -  Mutability: read-only
       -  Data Type: Status Object
-      -  Description: The current status descriptors associated with the
-         contact.
+      -  Description: Status descriptors associated with the contact.
       -  Constraints:
          -  Possible combinations of Domain Status Labels is specified
             in Section 2.2 of [RFC5733]
@@ -2247,13 +2294,13 @@ Table of Contents
       -  Identifier: postalInfo
       -  Cardinality: 1-2
       -  Mutability: read-write
-      -  Data Type: DictionaryAggregation[Postal Info Object]
+      -  Data Type: DictionaryComposition[Postal Info Object]
          -  Label Description: type of contact data localisation
          -  Label Constraints: Allowed values: "int" for
             "internationalised" all-ASCII version of an address and
             "loc" for localised forms with possible non-ASCII character
             sets.
-      -  Description: Contains postal-address information.
+      -  Description: Postal-address information.
       -  Constraints: There MUST be no more that 1 element of type "int"
          and one element of type "loc".
 
@@ -2281,7 +2328,7 @@ Table of Contents
       -  Cardinality: 0+
       -  Mutability: read-write
       -  Data Type: String.
-      -  Description: The contact's email address.
+      -  Description: Email address.
       -  Constraints: Email address syntax is defined in [RFC5322].
 
    -  Authorisation Information
@@ -2310,6 +2357,8 @@ Table of Contents
 
 8.3.1.  Create Operation
 
+   -  Identifier: create
+
    The Create operation allows a client to provision a new Contact
    resource.  The operation accepts as input all create-only and read-
    write data elements defined for the Contact Data Object.
@@ -2331,6 +2380,8 @@ Table of Contents
    -  Authorisation Information (authInfo)
 
 8.3.2.  Read Operation
+
+   -  Identifier: read
 
    The Read operation allows a client to retrieve the data elements of a
    Contact resource.  The server's response MAY vary depending on client
@@ -2360,6 +2411,8 @@ Table of Contents
 
 8.3.3.  Update Operation
 
+   -  Identifier: update
+
    The Update operation allows a client to modify the attributes of an
    existing Contact resource.
 
@@ -2379,6 +2432,8 @@ Table of Contents
    alter status values set by a client, subject to server policy.
 
 8.3.4.  Delete Operation
+
+   -  Identifier: delete
 
    The Delete operation allows a client to remove an existing Contact
    resource.  The operation targets a specific data object identified by
@@ -2466,6 +2521,8 @@ Table of Contents
 
 9.3.1.  Create Operation
 
+   -  Identifier: create
+
    The Create operation allows a client to provision a new Host Data
    Object.  The operation accepts as input all create-only and read-
    write data elements defined for the Host Data Object.
@@ -2489,6 +2546,8 @@ Table of Contents
 
 9.3.2.  Read Operation
 
+   -  Identifier: read
+
    The Read operation allows a client to retrieve the data elements of a
    Host Data Object.
 
@@ -2499,6 +2558,8 @@ Table of Contents
          identity as described in Section 3.1.2 of [RFC5732].
 
 9.3.3.  Update Operation
+
+   -  Identifier: update
 
    The Update operation allows a client to modify the attributes of an
    existing Host Data Object.  The operation targets a specific data
@@ -2522,6 +2583,8 @@ Table of Contents
    the client.
 
 9.3.4.  Delete Operation
+
+   -  Identifier: delete
 
    The Delete operation allows a client to remove an existing Host Data
    Object.  The operation targets a specific data object identified by
@@ -2998,56 +3061,43 @@ Table of Contents
 
    Operation: Create
 
-   Operation Identifier: create
+   Operation Identifier: transferCreate
 
-   Description: Initiates a transfer of a Domain Name resource by
-   creating a Transfer Process Object.  Transfer direction and gaining
-   client are provided as create-only data elements.
+   Description: Initiates a transfer of a provisioned object by creating
+   a Transfer Process Object.
 
-   Parameters
-
-   +================+==========+=======+========+=====================+
-   | Identifier     | Name     | Card. | Data   | Description         |
-   |                |          |       | Type   |                     |
-   +================+==========+=======+========+=====================+
-   | transferPeriod | Transfer | 0-1   | period | The duration to add |
-   |                | Period   |       |        | to the registration |
-   |                |          |       |        | period upon         |
-   |                |          |       |        | transfer.           |
-   +----------------+----------+-------+--------+---------------------+
-
-                                 Table 9
+   Parameters: (None)
 
    Operation: Transfer Read
 
-   Operation Identifier: read
+   Operation Identifier: transferRead
 
-   Description: Queries the status of a transfer of a Domain Name
-   resource.
+   Description: Queries the status of a transfer of a provisioned
+   object.
 
    Parameters: (None)
 
    Operation: Transfer Delete
 
-   Operation Identifier: delete
+   Operation Identifier: transferDelete
 
-   Description: Cancels a pending transfer of a Domain Name resource.
+   Description: Cancels a pending transfer of a provisioned object.
 
    Parameters: (None)
 
    Operation: Transfer Approve
 
-   Operation Identifier: approve
+   Operation Identifier: transferApprove
 
-   Description: Approves a pending transfer of a Domain Name resource.
+   Description: Approves a pending transfer of a provisioned object.
 
    Parameters: (None)
 
    Operation: Transfer Reject
 
-   Operation Identifier: reject (on Transfer Process Object)
+   Operation Identifier: transferReject (on Transfer Process Object)
 
-   Description: Rejects a pending transfer of a Domain Name resource.
+   Description: Rejects a pending transfer of a provisioned object.
 
    Parameters
 
@@ -3060,10 +3110,139 @@ Table of Contents
     |            |        |       |        | for rejection.           |
     +------------+--------+-------+--------+--------------------------+
 
+                                  Table 9
+
+   Object: renewProcess
+
+   Object Name: Renew Process Object
+
+   Object Type: Process
+
+   Description: Represents a renewal request for a provisioned object.
+   Creating this object initiates the renewal
+
+   Reference: [This-ID]
+
+   Data Elements
+
+   +============+=======+=====+============+===========+===============+
+   | Element    |Element|Card.| Mutability | Data Type | Description   |
+   | Identifier |Name   |     |            |           |               |
+   +============+=======+=====+============+===========+===============+
+   | expiryDate |Expiry |0-1  | read-only  | Timestamp | The expiry    |
+   |            |Date   |     |            |           | date of the   |
+   |            |       |     |            |           | object        |
+   |            |       |     |            |           | after the     |
+   |            |       |     |            |           | renewal is    |
+   |            |       |     |            |           | completed.    |
+   +------------+-------+-----+------------+-----------+---------------+
+
                                   Table 10
 
-      |  TODO: IANA table: Postal Address Object TODO: IANA table:
-      |  Postal Info Object TODO: IANA table: Disclose Object
+   Operations
+
+   Operation: Create
+
+   Operation Identifier: renewCreate
+
+   Description: Initiates a renewal of a provisioned object by creating
+   a Renew Process Object.
+
+   Parameters: (None)
+
+   Object: postalData
+
+   Object Name: Postal Address Object
+
+   Object Type: Component
+
+   Description: Contains the components of a postal address.
+
+   Reference: [This-ID]
+
+   Data Elements
+
+    +============+==========+=====+============+========+=============+
+    | Element    | Element  |Card.| Mutability | Data   | Description |
+    | Identifier | Name     |     |            | Type   |             |
+    +============+==========+=====+============+========+=============+
+    | street     | Street   |0+   | read-write | String | Street      |
+    |            |          |     |            |        | address.    |
+    +------------+----------+-----+------------+--------+-------------+
+    | city       | City     |0-1  | read-write | String | City.       |
+    +------------+----------+-----+------------+--------+-------------+
+    | sp         | State/   |0-1  | read-write | String | State or    |
+    |            | Province |     |            |        | province.   |
+    +------------+----------+-----+------------+--------+-------------+
+    | pc         | Postal   |0-1  | read-write | String | Postal      |
+    |            | Code     |     |            |        | code.       |
+    +------------+----------+-----+------------+--------+-------------+
+    | cc         | Country  |0-1  | read-write | String | Country     |
+    |            | Code     |     |            |        | code.       |
+    +------------+----------+-----+------------+--------+-------------+
+
+                                  Table 11
+
+   Object: postalInfo
+
+   Object Name: Postal Info Object
+
+   Object Type: Component
+
+   Description: Contains postal-address information in either
+   internationalised or localised forms.
+
+   Reference: [This-ID]
+
+   Data Elements
+
+   +==========+==============+=====+==========+=======+================+
+   |Element   | Element Name |Card.|Mutability|Data   | Description    |
+   |Identifier|              |     |          |Type   |                |
+   +==========+==============+=====+==========+=======+================+
+   |type      | Contact Type |0-1  |read-write|String | Specifies      |
+   |          |              |     |          |       | whether the    |
+   |          |              |     |          |       | contact is     |
+   |          |              |     |          |       | and            |
+   |          |              |     |          |       | individual or  |
+   |          |              |     |          |       | an             |
+   |          |              |     |          |       | organisation.  |
+   +----------+--------------+-----+----------+-------+----------------+
+   |name      | Name         |0-1  |read-write|String | The name of    |
+   |          |              |     |          |       | the            |
+   |          |              |     |          |       | individual or  |
+   |          |              |     |          |       | role.          |
+   +----------+--------------+-----+----------+-------+----------------+
+   |org       | Organisation |0-1  |read-write|String | The name of    |
+   |          |              |     |          |       | the            |
+   |          |              |     |          |       | organisation.  |
+   +----------+--------------+-----+----------+-------+----------------+
+   |addr      | Address      |0-1  |read-write|Postal | The detailed   |
+   |          |              |     |          |Address| postal         |
+   |          |              |     |          |Object | address.       |
+   +----------+--------------+-----+----------+-------+----------------+
+
+                                  Table 12
+
+   Object: disclose
+
+   Object Name: Disclose
+
+   Object Type: Component
+
+   Description: TBD
+
+   Reference: [This-ID]
+
+   Data Elements
+
+    +============+=========+=======+============+======+=============+
+    | Element    | Element | Card. | Mutability | Data | Description |
+    | Identifier | Name    |       |            | Type |             |
+    +============+=========+=======+============+======+=============+
+    +------------+---------+-------+------------+------+-------------+
+
+                                 Table 13
 
    Object: restoreProcess
 
@@ -3115,7 +3294,7 @@ Table of Contents
    |             |       |     |          |         |pendingRestore.  |
    +-------------+-------+-----+----------+---------+-----------------+
 
-                                 Table 11
+                                 Table 14
 
    Operations
 
@@ -3138,7 +3317,7 @@ Table of Contents
    |               |         |       |               | report.         |
    +---------------+---------+-------+---------------+-----------------+
 
-                                  Table 12
+                                  Table 15
 
    Operation: Restore Read
 
@@ -3169,7 +3348,7 @@ Table of Contents
     |               |         |       |               | submitted.   |
     +---------------+---------+-------+---------------+--------------+
 
-                                 Table 13
+                                 Table 16
 
    Object: restoreReport
 
@@ -3257,7 +3436,7 @@ Table of Contents
    |             |            |     |          |         |the client.  |
    +-------------+------------+-----+----------+---------+-------------+
 
-                                  Table 14
+                                  Table 17
 
    Object: domainName
 
@@ -3327,7 +3506,7 @@ Table of Contents
    |                |             |     |          |                   |object.      |
    +----------------+-------------+-----+----------+-------------------+-------------+
 
-                                  Table 15
+                                  Table 18
 
    Operations
 
@@ -3343,13 +3522,13 @@ Table of Contents
    | Identifier | Name         | Card. | Data   | Description          |
    |            |              |       | Type   |                      |
    +============+==============+=======+========+======================+
-   | period     | Registration | 0-1   | period | The initial          |
-   |            | Period       |       |        | registration         |
+   | period     | Registration | 0-1   | Period | The initial          |
+   |            | Period       |       | Object | registration         |
    |            |              |       |        | period for the       |
    |            |              |       |        | domain name.         |
    +------------+--------------+-------+--------+----------------------+
 
-                                  Table 16
+                                  Table 19
 
    Operation: Read
 
@@ -3359,23 +3538,15 @@ Table of Contents
 
    Parameters
 
-   +===============+===============+=======+==========+================+
-   | Identifier    | Name          | Card. | Data     | Description    |
-   |               |               |       | Type     |                |
-   +===============+===============+=======+==========+================+
-   | hostsFilter   | Hosts Filter  | 0-1   | String   | Controls       |
-   |               |               |       |          | which host     |
-   |               |               |       |          | information    |
-   |               |               |       |          | is returned.   |
-   +---------------+---------------+-------+----------+----------------+
-   | queryAuthInfo | Query         | 0-1   | authInfo | Credentials    |
-   |               | Authorisation |       |          | to authorise   |
-   |               | Information   |       |          | access to      |
-   |               |               |       |          | full object    |
-   |               |               |       |          | data.          |
-   +---------------+---------------+-------+----------+----------------+
+   +=============+========+=======+========+==========================+
+   | Identifier  | Name   | Card. | Data   | Description              |
+   |             |        |       | Type   |                          |
+   +=============+========+=======+========+==========================+
+   | hostsFilter | Hosts  | 0-1   | String | Controls which host      |
+   |             | Filter |       |        | information is returned. |
+   +-------------+--------+-------+--------+--------------------------+
 
-                                  Table 17
+                                 Table 20
 
    Operation: Update
 
@@ -3393,7 +3564,7 @@ Table of Contents
     |            |        |       |         | update by the server.  |
     +------------+--------+-------+---------+------------------------+
 
-                                 Table 18
+                                 Table 21
 
    Operation: Delete
 
@@ -3419,15 +3590,143 @@ Table of Contents
    |                   | Date    |       |           | date, for      |
    |                   |         |       |           | validation.    |
    +-------------------+---------+-------+-----------+----------------+
-   | renewalPeriod     | Renewal | 0-1   | period    | The duration   |
-   |                   | Period  |       |           | to add to the  |
+   | renewalPeriod     | Renewal | 0-1   | Period    | The duration   |
+   |                   | Period  |       | Object    | to add to the  |
    |                   |         |       |           | registration   |
    |                   |         |       |           | period.        |
    +-------------------+---------+-------+-----------+----------------+
 
-                                 Table 19
+                                 Table 22
 
-      |  TODO: IANA table: Contact Data Object
+   Operation: Transfer Create Operation
+
+   Operation Identifier: transferCreate
+
+   Description:
+
+   Parameters
+
+   +================+==========+=======+========+=====================+
+   | Identifier     | Name     | Card. | Data   | Description         |
+   |                |          |       | Type   |                     |
+   +================+==========+=======+========+=====================+
+   | transferPeriod | Transfer | 0-1   | Period | The duration to add |
+   |                | Period   |       | Object | to the registration |
+   |                |          |       |        | period upon         |
+   |                |          |       |        | transfer.           |
+   +----------------+----------+-------+--------+---------------------+
+
+                                 Table 23
+
+   Object: contact
+
+   Object Name: Contact Data Object
+
+   Object Type: Resource
+
+   Description: A Contact Data Object represents the contact information
+   for an individual or organisation associated with other objects.
+
+   Reference: [This-ID]
+
+   Data Elements
+
+   +============+=============+=====+==========+=====================+=============+
+   |Identifier  |Name         |Card.|Mutability|Data Type            |Description  |
+   +============+=============+=====+==========+=====================+=============+
+   |id          |Handle ID    |1    |create-   |Identifier.          |External     |
+   |            |             |     |only      |                     |unique       |
+   |            |             |     |          |                     |identifier of|
+   |            |             |     |          |                     |the contact  |
+   |            |             |     |          |                     |object.      |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |provMetadata|Provisioning |1    |read-only |Provisioning Metadata|Standard     |
+   |            |Metadata     |     |          |Object               |metadata     |
+   |            |             |     |          |                     |about the    |
+   |            |             |     |          |                     |object's     |
+   |            |             |     |          |                     |lifecycle and|
+   |            |             |     |          |                     |ownership.   |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |status      |Status       |0+   |read-only |Status Object        |Status       |
+   |            |             |     |          |                     |descriptors  |
+   |            |             |     |          |                     |associated   |
+   |            |             |     |          |                     |with the     |
+   |            |             |     |          |                     |contact.     |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |postalInfo  |Postal       |1-2  |read-write|DictionaryComposition|Postal-      |
+   |            |Information  |     |          |[Postal Info Object] |address      |
+   |            |             |     |          |                     |information. |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |voice       |Voice Phone  |0+   |read-write|Phone Number         |Voice phone  |
+   |            |Number       |     |          |                     |number       |
+   |            |             |     |          |                     |associated   |
+   |            |             |     |          |                     |with the     |
+   |            |             |     |          |                     |contact      |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |fax         |Fax Phone    |0+   |read-write|Phone Number         |Fax number   |
+   |            |Number       |     |          |                     |associated   |
+   |            |             |     |          |                     |with the     |
+   |            |             |     |          |                     |contact      |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |email       |E-mail       |0+   |read-write|String.              |Email        |
+   |            |             |     |          |                     |address.     |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |authInfo    |Authorisation|0-1  |read-write|Authorisation        |Authorisation|
+   |            |Information  |     |          |Information          |information  |
+   |            |             |     |          |                     |associated   |
+   |            |             |     |          |                     |with the     |
+   |            |             |     |          |                     |contact      |
+   |            |             |     |          |                     |object.      |
+   +------------+-------------+-----+----------+---------------------+-------------+
+   |disclose    |Disclose     |0-1  |read-write|Disclose Object.     |Identifies   |
+   |            |             |     |          |                     |elements that|
+   |            |             |     |          |                     |require      |
+   |            |             |     |          |                     |exceptional  |
+   |            |             |     |          |                     |server-      |
+   |            |             |     |          |                     |operator     |
+   |            |             |     |          |                     |handling to  |
+   |            |             |     |          |                     |allow or     |
+   |            |             |     |          |                     |restrict     |
+   |            |             |     |          |                     |disclosure to|
+   |            |             |     |          |                     |third        |
+   |            |             |     |          |                     |parties.     |
+   +------------+-------------+-----+----------+---------------------+-------------+
+
+                                  Table 24
+
+   Operations
+
+   Operation: Create Operation
+
+   Operation Identifier: create
+
+   Description:
+
+   Parameters: (None)
+
+   Operation: Read Operation
+
+   Operation Identifier: read
+
+   Description:
+
+   Parameters: (None)
+
+   Operation: Update Operation
+
+   Operation Identifier: update
+
+   Description:
+
+   Parameters: (None)
+
+   Operation: Delete Operation
+
+   Operation Identifier: delete
+
+   Description:
+
+   Parameters: (None)
 
    Object: host
 
@@ -3473,7 +3772,7 @@ Table of Contents
    |            |            |     |          |            |the host.  |
    +------------+------------+-----+----------+------------+-----------+
 
-                                  Table 20
+                                  Table 25
 
    Operations
 
@@ -3507,7 +3806,17 @@ Table of Contents
 
 12.  Changes History
 
+draft-kowalik-rpp-data-objects -04 - -05
+
+   -  Added Renew Process Object and operations (Issue #76)
+
 draft-kowalik-rpp-data-objects -03 - -04
+
+   -  correct "postalInfo" to be DictionaryComposition not
+      DictionaryAggregation
+   -  Added missing IANA tables for Contact, Postal Address and Postal
+      Info.  Added missing Operations.  Added missing operation
+      identifiers.  Fixes #17, #18, #19, #20, #21.
 
 draft-kowalik-rpp-data-objects -02 - -03
 
@@ -3592,7 +3901,7 @@ draft-kowalik-rpp-data-objects -01 - -02
 
    [RFC3915]  Hollenbeck, S., "Domain Registry Grace Period Mapping for
               the Extensible Provisioning Protocol (EPP)", RFC 3915,
-              DOI 10.17487/RFC3915, September 2004,
+              DOI 10.17487/RFC3915, October 2004,
               <https://www.rfc-editor.org/info/rfc3915>.
 
    [RFC5322]  Resnick, P., Ed., "Internet Message Format", RFC 5322,

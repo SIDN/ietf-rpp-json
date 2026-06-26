@@ -363,13 +363,40 @@ Rule 16: If the external type does not have a native JSON representation but has
 
 Rule 17: If the external type has neither a native JSON nor a native UTF-8 text representation, the binary representation of the value MUST be Base64-encoded ([@!RFC4648], Section 4) and embedded as a JSON `string`.
 
+## Process Data Embedding Rules
+
+As defined in [@!I-D.wullink-rpp-core], a uniform interface operation MAY require process data in addition to the object representation data. This section defines how such process data MUST be represented in JSON when transmitted together with the object representation in a single request body.
+
+Rule 18: When a uniform interface operation requires both object data and process data in the request body, the process data MUST be embedded under a top-level `"@process"` JSON object. The `"@process"` object MUST be a valid JSON representation of the process object, including the `"@type"` property set to the process object's registered identifier, following the same convention as Rule 25 for RPP object representations. Only one process object MAY be embedded per request.
+
+Example: a domain create request body carrying a two-year registration period as process data embedded in a `"createProcess"` process object:
+
+```json
+{
+    "@type": "domainName",
+    "name": "example.example",
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
+    ],
+    "@process": {
+        "@type": "createProcess",
+        "period": {
+            "@type": "period",
+            "value": 2,
+            "unit": "y"
+        }
+    }
+}
+```
+
 ## JSON Schema Definition Rules
 
-Rule 18: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the `$defs` keyword of the JSON Schema document.
+Rule 20: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the `$defs` keyword of the JSON Schema document.
 
-Rule 19: Identifier fields MUST use `"type": "string"` in JSON Schema.
+Rule 21: Identifier fields MUST use `"type": "string"` in JSON Schema.
 
-Rule 20: Enumeration constraints on string fields MUST be expressed using the `"enum"` keyword in JSON Schema.
+Rule 22: Enumeration constraints on string fields MUST be expressed using the `"enum"` keyword in JSON Schema.
 
 Example (Transfer Status enum):
 
@@ -381,14 +408,14 @@ Example (Transfer Status enum):
 }
 ```
 
-Rule 21: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
+Rule 23: Each JSON Schema definition for an RPP object MUST include a `"required"` array listing all data elements with cardinality `1` or `1+`.
 
 
-Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use `"additionalProperties": true` to allow for free key definition.
+Rule 24: JSON Schema definitions for extendible RPP objects MUST NOT use `"additionalProperties": false` or `"unevaluatedProperties": false`. However, before validation, schemas on every property level MUST be enriched with `"unevaluatedProperties": false` property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use `"additionalProperties": true` to allow for free key definition.
 
 <!-- Implementation of this is a nightmare, because one as to take care to put unevaluatedProperties: false on top level of allOf/anyOf branches, but not in the branches themselves. See inject_unevaluated_properties() function in the verification script. -->
 
-Rule 23: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
+Rule 25: Every RPP object representation MUST include a `"@type"` property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The `"@type"` property MUST be included in the JSON Schema `"properties"` object for each RPP object definition with a `"const"` constraint fixing the value to the object's registered identifier. The `"@type"` property MUST be listed in the `"required"` array of the corresponding JSON Schema definition.
 
 Example (Domain Name Data Object):
 
@@ -399,7 +426,7 @@ Example (Domain Name Data Object):
 }
 ```
 
-Rule 24: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authInfo` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authInfo` object in the JSON body with an appropriate error response.
+Rule 26: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the `authInfo` object in the JSON request body. Instead, the client MUST convey the authorization information using the `RPP-Authorization` HTTP request header as defined in [@!I-D.wullink-rpp-core]. Servers MUST reject any request that includes an `authInfo` object in the JSON body with an appropriate error response.
 
 ### RPP Profiles and Validation
 
@@ -809,6 +836,29 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ## Process Object Schemas
 
+### Create Process Object
+
+The Create Process Object carries the process-specific inputs for a resource creation operation, such as the requested registration period. It is embedded in the create request body under `"@process": { "@type": "createProcess", ... }` per Rule 18.
+
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/createProcess.create",
+  "$defs": {
+    "createProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "createProcess" },
+        "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
 ### Transfer Process Object
 
 Create request schema (create-only and read-write properties):
@@ -1025,7 +1075,7 @@ Create request schema (create-only and read-write properties):
         },
         "dns":    { "$ref": "#/$defs/dnsData" },
         "authInfo": { "$ref": "#/$defs/authInfo" },
-        "period": { "$ref": "#/$defs/period" }
+        "@process": { "$ref": "#/$defs/createProcess.create" }
       },
       "required": ["@type", "name"]
     }
@@ -1353,11 +1403,6 @@ Example domain create request:
 {
     "@type": "domainName",
     "name": "example.example",
-    "period": {
-        "@type": "period",
-        "value": 2,
-        "unit": "y"
-    },
     "nameservers": [
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
@@ -1371,6 +1416,14 @@ Example domain create request:
         "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
+    },
+    "@process": {
+        "@type": "createProcess",
+        "period": {
+            "@type": "period",
+            "value": 2,
+            "unit": "y"
+        }
     }
 }
 ```
@@ -1395,6 +1448,22 @@ Example domain create response from a server with RGP support:
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
 ```
+
+### Create Process Data
+
+Example create process data for a two-year registration period:
+
+```json
+{
+    "@type": "createProcess",
+    "period": {
+        "@type": "period",
+        "value": 2,
+        "unit": "y"
+    }
+}
+```
+
 
 ### Read
 
@@ -2279,6 +2348,7 @@ TODO
 ## Version 01 to 02
 
 - Adjust rule 19 and all schemas to match it.
+- Add representation for embedding of process data in uniform interface operations (especially create).
 
 ## Version 00 to 01
 

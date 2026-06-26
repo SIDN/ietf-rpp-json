@@ -10,23 +10,22 @@
 <meta content="
        This document defines the rules for representing the RESTful Provisioning Protocol (RPP) data objects, as defined in  , using the JavaScript Object Notation (JSON) Data Interchange Format  . It specifies how RPP primitive types, common data types, component objects, resource objects, and associations are mapped to JSON and JSON Schema, and provides normative JSON Schema definitions and worked examples for domain name, contact, and host data objects. 
     " name="description">
-<meta content="xml2rfc 3.34.0" name="generator">
+<meta content="xml2rfc 3.30.2" name="generator">
 <meta content="draft-wullink-rpp-json-02" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.0
-    Python 3.14.5
-    ConfigArgParse 1.7.5
+  xml2rfc 3.30.2
+    Python 3.10.12
+    ConfigArgParse 1.7.1
     google-i18n-address 3.1.1
-    intervaltree 3.2.1
+    intervaltree 3.1.0
     Jinja2 3.1.6
-    lxml 6.1.1
-    natsort 8.4.0
-    platformdirs 4.10.0
-    pycountry 26.2.16
+    lxml 6.0.2
+    platformdirs 4.5.0
+    pycountry 24.6.1
     PyYAML 6.0.3
-    requests 2.34.2
-    wcwidth 0.8.1
-    weasyprint 69.0
+    requests 2.32.5
+    wcwidth 0.2.14
+    weasyprint 65.0
 -->
 <link href="draft-wullink-rpp-json.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1220,7 +1219,7 @@ li > p:last-of-type:only-child {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Wullink &amp; Kowalik</td>
-<td class="center">Expires 19 December 2026</td>
+<td class="center">Expires 28 December 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1233,12 +1232,12 @@ li > p:last-of-type:only-child {
 <dd class="internet-draft">draft-wullink-rpp-json-02</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-17" class="published">17 June 2026</time>
+<time datetime="2026-06-26" class="published">26 June 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-19">19 December 2026</time></dd>
+<dd class="expires"><time datetime="2026-12-28">28 December 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1276,7 +1275,7 @@ li > p:last-of-type:only-child {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 19 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 28 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1364,10 +1363,13 @@ li > p:last-of-type:only-child {
                 <p id="section-toc.1-1.4.2.6.1"><a href="#section-4.6" class="auto internal xref">4.6</a>.  <a href="#name-external-type-embedding-rul" class="internal xref">External Type Embedding Rules</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.7">
-                <p id="section-toc.1-1.4.2.7.1"><a href="#section-4.7" class="auto internal xref">4.7</a>.  <a href="#name-json-schema-definition-rule" class="internal xref">JSON Schema Definition Rules</a></p>
+                <p id="section-toc.1-1.4.2.7.1"><a href="#section-4.7" class="auto internal xref">4.7</a>.  <a href="#name-process-data-embedding-rule" class="internal xref">Process Data Embedding Rules</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.8">
+                <p id="section-toc.1-1.4.2.8.1"><a href="#section-4.8" class="auto internal xref">4.8</a>.  <a href="#name-json-schema-definition-rule" class="internal xref">JSON Schema Definition Rules</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.7.2.1">
-                    <p id="section-toc.1-1.4.2.7.2.1.1"><a href="#section-4.7.1" class="auto internal xref">4.7.1</a>.  <a href="#name-rpp-profiles-and-validation" class="internal xref">RPP Profiles and Validation</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.8.2.1">
+                    <p id="section-toc.1-1.4.2.8.2.1.1"><a href="#section-4.8.1" class="auto internal xref">4.8.1</a>.  <a href="#name-rpp-profiles-and-validation" class="internal xref">RPP Profiles and Validation</a></p>
 </li>
                 </ul>
 </li>
@@ -1426,10 +1428,13 @@ li > p:last-of-type:only-child {
                 <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-process-object-schemas" class="internal xref">Process Object Schemas</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.1">
-                    <p id="section-toc.1-1.5.2.3.2.1.1"><a href="#section-5.3.1" class="auto internal xref">5.3.1</a>.  <a href="#name-transfer-process-object" class="internal xref">Transfer Process Object</a></p>
+                    <p id="section-toc.1-1.5.2.3.2.1.1"><a href="#section-5.3.1" class="auto internal xref">5.3.1</a>.  <a href="#name-create-process-object" class="internal xref">Create Process Object</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.2">
-                    <p id="section-toc.1-1.5.2.3.2.2.1"><a href="#section-5.3.2" class="auto internal xref">5.3.2</a>.  <a href="#name-restore-process-object" class="internal xref">Restore Process Object</a></p>
+                    <p id="section-toc.1-1.5.2.3.2.2.1"><a href="#section-5.3.2" class="auto internal xref">5.3.2</a>.  <a href="#name-transfer-process-object" class="internal xref">Transfer Process Object</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.3">
+                    <p id="section-toc.1-1.5.2.3.2.3.1"><a href="#section-5.3.3" class="auto internal xref">5.3.3</a>.  <a href="#name-restore-process-object" class="internal xref">Restore Process Object</a></p>
 </li>
                 </ul>
 </li>
@@ -1462,34 +1467,37 @@ li > p:last-of-type:only-child {
                     <p id="section-toc.1-1.6.2.1.2.1.1"><a href="#section-6.1.1" class="auto internal xref">6.1.1</a>.  <a href="#name-create" class="internal xref">Create</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.2">
-                    <p id="section-toc.1-1.6.2.1.2.2.1"><a href="#section-6.1.2" class="auto internal xref">6.1.2</a>.  <a href="#name-read" class="internal xref">Read</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.2.1"><a href="#section-6.1.2" class="auto internal xref">6.1.2</a>.  <a href="#name-create-process-data" class="internal xref">Create Process Data</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.3">
-                    <p id="section-toc.1-1.6.2.1.2.3.1"><a href="#section-6.1.3" class="auto internal xref">6.1.3</a>.  <a href="#name-update" class="internal xref">Update</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.3.1"><a href="#section-6.1.3" class="auto internal xref">6.1.3</a>.  <a href="#name-read" class="internal xref">Read</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.4">
-                    <p id="section-toc.1-1.6.2.1.2.4.1"><a href="#section-6.1.4" class="auto internal xref">6.1.4</a>.  <a href="#name-delete" class="internal xref">Delete</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.4.1"><a href="#section-6.1.4" class="auto internal xref">6.1.4</a>.  <a href="#name-update" class="internal xref">Update</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.5">
-                    <p id="section-toc.1-1.6.2.1.2.5.1"><a href="#section-6.1.5" class="auto internal xref">6.1.5</a>.  <a href="#name-renew" class="internal xref">Renew</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.5.1"><a href="#section-6.1.5" class="auto internal xref">6.1.5</a>.  <a href="#name-delete" class="internal xref">Delete</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.6">
-                    <p id="section-toc.1-1.6.2.1.2.6.1"><a href="#section-6.1.6" class="auto internal xref">6.1.6</a>.  <a href="#name-transfer-request" class="internal xref">Transfer Request</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.6.1"><a href="#section-6.1.6" class="auto internal xref">6.1.6</a>.  <a href="#name-renew" class="internal xref">Renew</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.7">
-                    <p id="section-toc.1-1.6.2.1.2.7.1"><a href="#section-6.1.7" class="auto internal xref">6.1.7</a>.  <a href="#name-transfer-query" class="internal xref">Transfer Query</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.7.1"><a href="#section-6.1.7" class="auto internal xref">6.1.7</a>.  <a href="#name-transfer-request" class="internal xref">Transfer Request</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.8">
-                    <p id="section-toc.1-1.6.2.1.2.8.1"><a href="#section-6.1.8" class="auto internal xref">6.1.8</a>.  <a href="#name-transfer-cancel-reject-appr" class="internal xref">Transfer Cancel / Reject / Approve</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.8.1"><a href="#section-6.1.8" class="auto internal xref">6.1.8</a>.  <a href="#name-transfer-query" class="internal xref">Transfer Query</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.9">
-                    <p id="section-toc.1-1.6.2.1.2.9.1"><a href="#section-6.1.9" class="auto internal xref">6.1.9</a>.  <a href="#name-restore-request" class="internal xref">Restore Request</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.9.1"><a href="#section-6.1.9" class="auto internal xref">6.1.9</a>.  <a href="#name-transfer-cancel-reject-appr" class="internal xref">Transfer Cancel / Reject / Approve</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.10">
-                    <p id="section-toc.1-1.6.2.1.2.10.1"><a href="#section-6.1.10" class="auto internal xref">6.1.10</a>. <a href="#name-restore-report" class="internal xref">Restore Report</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.10.1"><a href="#section-6.1.10" class="auto internal xref">6.1.10</a>. <a href="#name-restore-request" class="internal xref">Restore Request</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.11">
-                    <p id="section-toc.1-1.6.2.1.2.11.1"><a href="#section-6.1.11" class="auto internal xref">6.1.11</a>. <a href="#name-restore-query" class="internal xref">Restore Query</a></p>
+                    <p id="section-toc.1-1.6.2.1.2.11.1"><a href="#section-6.1.11" class="auto internal xref">6.1.11</a>. <a href="#name-restore-report" class="internal xref">Restore Report</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.12">
+                    <p id="section-toc.1-1.6.2.1.2.12.1"><a href="#section-6.1.12" class="auto internal xref">6.1.12</a>. <a href="#name-restore-query" class="internal xref">Restore Query</a></p>
 </li>
                 </ul>
 </li>
@@ -1633,7 +1641,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
 <p id="section-3-3">All JSON Schema definitions in this document use JSON Schema draft 2020-12 <span>[<a href="#JSON-SCHEMA" class="cite xref">JSON-SCHEMA</a>]</span>, and where not provided with a <code>$schema</code> keyword, the following default applies:<a href="#section-3-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-3-4">
 <pre>  "$schema": "https://json-schema.org/draft/2020-12/schema"
-
 </pre><a href="#section-3-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1740,7 +1747,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
   },
   "required": ["name"]
 }
-
 </pre><a href="#section-4.2-3" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-4">Rule 2: A data element with cardinality <code>0-1</code> (zero or one) MUST be represented as an optional JSON property. The element MUST NOT be listed under <code>required</code> in the corresponding JSON Schema. When absent, the element MUST be omitted from the JSON object (not represented as <code>null</code>).<a href="#section-4.2-4" class="pilcrow">¶</a></p>
@@ -1751,7 +1757,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     "expiryDate": { "type": "string", "format": "date-time" }
   }
 }
-
 </pre><a href="#section-4.2-5" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-6">Rule 3: A data element with cardinality <code>0+</code> (zero or more) MUST be represented as an optional JSON array. When no values are present, the property MUST be omitted or represented as an empty array.<a href="#section-4.2-6" class="pilcrow">¶</a></p>
@@ -1765,7 +1770,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     }
   }
 }
-
 </pre><a href="#section-4.2-7" class="pilcrow">¶</a>
 </div>
 <p id="section-4.2-8">Rule 4: A data element with cardinality <code>1+</code> (one or more) MUST be represented as a required JSON array with <code>"minItems": 1</code> and the element MUST be listed under <code>required</code> in the corresponding JSON Schema.<a href="#section-4.2-8" class="pilcrow">¶</a></p>
@@ -1781,7 +1785,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
   },
   "required": ["records"]
 }
-
 </pre><a href="#section-4.2-9" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1800,7 +1803,6 @@ document are to be interpreted as described in <span>[<a href="#RFC2119" class="
     "readOnly": true
   }
 }
-
 </pre><a href="#section-4.3-3" class="pilcrow">¶</a>
 </div>
 <p id="section-4.3-4">Rule 6: Data elements with mutability <code>create-only</code> MUST be annotated with <code>"writeOnly": true</code> in the JSON Schema for request schemas, and excluded from update request schemas. Servers MUST reject requests that attempt to modify a <code>create-only</code> element after object creation.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
@@ -1839,7 +1841,6 @@ A Aggregation represents a relationship between two independent objects, where o
         { "@type": "host", "hostName": "ns2.name.example" }
     ]
 }
-
 </pre><a href="#section-4.4.2-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1884,7 +1885,6 @@ A Aggregation represents a relationship between two independent objects, where o
             }
         ]
 }
-
 </pre><a href="#section-4.4.3-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1914,7 +1914,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
      }
 ]
-
 </pre><a href="#section-4.4.4-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1938,7 +1937,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "id": "ABC-8014"
     }
 }
-
 </pre><a href="#section-4.4.5-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1968,7 +1966,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 ]
-
 </pre><a href="#section-4.4.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1992,7 +1989,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "description": "Internal note for the sponsoring client."
     }
 }
-
 </pre><a href="#section-4.4.7-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2019,43 +2015,70 @@ A Aggregation represents a relationship between two independent objects, where o
 <p id="section-4.6-4">Rule 17: If the external type has neither a native JSON nor a native UTF-8 text representation, the binary representation of the value MUST be Base64-encoded (<span>[<a href="#RFC4648" class="cite xref">RFC4648</a>]</span>, Section 4) and embedded as a JSON <code>string</code>.<a href="#section-4.6-4" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="json-schema-definition-rules">
+<div id="process-data-embedding-rules">
 <section id="section-4.7">
-        <h3 id="name-json-schema-definition-rule">
-<a href="#section-4.7" class="section-number selfRef">4.7. </a><a href="#name-json-schema-definition-rule" class="section-name selfRef">JSON Schema Definition Rules</a>
+        <h3 id="name-process-data-embedding-rule">
+<a href="#section-4.7" class="section-number selfRef">4.7. </a><a href="#name-process-data-embedding-rule" class="section-name selfRef">Process Data Embedding Rules</a>
         </h3>
-<p id="section-4.7-1">Rule 18: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the <code>$defs</code> keyword of the JSON Schema document.<a href="#section-4.7-1" class="pilcrow">¶</a></p>
-<p id="section-4.7-2">Rule 19: Identifier fields MUST use <code>"type": "string"</code> in JSON Schema.<a href="#section-4.7-2" class="pilcrow">¶</a></p>
-<p id="section-4.7-3">Rule 20: Enumeration constraints on string fields MUST be expressed using the <code>"enum"</code> keyword in JSON Schema.<a href="#section-4.7-3" class="pilcrow">¶</a></p>
-<p id="section-4.7-4">Example (Transfer Status enum):<a href="#section-4.7-4" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-4.7-5">
+<p id="section-4.7-1">As defined in <span>[<a href="#I-D.wullink-rpp-core" class="cite xref">I-D.wullink-rpp-core</a>]</span>, a uniform interface operation MAY require process data in addition to the object representation data. This section defines how such process data MUST be represented in JSON when transmitted together with the object representation in a single request body.<a href="#section-4.7-1" class="pilcrow">¶</a></p>
+<p id="section-4.7-2">Rule 18: When a uniform interface operation requires both object data and process data in the request body, the process data MUST be embedded under a top-level <code>"@process"</code> JSON object. The <code>"@process"</code> object MUST be a valid JSON representation of the process object, including the <code>"@type"</code> property set to the process object's registered identifier, following the same convention as Rule 25 for RPP object representations. Only one process object MAY be embedded per request.<a href="#section-4.7-2" class="pilcrow">¶</a></p>
+<p id="section-4.7-3">Example: a domain create request body carrying a two-year registration period as process data embedded in a <code>"createProcess"</code> process object:<a href="#section-4.7-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-4.7-4">
+<pre>{
+    "@type": "domainName",
+    "name": "example.example",
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
+    ],
+    "@process": {
+        "@type": "createProcess",
+        "period": {
+            "@type": "period",
+            "value": 2,
+            "unit": "y"
+        }
+    }
+}
+</pre><a href="#section-4.7-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="json-schema-definition-rules">
+<section id="section-4.8">
+        <h3 id="name-json-schema-definition-rule">
+<a href="#section-4.8" class="section-number selfRef">4.8. </a><a href="#name-json-schema-definition-rule" class="section-name selfRef">JSON Schema Definition Rules</a>
+        </h3>
+<p id="section-4.8-1">Rule 20: Each RPP component object and resource object MUST have a corresponding JSON Schema definition. Object definitions MUST be placed in the <code>$defs</code> keyword of the JSON Schema document.<a href="#section-4.8-1" class="pilcrow">¶</a></p>
+<p id="section-4.8-2">Rule 21: Identifier fields MUST use <code>"type": "string"</code> in JSON Schema.<a href="#section-4.8-2" class="pilcrow">¶</a></p>
+<p id="section-4.8-3">Rule 22: Enumeration constraints on string fields MUST be expressed using the <code>"enum"</code> keyword in JSON Schema.<a href="#section-4.8-3" class="pilcrow">¶</a></p>
+<p id="section-4.8-4">Example (Transfer Status enum):<a href="#section-4.8-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-4.8-5">
 <pre>"trStatus": {
     "type": "string",
     "enum": ["pending", "clientApproved", "clientCancelled",
              "clientRejected", "serverApproved", "serverCancelled"]
 }
-
-</pre><a href="#section-4.7-5" class="pilcrow">¶</a>
+</pre><a href="#section-4.8-5" class="pilcrow">¶</a>
 </div>
-<p id="section-4.7-6">Rule 21: Each JSON Schema definition for an RPP object MUST include a <code>"required"</code> array listing all data elements with cardinality <code>1</code> or <code>1+</code>.<a href="#section-4.7-6" class="pilcrow">¶</a></p>
-<p id="section-4.7-7">Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT use <code>"additionalProperties": false</code> or <code>"unevaluatedProperties": false</code>. However, before validation, schemas on every property level MUST be enriched with <code>"unevaluatedProperties": false</code> property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use <code>"additionalProperties": true</code> to allow for free key definition.<a href="#section-4.7-7" class="pilcrow">¶</a></p>
-<p id="section-4.7-8">Rule 23: Every RPP object representation MUST include a <code>"@type"</code> property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The <code>"@type"</code> property MUST be included in the JSON Schema <code>"properties"</code> object for each RPP object definition with a <code>"const"</code> constraint fixing the value to the object's registered identifier. The <code>"@type"</code> property MUST be listed in the <code>"required"</code> array of the corresponding JSON Schema definition.<a href="#section-4.7-8" class="pilcrow">¶</a></p>
-<p id="section-4.7-9">Example (Domain Name Data Object):<a href="#section-4.7-9" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-4.7-10">
+<p id="section-4.8-6">Rule 23: Each JSON Schema definition for an RPP object MUST include a <code>"required"</code> array listing all data elements with cardinality <code>1</code> or <code>1+</code>.<a href="#section-4.8-6" class="pilcrow">¶</a></p>
+<p id="section-4.8-7">Rule 24: JSON Schema definitions for extendible RPP objects MUST NOT use <code>"additionalProperties": false</code> or <code>"unevaluatedProperties": false</code>. However, before validation, schemas on every property level MUST be enriched with <code>"unevaluatedProperties": false</code> property to prevent the presence of undeclared properties in JSON instances. JSON Schemas for Object type MAY use <code>"additionalProperties": true</code> to allow for free key definition.<a href="#section-4.8-7" class="pilcrow">¶</a></p>
+<p id="section-4.8-8">Rule 25: Every RPP object representation MUST include a <code>"@type"</code> property whose value is the object's identifier as registered in the IANA RPP Data Object Registry. This property enables identification and allows clients and servers to unambiguously determine the type of an object. The <code>"@type"</code> property MUST be included in the JSON Schema <code>"properties"</code> object for each RPP object definition with a <code>"const"</code> constraint fixing the value to the object's registered identifier. The <code>"@type"</code> property MUST be listed in the <code>"required"</code> array of the corresponding JSON Schema definition.<a href="#section-4.8-8" class="pilcrow">¶</a></p>
+<p id="section-4.8-9">Example (Domain Name Data Object):<a href="#section-4.8-9" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-4.8-10">
 <pre>{
     "@type": "domainName",
     "name": "example.example"
 }
-
-</pre><a href="#section-4.7-10" class="pilcrow">¶</a>
+</pre><a href="#section-4.8-10" class="pilcrow">¶</a>
 </div>
-<p id="section-4.7-11">Rule 24: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <code>authInfo</code> object in the JSON request body. Instead, the client MUST convey the authorization information using the <code>RPP-Authorization</code> HTTP request header as defined in <span>[<a href="#I-D.wullink-rpp-core" class="cite xref">I-D.wullink-rpp-core</a>]</span>. Servers MUST reject any request that includes an <code>authInfo</code> object in the JSON body with an appropriate error response.<a href="#section-4.7-11" class="pilcrow">¶</a></p>
+<p id="section-4.8-11">Rule 26: When a transfer request or other operation requires authorization information (e.g., EPP-style authinfo), the client MUST NOT include the <code>authInfo</code> object in the JSON request body. Instead, the client MUST convey the authorization information using the <code>RPP-Authorization</code> HTTP request header as defined in <span>[<a href="#I-D.wullink-rpp-core" class="cite xref">I-D.wullink-rpp-core</a>]</span>. Servers MUST reject any request that includes an <code>authInfo</code> object in the JSON body with an appropriate error response.<a href="#section-4.8-11" class="pilcrow">¶</a></p>
 <div id="rpp-profiles-and-validation">
-<section id="section-4.7.1">
+<section id="section-4.8.1">
           <h4 id="name-rpp-profiles-and-validation">
-<a href="#section-4.7.1" class="section-number selfRef">4.7.1. </a><a href="#name-rpp-profiles-and-validation" class="section-name selfRef">RPP Profiles and Validation</a>
+<a href="#section-4.8.1" class="section-number selfRef">4.8.1. </a><a href="#name-rpp-profiles-and-validation" class="section-name selfRef">RPP Profiles and Validation</a>
           </h4>
-<p id="section-4.7.1-1">RPP profiles, such as the EPP Compatibility Profile defined in <span>[<a href="#I-D.kowalik-rpp-data-objects" class="cite xref">I-D.kowalik-rpp-data-objects</a>]</span>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.<a href="#section-4.7.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.8.1-1">RPP profiles, such as the EPP Compatibility Profile defined in <span>[<a href="#I-D.kowalik-rpp-data-objects" class="cite xref">I-D.kowalik-rpp-data-objects</a>]</span>, may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.<a href="#section-4.8.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2100,7 +2123,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.1.2-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2121,7 +2143,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.1.3-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2159,7 +2180,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.1-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2199,7 +2219,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.2-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2235,7 +2254,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.3-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2291,7 +2309,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.4-6" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2328,7 +2345,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.5-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2361,7 +2377,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2393,7 +2408,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.7-3" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2403,7 +2417,7 @@ A Aggregation represents a relationship between two independent objects, where o
           <h4 id="name-jscontact-card-object">
 <a href="#section-5.2.8" class="section-number selfRef">5.2.8. </a><a href="#name-jscontact-card-object" class="section-name selfRef">JSContact Card Object</a>
           </h4>
-<p id="section-5.2.8-1">The Contact Data Object uses version 2.0 of JSContact <span>[<a href="#RFC9982" class="cite xref">RFC9982</a>]</span> to represent contact information.  The <code>contact</code> component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.<a href="#section-5.2.8-1" class="pilcrow">¶</a></p>
+<p id="section-5.2.8-1">The Contact Data Object uses version 2.0 of JSContact <span>[<a href="#RFC9982" class="cite xref">RFC9982</a>]</span> to represent contact information. The <code>Contact</code> object is defined below according to the RPP JSContact Profile [TODO Add Ref].<a href="#section-5.2.8-1" class="pilcrow">¶</a></p>
 <p id="section-5.2.8-2">The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:<a href="#section-5.2.8-2" class="pilcrow">¶</a></p>
 <ul class="compact">
 <li class="compact" id="section-5.2.8-3.1">
@@ -2515,7 +2529,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.8-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2562,7 +2575,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.2.9-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2574,13 +2586,39 @@ A Aggregation represents a relationship between two independent objects, where o
         <h3 id="name-process-object-schemas">
 <a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-process-object-schemas" class="section-name selfRef">Process Object Schemas</a>
         </h3>
-<div id="transfer-process-object">
+<div id="create-process-object">
 <section id="section-5.3.1">
-          <h4 id="name-transfer-process-object">
-<a href="#section-5.3.1" class="section-number selfRef">5.3.1. </a><a href="#name-transfer-process-object" class="section-name selfRef">Transfer Process Object</a>
+          <h4 id="name-create-process-object">
+<a href="#section-5.3.1" class="section-number selfRef">5.3.1. </a><a href="#name-create-process-object" class="section-name selfRef">Create Process Object</a>
           </h4>
-<p id="section-5.3.1-1">Create request schema (create-only and read-write properties):<a href="#section-5.3.1-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.1-2">
+<p id="section-5.3.1-1">The Create Process Object carries the process-specific inputs for a resource creation operation, such as the requested registration period. It is embedded in the create request body under <code>"@process": { "@type": "createProcess", ... }</code> per Rule 18.<a href="#section-5.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.1-2">Create request schema (create-only and read-write properties):<a href="#section-5.3.1-2" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.1-3">
+<pre>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/createProcess.create",
+  "$defs": {
+    "createProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "createProcess" },
+        "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+</pre><a href="#section-5.3.1-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="transfer-process-object">
+<section id="section-5.3.2">
+          <h4 id="name-transfer-process-object">
+<a href="#section-5.3.2" class="section-number selfRef">5.3.2. </a><a href="#name-transfer-process-object" class="section-name selfRef">Transfer Process Object</a>
+          </h4>
+<p id="section-5.3.2-1">Create request schema (create-only and read-write properties):<a href="#section-5.3.2-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.2-2">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create",
@@ -2617,11 +2655,10 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.1-2" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.2-2" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3.1-3">Create request for Domain Object schema (create-only and read-write properties):<a href="#section-5.3.1-3" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.1-4">
+<p id="section-5.3.2-3">Create request for Domain Object schema (create-only and read-write properties):<a href="#section-5.3.2-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.2-4">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.create.domain",
@@ -2638,11 +2675,10 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.1-4" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.2-4" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3.1-5">Read response schema (read-write and read-only properties):<a href="#section-5.3.1-5" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.1-6">
+<p id="section-5.3.2-5">Read response schema (read-write and read-only properties):<a href="#section-5.3.2-5" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.2-6">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.read",
@@ -2675,11 +2711,10 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.1-6" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.2-6" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3.1-7">Read response for Domain Object schema (read-write and read-only properties):<a href="#section-5.3.1-7" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.1-8">
+<p id="section-5.3.2-7">Read response for Domain Object schema (read-write and read-only properties):<a href="#section-5.3.2-7" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.2-8">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/transferProcess.read.domain",
@@ -2696,31 +2731,30 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.1-8" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.2-8" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="restore-process-object">
-<section id="section-5.3.2">
+<section id="section-5.3.3">
           <h4 id="name-restore-process-object">
-<a href="#section-5.3.2" class="section-number selfRef">5.3.2. </a><a href="#name-restore-process-object" class="section-name selfRef">Restore Process Object</a>
+<a href="#section-5.3.3" class="section-number selfRef">5.3.3. </a><a href="#name-restore-process-object" class="section-name selfRef">Restore Process Object</a>
           </h4>
-<p id="section-5.3.2-1">The Restore Process Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as a response for all restore operations.<a href="#section-5.3.2-1" class="pilcrow">¶</a></p>
-<p id="section-5.3.2-2">The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:<a href="#section-5.3.2-2" class="pilcrow">¶</a></p>
+<p id="section-5.3.3-1">The Restore Process Object represents the current state of a restore request for an object that has entered the Redemption Grace Period (RGP). It is returned as a response for all restore operations.<a href="#section-5.3.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.3-2">The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:<a href="#section-5.3.3-2" class="pilcrow">¶</a></p>
 <ul class="compact">
-<li class="compact" id="section-5.3.2-3.1">
-              <code>requestDate</code> MUST NOT be present if no restore request has been submitted yet.<a href="#section-5.3.2-3.1" class="pilcrow">¶</a>
+<li class="compact" id="section-5.3.3-3.1">
+              <code>requestDate</code> MUST NOT be present if no restore request has been submitted yet.<a href="#section-5.3.3-3.1" class="pilcrow">¶</a>
 </li>
-            <li class="compact" id="section-5.3.2-3.2">
-              <code>reportDate</code> MUST NOT be present if no restore report has been accepted yet.<a href="#section-5.3.2-3.2" class="pilcrow">¶</a>
+            <li class="compact" id="section-5.3.3-3.2">
+              <code>reportDate</code> MUST NOT be present if no restore report has been accepted yet.<a href="#section-5.3.3-3.2" class="pilcrow">¶</a>
 </li>
-            <li class="compact" id="section-5.3.2-3.3">
-              <code>reportDueDate</code> MUST NOT be present when <code>restoreStatus</code> is not <code>"pendingRestore"</code>.<a href="#section-5.3.2-3.3" class="pilcrow">¶</a>
+            <li class="compact" id="section-5.3.3-3.3">
+              <code>reportDueDate</code> MUST NOT be present when <code>restoreStatus</code> is not <code>"pendingRestore"</code>.<a href="#section-5.3.3-3.3" class="pilcrow">¶</a>
 </li>
           </ul>
-<p id="section-5.3.2-4">Create request schema (create-only and read-write properties):<a href="#section-5.3.2-4" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.2-5">
+<p id="section-5.3.3-4">Create request schema (create-only and read-write properties):<a href="#section-5.3.3-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.3-5">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.create",
@@ -2735,11 +2769,10 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.2-5" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.3-5" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3.2-6">Read response schema (read-write and read-only properties):<a href="#section-5.3.2-6" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5.3.2-7">
+<p id="section-5.3.3-6">Read response schema (read-write and read-only properties):<a href="#section-5.3.3-6" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5.3.3-7">
 <pre>{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/restoreProcess.read",
@@ -2761,8 +2794,7 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
-</pre><a href="#section-5.3.2-7" class="pilcrow">¶</a>
+</pre><a href="#section-5.3.3-7" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -2809,13 +2841,12 @@ A Aggregation represents a relationship between two independent objects, where o
         },
         "dns":    { "$ref": "#/$defs/dnsData" },
         "authInfo": { "$ref": "#/$defs/authInfo" },
-        "period": { "$ref": "#/$defs/period" }
+        "@process": { "$ref": "#/$defs/createProcess.create" }
       },
       "required": ["@type", "name"]
     }
   }
 }
-
 </pre><a href="#section-5.4-5" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-6">Read response schema (read-write and read-only properties):<a href="#section-5.4-6" class="pilcrow">¶</a></p>
@@ -2864,7 +2895,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-7" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-8">Update request schema (read-write properties):<a href="#section-5.4-8" class="pilcrow">¶</a></p>
@@ -2900,7 +2930,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-9" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-10">Renew minimal response schema (only expire date):<a href="#section-5.4-10" class="pilcrow">¶</a></p>
@@ -2919,7 +2948,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-11" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-12">Reference schema (identifier only):<a href="#section-5.4-12" class="pilcrow">¶</a></p>
@@ -2938,7 +2966,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.4-13" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2948,7 +2975,7 @@ A Aggregation represents a relationship between two independent objects, where o
         <h3 id="name-contact-data-object">
 <a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-contact-data-object" class="section-name selfRef">Contact Data Object</a>
         </h3>
-<p id="section-5.5-1">This document uses version 2.0 of JSContact <span>[<a href="#RFC9982" class="cite xref">RFC9982</a>]</span> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <code>Card</code> object embedded in the <code>card</code> property of the contact JSON object.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<p id="section-5.5-1">This document uses version 2.0 of JSContact <span>[<a href="#RFC9982" class="cite xref">RFC9982</a>]</span> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <code>Card</code> object embedded in the <code>contactInfo</code> property.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
 <div id="jscontact-profile-for-rpp">
 <section id="section-5.5.1">
           <h4 id="name-jscontact-profile-for-rpp">
@@ -2981,15 +3008,14 @@ A Aggregation represents a relationship between two independent objects, where o
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
         "id":     { "type": "string" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "card"],
+      "required": ["@type", "id", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
 }
-
 </pre><a href="#section-5.5.1-5" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5.1-6">Update request schema (read-write properties):<a href="#section-5.5.1-6" class="pilcrow">¶</a></p>
@@ -3002,15 +3028,14 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
 }
-
 </pre><a href="#section-5.5.1-7" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5.1-8">Read response schema (read-write and read-only properties):<a href="#section-5.5.1-8" class="pilcrow">¶</a></p>
@@ -3030,15 +3055,14 @@ A Aggregation represents a relationship between two independent objects, where o
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
 }
-
 </pre><a href="#section-5.5.1-9" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5.1-10">Reference schema (identifier only):<a href="#section-5.5.1-10" class="pilcrow">¶</a></p>
@@ -3057,7 +3081,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.5.1-11" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3094,7 +3117,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5.6-5">Read response schema (read-write and read-only properties):<a href="#section-5.6-5" class="pilcrow">¶</a></p>
@@ -3120,7 +3142,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5.6-7">Reference schema (identifier only):<a href="#section-5.6-7" class="pilcrow">¶</a></p>
@@ -3139,7 +3160,6 @@ A Aggregation represents a relationship between two independent objects, where o
     }
   }
 }
-
 </pre><a href="#section-5.6-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3175,11 +3195,6 @@ A Aggregation represents a relationship between two independent objects, where o
 <pre>{
     "@type": "domainName",
     "name": "example.example",
-    "period": {
-        "@type": "period",
-        "value": 2,
-        "unit": "y"
-    },
     "nameservers": [
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
@@ -3193,9 +3208,16 @@ A Aggregation represents a relationship between two independent objects, where o
         "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
+    },
+    "@process": {
+        "@type": "createProcess",
+        "period": {
+            "@type": "period",
+            "value": 2,
+            "unit": "y"
+        }
     }
 }
-
 </pre><a href="#section-6.1.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1.1-3">Example domain create response from a server with RGP support:<a href="#section-6.1.1-3" class="pilcrow">¶</a></p>
@@ -3216,18 +3238,36 @@ A Aggregation represents a relationship between two independent objects, where o
     ],
     "expiryDate": "2001-04-03T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.1.1-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
-<div id="read">
+<div id="create-process-data">
 <section id="section-6.1.2">
-          <h4 id="name-read">
-<a href="#section-6.1.2" class="section-number selfRef">6.1.2. </a><a href="#name-read" class="section-name selfRef">Read</a>
+          <h4 id="name-create-process-data">
+<a href="#section-6.1.2" class="section-number selfRef">6.1.2. </a><a href="#name-create-process-data" class="section-name selfRef">Create Process Data</a>
           </h4>
-<p id="section-6.1.2-1">Example domain read response:<a href="#section-6.1.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.2-1">Example create process data for a two-year registration period:<a href="#section-6.1.2-1" class="pilcrow">¶</a></p>
 <div class="lang-json sourcecode" id="section-6.1.2-2">
+<pre>{
+    "@type": "createProcess",
+    "period": {
+        "@type": "period",
+        "value": 2,
+        "unit": "y"
+    }
+}
+</pre><a href="#section-6.1.2-2" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="read">
+<section id="section-6.1.3">
+          <h4 id="name-read">
+<a href="#section-6.1.3" class="section-number selfRef">6.1.3. </a><a href="#name-read" class="section-name selfRef">Read</a>
+          </h4>
+<p id="section-6.1.3-1">Example domain read response:<a href="#section-6.1.3-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.3-2">
 <pre>{
     "@type": "domainName",
     "name": "example.example",
@@ -3276,18 +3316,17 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2fooBAR"
     }
 }
-
-</pre><a href="#section-6.1.2-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.3-2" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="update">
-<section id="section-6.1.3">
+<section id="section-6.1.4">
           <h4 id="name-update">
-<a href="#section-6.1.3" class="section-number selfRef">6.1.3. </a><a href="#name-update" class="section-name selfRef">Update</a>
+<a href="#section-6.1.4" class="section-number selfRef">6.1.4. </a><a href="#name-update" class="section-name selfRef">Update</a>
           </h4>
-<p id="section-6.1.3-1">Example domain update request (read-write properties):<a href="#section-6.1.3-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.3-2">
+<p id="section-6.1.4-1">Example domain update request (read-write properties):<a href="#section-6.1.4-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.4-2">
 <pre>{
     "@type": "domainName",
     "registrant": { "@type": "contact", "id": "sh8013" },
@@ -3297,11 +3336,10 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2BARfoo"
     }
 }
-
-</pre><a href="#section-6.1.3-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.4-2" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.3-3">Example domain update response:<a href="#section-6.1.3-3" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.3-4">
+<p id="section-6.1.4-3">Example domain update response:<a href="#section-6.1.4-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.4-4">
 <pre>{
     "@type": "domainName",
     "name": "example.example",
@@ -3319,19 +3357,18 @@ A Aggregation represents a relationship between two independent objects, where o
     ],
     "registrant": { "@type": "contact", "id": "sh8013" }
 }
-
-</pre><a href="#section-6.1.3-4" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.4-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="delete">
-<section id="section-6.1.4">
+<section id="section-6.1.5">
           <h4 id="name-delete">
-<a href="#section-6.1.4" class="section-number selfRef">6.1.4. </a><a href="#name-delete" class="section-name selfRef">Delete</a>
+<a href="#section-6.1.5" class="section-number selfRef">6.1.5. </a><a href="#name-delete" class="section-name selfRef">Delete</a>
           </h4>
-<p id="section-6.1.4-1">The domain delete operation takes the domain name as the resource identifier in the request. No request body is required.<a href="#section-6.1.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.1.4-2">Example domain delete response (minimal, server may return full representation):<a href="#section-6.1.4-2" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.4-3">
+<p id="section-6.1.5-1">The domain delete operation takes the domain name as the resource identifier in the request. No request body is required.<a href="#section-6.1.5-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.5-2">Example domain delete response (minimal, server may return full representation):<a href="#section-6.1.5-2" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.5-3">
 <pre>{
     "@type": "domainName",
     "name": "example.example",
@@ -3341,19 +3378,18 @@ A Aggregation represents a relationship between two independent objects, where o
         "spClientId": "ClientX"
     }
 }
-
-</pre><a href="#section-6.1.4-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.5-3" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="renew">
-<section id="section-6.1.5">
+<section id="section-6.1.6">
           <h4 id="name-renew">
-<a href="#section-6.1.5" class="section-number selfRef">6.1.5. </a><a href="#name-renew" class="section-name selfRef">Renew</a>
+<a href="#section-6.1.6" class="section-number selfRef">6.1.6. </a><a href="#name-renew" class="section-name selfRef">Renew</a>
           </h4>
-<p id="section-6.1.5-1">The renew operation accepts a transient <code>currentExpiryDate</code> parameter for validation and an optional <code>renewalPeriod</code>.<a href="#section-6.1.5-1" class="pilcrow">¶</a></p>
-<p id="section-6.1.5-2">Example domain renew request:<a href="#section-6.1.5-2" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.5-3">
+<p id="section-6.1.6-1">The renew operation accepts a transient <code>currentExpiryDate</code> parameter for validation and an optional <code>renewalPeriod</code>.<a href="#section-6.1.6-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.6-2">Example domain renew request:<a href="#section-6.1.6-2" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.6-3">
 <pre>{
     "@type": "domainName.renew",
     "currentExpiryDate": "2005-04-03T22:00:00.0Z",
@@ -3363,28 +3399,26 @@ A Aggregation represents a relationship between two independent objects, where o
         "unit": "y"
     }
 }
-
-</pre><a href="#section-6.1.5-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.6-3" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.5-4">Example domain renew response:<a href="#section-6.1.5-4" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.5-5">
+<p id="section-6.1.6-4">Example domain renew response:<a href="#section-6.1.6-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.6-5">
 <pre>{
     "@type": "domainName",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
-
-</pre><a href="#section-6.1.5-5" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.6-5" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="transfer-request">
-<section id="section-6.1.6">
+<section id="section-6.1.7">
           <h4 id="name-transfer-request">
-<a href="#section-6.1.6" class="section-number selfRef">6.1.6. </a><a href="#name-transfer-request" class="section-name selfRef">Transfer Request</a>
+<a href="#section-6.1.7" class="section-number selfRef">6.1.7. </a><a href="#name-transfer-request" class="section-name selfRef">Transfer Request</a>
           </h4>
-<p id="section-6.1.6-1">Authorization information for the transfer MUST be conveyed using the <code>RPP-Authorization</code> HTTP header (see Rule 21), not in the JSON request body.<a href="#section-6.1.6-1" class="pilcrow">¶</a></p>
-<p id="section-6.1.6-2">Example domain transfer request (pull transfer)<a href="#section-6.1.6-2" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.6-3">
+<p id="section-6.1.7-1">Authorization information for the transfer MUST be conveyed using the <code>RPP-Authorization</code> HTTP header (see Rule 21), not in the JSON request body.<a href="#section-6.1.7-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.7-2">Example domain transfer request (pull transfer)<a href="#section-6.1.7-2" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.7-3">
 <pre>{
     "@type": "transferProcess",
     "transferDir": "pull",
@@ -3394,11 +3428,10 @@ A Aggregation represents a relationship between two independent objects, where o
         "unit": "y"
     }
 }
-
-</pre><a href="#section-6.1.6-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.7-3" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.6-4">Example domain transfer response (Transfer Process Object):<a href="#section-6.1.6-4" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.6-5">
+<p id="section-6.1.7-4">Example domain transfer response (Transfer Process Object):<a href="#section-6.1.7-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.7-5">
 <pre>{
     "@type": "transferProcess",
     "trStatus": "pending",
@@ -3409,18 +3442,17 @@ A Aggregation represents a relationship between two independent objects, where o
     "actionDate": "2000-06-13T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
-
-</pre><a href="#section-6.1.6-5" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.7-5" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="transfer-query">
-<section id="section-6.1.7">
+<section id="section-6.1.8">
           <h4 id="name-transfer-query">
-<a href="#section-6.1.7" class="section-number selfRef">6.1.7. </a><a href="#name-transfer-query" class="section-name selfRef">Transfer Query</a>
+<a href="#section-6.1.8" class="section-number selfRef">6.1.8. </a><a href="#name-transfer-query" class="section-name selfRef">Transfer Query</a>
           </h4>
-<p id="section-6.1.7-1">Example domain transfer query response (Transfer Process Object):<a href="#section-6.1.7-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.7-2">
+<p id="section-6.1.8-1">Example domain transfer query response (Transfer Process Object):<a href="#section-6.1.8-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.8-2">
 <pre>{
     "@type": "transferProcess",
     "trStatus": "pending",
@@ -3431,45 +3463,42 @@ A Aggregation represents a relationship between two independent objects, where o
     "actionDate": "2000-06-11T22:00:00.0Z",
     "expiryDate": "2002-09-08T22:00:00.0Z"
 }
-
-</pre><a href="#section-6.1.7-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.8-2" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="transfer-cancel-reject-approve">
-<section id="section-6.1.8">
+<section id="section-6.1.9">
           <h4 id="name-transfer-cancel-reject-appr">
-<a href="#section-6.1.8" class="section-number selfRef">6.1.8. </a><a href="#name-transfer-cancel-reject-appr" class="section-name selfRef">Transfer Cancel / Reject / Approve</a>
+<a href="#section-6.1.9" class="section-number selfRef">6.1.9. </a><a href="#name-transfer-cancel-reject-appr" class="section-name selfRef">Transfer Cancel / Reject / Approve</a>
           </h4>
-<p id="section-6.1.8-1">Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <code>trStatus</code> value reflects the outcome of the operation (e.g. <code>"clientCancelled"</code>, <code>"clientRejected"</code>, or <code>"clientApproved"</code>).<a href="#section-6.1.8-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.9-1">Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <code>trStatus</code> value reflects the outcome of the operation (e.g. <code>"clientCancelled"</code>, <code>"clientRejected"</code>, or <code>"clientApproved"</code>).<a href="#section-6.1.9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="restore-request">
-<section id="section-6.1.9">
+<section id="section-6.1.10">
           <h4 id="name-restore-request">
-<a href="#section-6.1.9" class="section-number selfRef">6.1.9. </a><a href="#name-restore-request" class="section-name selfRef">Restore Request</a>
+<a href="#section-6.1.10" class="section-number selfRef">6.1.10. </a><a href="#name-restore-request" class="section-name selfRef">Restore Request</a>
           </h4>
-<p id="section-6.1.9-1">Example domain restore request (without inline report; object transitions to <code>pendingRestore</code> state):<a href="#section-6.1.9-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.9-2">
+<p id="section-6.1.10-1">Example domain restore request (without inline report; object transitions to <code>pendingRestore</code> state):<a href="#section-6.1.10-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.10-2">
 <pre>{
     "@type": "restoreProcess"
 }
-
-</pre><a href="#section-6.1.9-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.10-2" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.9-3">Example domain restore response (Restore Process Object, server requires a report):<a href="#section-6.1.9-3" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.9-4">
+<p id="section-6.1.10-3">Example domain restore response (Restore Process Object, server requires a report):<a href="#section-6.1.10-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.10-4">
 <pre>{
     "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
-</pre><a href="#section-6.1.9-4" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.10-4" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.9-5">Example domain restore request with inline restore report (single-step; object restored immediately):<a href="#section-6.1.9-5" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.9-6">
+<p id="section-6.1.10-5">Example domain restore request with inline restore report (single-step; object restored immediately):<a href="#section-6.1.10-5" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.10-6">
 <pre>{
     "@type": "restoreProcess",
     "restoreReport": {
@@ -3485,29 +3514,27 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
-</pre><a href="#section-6.1.9-6" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.10-6" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.9-7">Example domain restore response with inline report (Restore Process Object, immediately restored):<a href="#section-6.1.9-7" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.9-8">
+<p id="section-6.1.10-7">Example domain restore response with inline report (Restore Process Object, immediately restored):<a href="#section-6.1.10-7" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.10-8">
 <pre>{
     "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
 }
-
-</pre><a href="#section-6.1.9-8" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.10-8" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="restore-report">
-<section id="section-6.1.10">
+<section id="section-6.1.11">
           <h4 id="name-restore-report">
-<a href="#section-6.1.10" class="section-number selfRef">6.1.10. </a><a href="#name-restore-report" class="section-name selfRef">Restore Report</a>
+<a href="#section-6.1.11" class="section-number selfRef">6.1.11. </a><a href="#name-restore-report" class="section-name selfRef">Restore Report</a>
           </h4>
-<p id="section-6.1.10-1">Example domain restore report request:<a href="#section-6.1.10-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.10-2">
+<p id="section-6.1.11-1">Example domain restore report request:<a href="#section-6.1.11-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.11-2">
 <pre>{
     "@type": "restoreProcess",
     "restoreReport": {
@@ -3523,49 +3550,45 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
-</pre><a href="#section-6.1.10-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.11-2" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.10-3">Example domain restore report response (Restore Process Object):<a href="#section-6.1.10-3" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.10-4">
+<p id="section-6.1.11-3">Example domain restore report response (Restore Process Object):<a href="#section-6.1.11-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.11-4">
 <pre>{
     "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
-</pre><a href="#section-6.1.10-4" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.11-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="restore-query">
-<section id="section-6.1.11">
+<section id="section-6.1.12">
           <h4 id="name-restore-query">
-<a href="#section-6.1.11" class="section-number selfRef">6.1.11. </a><a href="#name-restore-query" class="section-name selfRef">Restore Query</a>
+<a href="#section-6.1.12" class="section-number selfRef">6.1.12. </a><a href="#name-restore-query" class="section-name selfRef">Restore Query</a>
           </h4>
-<p id="section-6.1.11-1">The Restore Query operation takes no request body (Parameters: None).<a href="#section-6.1.11-1" class="pilcrow">¶</a></p>
-<p id="section-6.1.11-2">Example domain restore query response (Restore Process Object, object in <code>pendingRestore</code> state):<a href="#section-6.1.11-2" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.11-3">
+<p id="section-6.1.12-1">The Restore Query operation takes no request body (Parameters: None).<a href="#section-6.1.12-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.12-2">Example domain restore query response (Restore Process Object, object in <code>pendingRestore</code> state):<a href="#section-6.1.12-2" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.12-3">
 <pre>{
     "@type": "restoreProcess",
     "restoreStatus": "pendingRestore",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
-</pre><a href="#section-6.1.11-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.12-3" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1.11-4">Example domain restore query response (Restore Process Object, object restored):<a href="#section-6.1.11-4" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-6.1.11-5">
+<p id="section-6.1.12-4">Example domain restore query response (Restore Process Object, object restored):<a href="#section-6.1.12-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.1.12-5">
 <pre>{
     "@type": "restoreProcess",
     "restoreStatus": "restored",
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
-</pre><a href="#section-6.1.11-5" class="pilcrow">¶</a>
+</pre><a href="#section-6.1.12-5" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -3586,7 +3609,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <pre>{
     "@type": "contact",
     "id": "jd1234",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -3626,7 +3649,6 @@ A Aggregation represents a relationship between two independent objects, where o
         "authdata": "2fooBAR"
     }
 }
-
 </pre><a href="#section-6.2.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.1-3">Example contact create response:<a href="#section-6.2.1-3" class="pilcrow">¶</a></p>
@@ -3644,7 +3666,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -3679,7 +3701,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 }
-
 </pre><a href="#section-6.2.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3690,7 +3711,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <a href="#section-6.2.2" class="section-number selfRef">6.2.2. </a><a href="#name-read-2" class="section-name selfRef">Read</a>
           </h4>
 <p id="section-6.2.2-1">Example contact read response:<a href="#section-6.2.2-1" class="pilcrow">¶</a></p>
-<div class="breakable lang-json sourcecode" id="section-6.2.2-2">
+<div class="lang-json sourcecode" id="section-6.2.2-2">
 <pre>{
     "@type": "contact",
     "id": "jd1234",
@@ -3706,7 +3727,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -3740,7 +3761,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 }
-
 </pre><a href="#section-6.2.2-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3754,7 +3774,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <div class="lang-json sourcecode" id="section-6.2.3-2">
 <pre>{
     "@type": "contact",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "addresses": {
@@ -3777,11 +3797,10 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 }
-
 </pre><a href="#section-6.2.3-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.3-3">Example contact update response:<a href="#section-6.2.3-3" class="pilcrow">¶</a></p>
-<div class="breakable lang-json sourcecode" id="section-6.2.3-4">
+<div class="lang-json sourcecode" id="section-6.2.3-4">
 <pre>{
     "@type": "contact",
     "id": "jd1234",
@@ -3797,7 +3816,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -3831,7 +3850,6 @@ A Aggregation represents a relationship between two independent objects, where o
         }
     }
 }
-
 </pre><a href="#section-6.2.3-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3856,7 +3874,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "@type": "transferProcess",
     "transferDir": "pull"
 }
-
 </pre><a href="#section-6.2.5-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.5-4">Example contact transfer response (Transfer Process Object):<a href="#section-6.2.5-4" class="pilcrow">¶</a></p>
@@ -3870,7 +3887,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actClientId": "ClientY",
     "actionDate": "2000-06-13T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.2.5-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3891,7 +3907,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "actClientId": "ClientY",
     "actionDate": "2000-06-11T22:00:00.0Z"
 }
-
 </pre><a href="#section-6.2.6-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3946,7 +3961,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.1-3">Example host create response:<a href="#section-6.3.1-3" class="pilcrow">¶</a></p>
@@ -3988,7 +4002,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4031,7 +4044,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.2-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4064,7 +4076,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.3-2" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4087,7 +4098,6 @@ A Aggregation represents a relationship between two independent objects, where o
 <pre>{
   "@type": "restoreProcess"
 }
-
 </pre><a href="#section-6.3.5-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-3">Example host restore request response (Restore Process Object, server requires a report):<a href="#section-6.3.5-3" class="pilcrow">¶</a></p>
@@ -4098,7 +4108,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.5-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-5">Example host restore request with inline restore report (single-step; object restored immediately):<a href="#section-6.3.5-5" class="pilcrow">¶</a></p>
@@ -4118,7 +4127,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.5-6" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.5-7">Example host restore response with inline report (Restore Process Object, immediately restored):<a href="#section-6.3.5-7" class="pilcrow">¶</a></p>
@@ -4129,7 +4137,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-20T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.5-8" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4156,7 +4163,6 @@ A Aggregation represents a relationship between two independent objects, where o
         ]
     }
 }
-
 </pre><a href="#section-6.3.6-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.6-3">Example host restore report response (Restore Process Object):<a href="#section-6.3.6-3" class="pilcrow">¶</a></p>
@@ -4167,7 +4173,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.3.6-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4186,7 +4191,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDueDate": "2025-01-27T15:30:00.0Z"
 }
-
 </pre><a href="#section-6.3.7-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3.7-4">Example host restore query response (Restore Process Object, object restored):<a href="#section-6.3.7-4" class="pilcrow">¶</a></p>
@@ -4197,7 +4201,6 @@ A Aggregation represents a relationship between two independent objects, where o
     "requestDate": "2025-01-20T15:30:00.0Z",
     "reportDate": "2025-01-22T09:15:00.0Z"
 }
-
 </pre><a href="#section-6.3.7-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -4284,7 +4287,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <dl class="references">
 <dt id="I-D.kowalik-rpp-data-objects">[I-D.kowalik-rpp-data-objects]</dt>
         <dd>
-<span class="refAuthor">Kowalik, P.</span> and <span class="refAuthor">M. Wullink</span>, <span class="refTitle">"RESTful Provisioning Protocol (RPP) Data Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-kowalik-rpp-data-objects-03</span>, <time datetime="2026-03-02" class="refDate">2 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-03">https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-03</a>&gt;</span>. </dd>
+<span class="refAuthor">Kowalik, P.</span> and <span class="refAuthor">M. Wullink</span>, <span class="refTitle">"RESTful Provisioning Protocol (RPP) Data Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-kowalik-rpp-data-objects-04</span>, <time datetime="2026-06-12" class="refDate">12 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-04">https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-data-objects-04</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.wullink-rpp-core">[I-D.wullink-rpp-core]</dt>
         <dd>
