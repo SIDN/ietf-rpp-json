@@ -419,7 +419,19 @@ This section defines shared data types that are based on the primitive data type
 
 Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
 
-<!-- TODO: Add required identifiers -->
+In JSON, an Identifier MUST be represented as a `string` value conforming to the `roidType` syntax defined in [@!RFC5730, section 2.8]: one to eight word characters optionally preceded by an underscore, followed by a hyphen and one or more word characters, with a maximum total length of 89 characters.
+
+```json
+{
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^(\\w|_){1,8}-\\w{1,}$",
+      "maxLength": 89
+    }
+  }
+}
+```
 
 ### Client Identifier
 
@@ -802,6 +814,34 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
         "other": { "type": "string" }
       },
       "required": ["@type", "statements"]
+    }
+  }
+}
+```
+
+### Organisation Role Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `type` MUST only use values registered in the IANA "EPP Organization Role Values" registry ([@!RFC8543]).
+
+```json
+{
+  "$defs": {
+    "organisationRole": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "organisationRole" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ok", "linked", "clientLinkProhibited", "serverLinkProhibited"]
+          }
+        },
+        "roleId": { "type": "string" }
+      },
+      "required": ["@type"]
     }
   }
 }
@@ -1391,7 +1431,266 @@ Reference schema (identifier only):
 
 ## Organisation Data Object
 
-TBD
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `id` MUST be a server-unique identifier conforming to the Identifier syntax.
+- `status` MUST always contain at least one value. `pendingCreate`, `ok`, `hold`, and `terminated` are mutually exclusive. `ok` MAY only be combined with `linked`.
+- `parent`, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.
+- `contacts` keys MUST be contact type values registered in the IANA "EPP Organisation Contact Types" registry ([@!RFC8543]).
+
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.create",
+  "$defs": {
+    "organisationObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "id":          { "$ref": "#/$defs/identifier" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" },
+          "minProperties": 1
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        }
+      },
+      "required": ["@type", "id", "roles"]      
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.read",
+  "$defs": {
+    "organisationObject.read": {
+      "allOf": [
+        { "$ref": "#/$defs/organisationObject.create" },
+        {
+          "properties": {
+            "provMetadata": { "$ref": "#/$defs/provMetadata", "readOnly": true },
+            "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+            },
+            "users": {
+              "type": "array",
+              "items": { 
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "object": { "$ref": "#/$defs/userObject.reference" }
+                },
+                "required": ["label", "object"]
+              }
+            }
+          },
+          "required": ["provMetadata", "status"]
+        }
+      ]
+    }
+  }
+}
+```
+
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.update",
+  "$defs": {
+    "organisationObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" }
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+            "type": "array",
+            "items": { 
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "object": { "$ref": "#/$defs/contactObject.reference" }
+              },
+              "required": ["label", "object"]
+            }
+        },
+        "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+        },
+        "users":       {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/userObject.reference" }
+            },
+            "required": ["label", "object"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.reference",
+  "$defs": {
+    "organisationObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "organisation", "readOnly": true },
+        "id":    { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
+
+## User Data Object
+
+The User Data Object represents a user linked to an Organisation Object. The lifecycle of a User Object is bound to its owning Organisation Object.
+
+Note: User status values are plain strings, not Status Objects.
+
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.create",
+  "$defs": {
+    "userObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "organisationId", "details"]
+    }
+  }
+}
+```
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.read",
+  "$defs": {
+    "userObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "userId": { "$ref": "#/$defs/identifier", "readOnly": true },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "userId", "details", "status"]
+    }
+  }
+}
+```
+
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.update",
+  "$defs": {
+    "userObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.reference",
+  "$defs": {
+    "userObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "id": { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
+
 
 # Examples
 
@@ -2312,6 +2611,275 @@ Example host restore query response (Restore Process Object, object restored):
 }
 ```
 
+## Organisation
+
+### Create
+
+Example organisation create request:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "roles": { "registrar": 
+        {
+            "@type": "organisationRole",
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ]
+}
+```
+
+Example organisation create response:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+               "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+```
+
+### Read
+
+Example organisation read response:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2025-06-01T08:30:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "linked" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+```
+
+### Update
+
+Example organisation update request:
+
+```json
+{
+    "@type": "organisation",
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["clientLinkProhibited"],
+            "roleId": "1234"
+        }
+    },
+    "status": [
+        { "@type": "status", "label": "clientLinkProhibited" }
+    ],
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-2001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-2002" } }
+    ]
+}
+```
+
+### Delete
+
+The organisation delete operation takes the organisation identifier as the resource identifier. No request body is required. The server MUST reject the request if the organisation object is associated with any other objects.
+
+### Reference
+
+Example organisation reference (used when referencing an organisation from another object):
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345"
+}
+```
+
+## User
+
+### Create
+
+Example user create request:
+
+```json
+{
+    "@type": "user",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+Example user create response:
+
+```json
+{
+    "@type": "user",
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+### Read
+
+Example user read response:
+
+```json
+{
+    "@type": "user",
+    "organisationId": { "@type": "organisation", "id": "ORG-12345" },
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+### Update
+
+Example user update request (suspend the user):
+
+```json
+{
+    "@type": "user",
+    "status": ["suspended"]
+}
+```
+
+### Delete
+
+The user delete operation takes the user identifier as the resource identifier in the context of the owning organisation. No request body is required.
+
+### Reference
+
+Example user reference (used when referencing a user from an organisation object):
+
+```json
+{
+    "@type": "user",
+    "id": "UID-5001"
+}
+```
+
 # IANA Considerations
 
 TODO
@@ -2332,6 +2900,7 @@ TODO
 
 ## Version 02 to 03
 
+- Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
 
 ## Version 01 to 02
