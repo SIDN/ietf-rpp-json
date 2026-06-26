@@ -405,6 +405,57 @@ Rule 24: When a transfer request or other operation requires authorization infor
 
 RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
 
+# Full and Partial Update Rules
+
+A full update operation replaces the entire state of a resource object with the new representation provided in the request, all required fields MUST be included in the request body. A partial update operation, on the other hand, allows clients to update only specific fields of a resource object, leaving other fields unchanged.
+
+The JSON representation of a partial update MUST use the following toplevel properties to indicate the intended modifications:
+
+- remove: An object containing the fields to be removed from the resource. Each property in this object corresponds to a field in the resource that should be deleted. The value of each property is ignored and can be set to `null` or any placeholder value. The following constraints apply to the `remove` object: 
+  * Items MUST be read-write
+  * Elements MUST have a cardinality different than 1 (no mandatory properties) **TODO: do we need this?**
+  * Arrays MUST bwe valid after removal of element(s)
+- add: An object containing the fields to be added to the resource. Each property in this object corresponds to a field in the resource that should be added. The value of each property is the new value to be assigned to that field. The following constraints apply to the `add` object:
+  * Items MUST be read-write
+  * Elements MUST have a cardinality different than 1 (no mandatory properties) **TODO: do we need this?**
+  * Arrays MUST be valid after addition of element(s)
+- change: An object containing the fields to be modified in the resource. Each property in this object corresponds to a field in the resource that should be updated. The value of each property is the new value to be assigned to that field. The following constraints apply to the `change` object:
+  * Items MUST be read-write
+  * items MUST be identified by a label (labelled dictionary) othwise use remove/add operations
+
+<!--
+Questions: 1) for add/remove there is requirement that Elements MUST have a cardinality different than 1, but should be possible 
+to update the value for a cardinality 1 element. should we allow remove followd by add for cardinality 1 elements.
+the important thing is that the order of operations is significant, so that if a cardinality 1 element is removed and then added, the final state is consistent.
+
+-->
+
+The order of operations is significant: the server MUST first apply the `remove` operations, then the `add` operations, and finally the `change` operations. This ensures that any dependencies between fields are respected and that the final state of the resource object is consistent.
+
+Example of a partial update request for a organisation object to add status "linked" and remove status "ok", also changing the admin contact and user:
+
+```json
+{
+  "remove": {
+    "status": [
+       { "@type": "status", "label": "ok" }
+    ]
+  },
+  "add": {
+    "status": [
+       { "@type": "status", "label": "linked" }
+    ]
+  },
+  "change": {
+    "contactInfo": { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+    "users": [
+      { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+  }
+}
+```
+
+
 # JSON Schema Definitions
 
 This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
