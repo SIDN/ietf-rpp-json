@@ -894,11 +894,17 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
-#### Approve / Delete
+#### Approve
 
-Both Approve and Delete (Cancel) operations have no request body, the server can identify the transfer process to be approved or cancelled based on the request URL and the authenticated client's permissions.
+The Approve operation MUST always have a request body, which may be an empty JSON object. The server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions. There is no Approve request schema defined in this specification.
 
-The Approve and Delete response schemas equals the read response schema.
+The Approve response schema MUST equal the read response schema.
+
+#### Cancel
+
+The Cancel operation, which is similar to a delete operation, has no request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions. Because the Cancel operation has no request body, it is not possible to extend the request schema with additional properties.
+
+The Cancel response schema MUST equal the read response schema or an empty response.
 
 #### Reject
 
@@ -921,7 +927,7 @@ Reject request schema:
 }
 ```
 
-Reject response schema equals the read response schema.
+Reject response schema MUST equal the read response schema.
 
 ### Restore Process Object
 
@@ -1730,9 +1736,24 @@ Example domain transfer query response (Transfer Process Object):
 }
 ```
 
-### Transfer Cancel / Approve
+### Transfer Approve
 
-The Transfer cancel and approve operations have no request body, the server can identify the transfer process to be cancelled or approved based on the request URL and the authenticated client's permissions.
+The Transfer approve operation has request body with an empty JSON object, the server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions.
+
+Example domain transfer approve request with empty JSON object:
+
+```json
+{ 
+  "@type": "transferProcess"
+}
+```
+<!-- Is this an empty response? or should we use "{}"? then validation script complains-->
+
+The response is the Transfer Process Object, similar to the transfer create and query responses.
+
+### Transfer Cancel
+
+The Transfer cancel operation has an empty request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions.
 
 The response is the Transfer Process Object, similar to the transfer create and query responses.
 
