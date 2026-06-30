@@ -435,6 +435,65 @@ A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support
 <!--Question: Partial update of object element is not supported? -->
 <!--Question: Traversing document stops at first array:  array->object->array... is not possible? -->
 <!--Question: How handle nested arrays?, is this even used in any of the data objects?  -->
+
+## Schema
+
+A partial update request body MUST be a JSON array of patch operation objects. Each operation MUST include an `op` and a `path` property. The `value` property MUST be present for `add` and `replace` operations. The `match` property MUST be present when the `path` points to an array property and is used to identify the specific array element to operate on.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/partialUpdate",
+  "$defs": {
+    "partialUpdate": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/patchOperation" },
+      "minItems": 1
+    },
+    "patchOperation": {
+      "oneOf": [
+        { "$ref": "#/$defs/patchAdd" },
+        { "$ref": "#/$defs/patchRemove" },
+        { "$ref": "#/$defs/patchReplace" }
+      ]
+    },
+    "patchAdd": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "add" },
+        "path":  { "type": "string" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    },
+    "patchRemove": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "remove" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" }
+      },
+      "required": ["op", "path"],
+      "additionalProperties": false
+    },
+    "patchReplace": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "replace" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+### Examples
+
 Example JSON document used by partial update examples below:
 
 ```json
@@ -3049,6 +3108,7 @@ TODO
 
 ## Version 02 to 03
 
+- Added "Update Rules" section, describing update requests (Issue #54)
 - Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
 

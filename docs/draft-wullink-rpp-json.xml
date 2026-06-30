@@ -416,6 +416,64 @@ A partial update MUST use JSON Patch <xref target="RFC6902"></xref> and an RPP e
 <li><t>Rule 32: If anyt of the JSONPointer paths in the request fail to match an existing field or element in the target resource object, the server MUST reject the complete request with an appropriate error response.</t>
 </li>
 </ul>
+</section>
+
+<section anchor="schema"><name>Schema</name>
+<t>A partial update request body MUST be a JSON array of patch operation objects. Each operation MUST include an <tt>op</tt> and a <tt>path</tt> property. The <tt>value</tt> property MUST be present for <tt>add</tt> and <tt>replace</tt> operations. The <tt>match</tt> property MUST be present when the <tt>path</tt> points to an array property and is used to identify the specific array element to operate on.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/partialUpdate",
+  "$defs": {
+    "partialUpdate": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/patchOperation" },
+      "minItems": 1
+    },
+    "patchOperation": {
+      "oneOf": [
+        { "$ref": "#/$defs/patchAdd" },
+        { "$ref": "#/$defs/patchRemove" },
+        { "$ref": "#/$defs/patchReplace" }
+      ]
+    },
+    "patchAdd": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "add" },
+        "path":  { "type": "string" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    },
+    "patchRemove": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "remove" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" }
+      },
+      "required": ["op", "path"],
+      "additionalProperties": false
+    },
+    "patchReplace": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "replace" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    }
+  }
+}
+]]>
+</sourcecode>
+
+<section anchor="examples"><name>Examples</name>
 <t>Example JSON document used by partial update examples below:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -492,6 +550,7 @@ A partial update MUST use JSON Patch <xref target="RFC6902"></xref> and an RPP e
 ]
 ]]>
 </sourcecode>
+</section>
 </section>
 </section>
 
@@ -1770,7 +1829,7 @@ A partial update MUST use JSON Patch <xref target="RFC6902"></xref> and an RPP e
 </section>
 </section>
 
-<section anchor="examples"><name>Examples</name>
+<section anchor="examples-1"><name>Examples</name>
 <t>This section provides examples that follow the JSON representation rules and JSON Schema definitions specified in the previous sections. The examples illustrate typical request and response messages for domain name, contact, and host resources.</t>
 
 <section anchor="domain-name"><name>Domain Name</name>
@@ -2957,6 +3016,7 @@ A partial update MUST use JSON Patch <xref target="RFC6902"></xref> and an RPP e
 <section anchor="version-02-to-03"><name>Version 02 to 03</name>
 
 <ul spacing="compact">
+<li>Added &quot;Update Rules&quot; section, describing update requests (Issue #54)</li>
 <li>Added Organisation and User Object JSON schemas and examples. (Issue #57)</li>
 <li>Added schema and examples for the Renew Process Object. (Issue #45)</li>
 </ul>
