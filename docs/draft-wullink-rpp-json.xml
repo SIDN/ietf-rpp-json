@@ -387,6 +387,114 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 </section>
 
+<section anchor="update-rules"><name>Update Rules</name>
+<t><strong>NOTE</strong>: The update rules in this section are still under discussion and may be subject to change. Feedback from the community is welcome.</t>
+
+<section anchor="full"><name>Full</name>
+<t>A full update operation replaces the entire state of a resource object with the new representation provided in the request, all required properties MUST be included in the new representation.</t>
+</section>
+
+<section anchor="partial"><name>Partial</name>
+<t>A partial update operation allows clients to update specific properties of a resource object, while leaving other properties unchanged.
+A partial update MUST use JSON Patch <xref target="RFC6902"></xref> and an RPP extension to support the &quot;match&quot; property for matching of array elements, the following rules apply:</t>
+
+<ul>
+<li>Rule 25: JSON Patch operations other than &quot;add&quot;, &quot;remove&quot; and &quot;replace&quot; MUST NOT be used.</li>
+<li>Rule 26: If a JSONPointer path points to field using a JSON simple data type (e.g. string or number) then the &quot;value&quot; property MUST be provided and its type MUST match the type of the target field.</li>
+<li>Rule 27: If a JSONPointer path points to an object, then the &quot;value&quot; property MUST be provided and contain a valid object, the new object's &quot;@type&quot; property MUST match the &quot;@type&quot; of the target object.</li>
+<li>Rule 28: If a JSONPointer path points to an array, the &quot;match&quot; property MUST be provided to identify the specific element to be updated.</li>
+<li>Rule 29: If a JSONPointer path points to an array, then &quot;match&quot; property MUST only be used for matching array elements of a similar type, and the rules 26 and 27 apply.</li>
+<li><t>Rule 30: If a JSONPointer path points to an array, the value of the &quot;op&quot; property determines the action to be taken on the matched element:</t>
+
+<ul spacing="compact">
+<li>For the &quot;add&quot; operation, the new value will be appended to the array.</li>
+<li>For the &quot;remove&quot; operation, the specified value will be removed from the array.</li>
+<li>For the &quot;replace&quot; operation, the specified value will replace the existing value at the given index.</li>
+</ul></li>
+<li><t>Rule 31: If the JSONPointer path points to an array, the value of the &quot;op&quot; property is &quot;replace&quot;, and there is a matching element, then the element MUST be fully replaced with the new value provided in the &quot;value&quot; property. The new value MUST include all required fields for the object type.</t>
+</li>
+<li><t>Rule 32: If anyt of the JSONPointer paths in the request fail to match an existing field or element in the target resource object, the server MUST reject the complete request with an appropriate error response.</t>
+</li>
+</ul>
+<t>Example JSON document used by partial update examples below:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "domainName",
+    "name": "example.example",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
+    },
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
+    ],
+    "registrant": { "@type": "contact", "id": "jd1234" },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
+    ],
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "expiryDate": "2027-01-01T00:00:00.0Z"
+}
+]]>
+</sourcecode>
+<t>Example of a partial update request to change the registrant of a domain name from &quot;jd1234&quot; to &quot;jd1234-new&quot;:</t>
+
+<sourcecode type="json"><![CDATA[[
+  {
+    "op": "replace",
+    "path": "/registrant",
+    "value": {
+      "@type": "contact",
+      "id": "jd1234-new"
+    }
+  }
+]
+]]>
+</sourcecode>
+<t>Example of a partial update request to change the status of a domain name from &quot;ok&quot; to &quot;clientProhibited&quot;:</t>
+
+<sourcecode type="json"><![CDATA[[
+  {
+    "op": "replace",
+    "path": "/status",
+    "match": {
+      "label": "ok"
+    },
+    "value": {
+      "@type": "status",
+      "label": "clientProhibited"
+    }
+  }
+]
+]]>
+</sourcecode>
+<t>Example of a partial update request for adding a additional tech contact to a domain name:</t>
+
+<sourcecode type="json"><![CDATA[[
+  {
+    "op": "add",
+    "path": "/contacts",
+    "value": {
+      "label": "tech",
+      "object": {
+        "@type": "contact",
+        "id": "sh8014"
+      }
+    }
+  }
+]
+]]>
+</sourcecode>
+</section>
+</section>
+
 <section anchor="json-schema-definitions"><name>JSON Schema Definitions</name>
 <t>This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 <xref target="JSON-SCHEMA"></xref>.</t>
 
@@ -395,6 +503,19 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="identifier"><name>Identifier</name>
 <t>Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in <xref target="RFC5730" sectionFormat="of" section="2.8"></xref>. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.</t>
+<t>In JSON, an Identifier MUST be represented as a <tt>string</tt> value conforming to the <tt>roidType</tt> syntax defined in <xref target="RFC5730" sectionFormat="of" section="2.8"></xref>: one to eight word characters optionally preceded by an underscore, followed by a hyphen and one or more word characters, with a maximum total length of 89 characters.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^(\\w|_){1,8}-\\w{1,}$",
+      "maxLength": 89
+    }
+  }
+}
+]]>
+</sourcecode>
 </section>
 
 <section anchor="client-identifier"><name>Client Identifier</name>
@@ -644,7 +765,7 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="jscontact-card-object"><name>JSContact Card Object</name>
-<t>The Contact Data Object uses version 2.0 of JSContact <xref target="RFC9982"></xref> to represent contact information.  The <tt>contact</tt> component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.</t>
+<t>The Contact Data Object uses version 2.0 of JSContact <xref target="RFC9982"></xref> to represent contact information. The <tt>Contact</tt> object is defined below according to the RPP JSContact Profile [TODO Add Ref].</t>
 <t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
 
 <ul spacing="compact">
@@ -793,9 +914,79 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]>
 </sourcecode>
 </section>
+
+<section anchor="organisation-role-object"><name>Organisation Role Object</name>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>type</tt> MUST only use values registered in the IANA &quot;EPP Organization Role Values&quot; registry (<xref target="RFC8543"></xref>).</li>
+</ul>
+
+<sourcecode type="json"><![CDATA[{
+  "$defs": {
+    "organisationRole": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "organisationRole" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ok", "linked", "clientLinkProhibited", "serverLinkProhibited"]
+          }
+        },
+        "roleId": { "type": "string" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
 </section>
 
 <section anchor="process-object-schemas"><name>Process Object Schemas</name>
+
+<section anchor="renew-process-object"><name>Renew Process Object</name>
+<t>Renew request schema (create-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.create",
+  "$defs": {
+    "renewProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "renewProcess" },
+        "expiryDate":    { "type": "string", "format": "date-time" },
+        "renewalPeriod": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Renew response schema (read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.read",
+  "$defs": {
+    "renewProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type":      { "type": "string", "const": "renewProcess", "readOnly": true },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
 
 <section anchor="transfer-process-object"><name>Transfer Process Object</name>
 <t>Create request schema (create-only and read-write properties):</t>
@@ -1098,24 +1289,37 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]>
 </sourcecode>
-<t>Renew minimal response schema (only expire date):</t>
+
+<section anchor="renew"><name>Renew</name>
+<t>Renew request schema (create-only properties):</t>
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/domainObject.renewResponse",
+  "$ref": "#/$defs/renewProcess.create.domain",
   "$defs": {
-    "domainObject.renewResponse": {
-      "type": "object",
-      "properties": {
-        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": ["@type", "expiryDate"]
+    "renewProcess.create.domain": {
+       "$ref": "#/$defs/renewProcess.create"
     }
   }
 }
 ]]>
 </sourcecode>
+<t>Renew response schema (read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.read.domain",
+  "$defs": {
+    "renewProcess.read.domain": {
+      "$ref": "#/$defs/renewProcess.read"
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="reference"><name>Reference</name>
 <t>Reference schema (identifier only):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1135,9 +1339,10 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]>
 </sourcecode>
 </section>
+</section>
 
 <section anchor="contact-data-object"><name>Contact Data Object</name>
-<t>This document uses version 2.0 of JSContact <xref target="RFC9982"></xref> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <tt>Card</tt> object embedded in the <tt>card</tt> property of the contact JSON object.</t>
+<t>This document uses version 2.0 of JSContact <xref target="RFC9982"></xref> for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact <tt>Card</tt> object embedded in the <tt>contactInfo</tt> property.</t>
 
 <section anchor="jscontact-profile-for-rpp"><name>JSContact Profile for RPP</name>
 <t>Since JSContact is a general-purpose representation of contact data, this document defines a restricted usage profile for use within RPP, see [TODO: ref to RPP JSContact profile here: <eref target="https://github.com/SIDN/ietf-rpp-jscontact-profile">https://github.com/SIDN/ietf-rpp-jscontact-profile</eref>].</t>
@@ -1160,10 +1365,10 @@ A Aggregation represents a relationship between two independent objects, where o
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
         "id":     { "type": "string" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "card"],
+      "required": ["@type", "id", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1180,10 +1385,10 @@ A Aggregation represents a relationship between two independent objects, where o
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1207,10 +1412,10 @@ A Aggregation represents a relationship between two independent objects, where o
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1310,7 +1515,258 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="organisation-data-object"><name>Organisation Data Object</name>
-<t>TBD</t>
+<t>The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:</t>
+
+<ul spacing="compact">
+<li><tt>id</tt> MUST be a server-unique identifier conforming to the Identifier syntax.</li>
+<li><tt>status</tt> MUST always contain at least one value. <tt>pendingCreate</tt>, <tt>ok</tt>, <tt>hold</tt>, and <tt>terminated</tt> are mutually exclusive. <tt>ok</tt> MAY only be combined with <tt>linked</tt>.</li>
+<li><tt>parent</tt>, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.</li>
+<li><tt>contacts</tt> keys MUST be contact type values registered in the IANA &quot;EPP Organisation Contact Types&quot; registry (<xref target="RFC8543"></xref>).</li>
+</ul>
+<t>Create request schema (create-only and read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.create",
+  "$defs": {
+    "organisationObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "id":          { "$ref": "#/$defs/identifier" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" },
+          "minProperties": 1
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        }
+      },
+      "required": ["@type", "id", "roles"]      
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Read response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.read",
+  "$defs": {
+    "organisationObject.read": {
+      "allOf": [
+        { "$ref": "#/$defs/organisationObject.create" },
+        {
+          "properties": {
+            "provMetadata": { "$ref": "#/$defs/provMetadata", "readOnly": true },
+            "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+            },
+            "users": {
+              "type": "array",
+              "items": { 
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "object": { "$ref": "#/$defs/userObject.reference" }
+                },
+                "required": ["label", "object"]
+              }
+            }
+          },
+          "required": ["provMetadata", "status"]
+        }
+      ]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Update request schema (read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.update",
+  "$defs": {
+    "organisationObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" }
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+            "type": "array",
+            "items": { 
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "object": { "$ref": "#/$defs/contactObject.reference" }
+              },
+              "required": ["label", "object"]
+            }
+        },
+        "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+        },
+        "users":       {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/userObject.reference" }
+            },
+            "required": ["label", "object"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Reference schema (identifier only):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.reference",
+  "$defs": {
+    "organisationObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "organisation", "readOnly": true },
+        "id":    { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="user-data-object"><name>User Data Object</name>
+<t>The User Data Object represents a user linked to an Organisation Object. The lifecycle of a User Object is bound to its owning Organisation Object.</t>
+<t>Note: User status values are plain strings, not Status Objects.</t>
+<t>Create request schema (create-only and read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.create",
+  "$defs": {
+    "userObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "organisationId", "details"]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Read response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.read",
+  "$defs": {
+    "userObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "userId": { "$ref": "#/$defs/identifier", "readOnly": true },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "userId", "details", "status"]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Update request schema (read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.update",
+  "$defs": {
+    "userObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]>
+</sourcecode>
+<t>Reference schema (identifier only):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.reference",
+  "$defs": {
+    "userObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "id": { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+]]>
+</sourcecode>
 </section>
 </section>
 
@@ -1478,13 +1934,13 @@ A Aggregation represents a relationship between two independent objects, where o
 </sourcecode>
 </section>
 
-<section anchor="renew"><name>Renew</name>
-<t>The renew operation accepts a transient <tt>currentExpiryDate</tt> parameter for validation and an optional <tt>renewalPeriod</tt>.</t>
+<section anchor="renew-1"><name>Renew</name>
+<t>The renew operation creates a Renew Process Object. The optional <tt>expiryDate</tt> in the request is the <em>current</em> expiry date, sent by the client for server-side validation to prevent duplicate renewals. The response returns a Renew Process Object containing the <em>new</em> expiry date.</t>
 <t>Example domain renew request:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "domainName.renew",
-    "currentExpiryDate": "2005-04-03T22:00:00.0Z",
+    "@type": "renewProcess",
+    "expiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
         "@type": "period",
         "value": 5,
@@ -1496,7 +1952,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>Example domain renew response:</t>
 
 <sourcecode type="json"><![CDATA[{
-    "@type": "domainName",
+    "@type": "renewProcess",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ]]>
@@ -1669,7 +2125,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
     "id": "jd1234",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1726,7 +2182,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1783,7 +2239,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1826,7 +2282,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <sourcecode type="json"><![CDATA[{
     "@type": "contact",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "addresses": {
@@ -1868,7 +2324,7 @@ A Aggregation represents a relationship between two independent objects, where o
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -2209,6 +2665,275 @@ A Aggregation represents a relationship between two independent objects, where o
 </sourcecode>
 </section>
 </section>
+
+<section anchor="organisation"><name>Organisation</name>
+
+<section anchor="create-3"><name>Create</name>
+<t>Example organisation create request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "roles": { "registrar": 
+        {
+            "@type": "organisationRole",
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ]
+}
+]]>
+</sourcecode>
+<t>Example organisation create response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+               "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="read-3"><name>Read</name>
+<t>Example organisation read response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2025-06-01T08:30:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "linked" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="update-3"><name>Update</name>
+<t>Example organisation update request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "organisation",
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["clientLinkProhibited"],
+            "roleId": "1234"
+        }
+    },
+    "status": [
+        { "@type": "status", "label": "clientLinkProhibited" }
+    ],
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-2001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-2002" } }
+    ]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="delete-3"><name>Delete</name>
+<t>The organisation delete operation takes the organisation identifier as the resource identifier. No request body is required. The server MUST reject the request if the organisation object is associated with any other objects.</t>
+</section>
+
+<section anchor="reference-1"><name>Reference</name>
+<t>Example organisation reference (used when referencing an organisation from another object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "organisation",
+    "id": "ORG-12345"
+}
+]]>
+</sourcecode>
+</section>
+</section>
+
+<section anchor="user"><name>User</name>
+
+<section anchor="create-4"><name>Create</name>
+<t>Example user create request:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "user",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+]]>
+</sourcecode>
+<t>Example user create response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "user",
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="read-4"><name>Read</name>
+<t>Example user read response:</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "user",
+    "organisationId": { "@type": "organisation", "id": "ORG-12345" },
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="update-4"><name>Update</name>
+<t>Example user update request (suspend the user):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "user",
+    "status": ["suspended"]
+}
+]]>
+</sourcecode>
+</section>
+
+<section anchor="delete-4"><name>Delete</name>
+<t>The user delete operation takes the user identifier as the resource identifier in the context of the owning organisation. No request body is required.</t>
+</section>
+
+<section anchor="reference-2"><name>Reference</name>
+<t>Example user reference (used when referencing a user from an organisation object):</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "user",
+    "id": "UID-5001"
+}
+]]>
+</sourcecode>
+</section>
+</section>
 </section>
 
 <section anchor="iana-considerations"><name>IANA Considerations</name>
@@ -2228,6 +2953,14 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="change-history"><name>Change History</name>
+
+<section anchor="version-02-to-03"><name>Version 02 to 03</name>
+
+<ul spacing="compact">
+<li>Added Organisation and User Object JSON schemas and examples. (Issue #57)</li>
+<li>Added schema and examples for the Renew Process Object. (Issue #45)</li>
+</ul>
+</section>
 
 <section anchor="version-01-to-02"><name>Version 01 to 02</name>
 
@@ -2290,7 +3023,9 @@ A Aggregation represents a relationship between two independent objects, where o
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.4648.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5730.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5732.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6902.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml"/>
+<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8543.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9553.xml"/>
 <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9982.xml"/>
 </references>
