@@ -345,8 +345,8 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="process-data-embedding-rules"><name>Process Data Embedding Rules</name>
 <t>As defined in <xref target="I-D.wullink-rpp-core"></xref>, a uniform interface operation MAY require process data in addition to the object representation data. This section defines how such process data MUST be represented in JSON when transmitted together with the object representation in a single request body.</t>
-<t>Rule 18: When a uniform interface operation requires both object data and process data in the request body, the process data MUST be embedded under a top-level <tt>&quot;@process&quot;</tt> JSON object. The <tt>&quot;@process&quot;</tt> object MUST be a valid JSON representation of the process object, including the <tt>&quot;@type&quot;</tt> property set to the process object's registered identifier, following the same convention as Rule 25 for RPP object representations. Only one process object MAY be embedded per request.</t>
-<t>Example: a domain create request body carrying a two-year registration period as process data embedded in a <tt>&quot;createProcess&quot;</tt> process object:</t>
+<t>Rule 18: Process data accompanying a uniform interface operation MUST be represented using the <tt>processes</tt> data element of the owning resource object (see Processes Object), following the Aggregation rules for the corresponding process type (for example <tt>createProcess</tt> for creation-specific inputs). Each embedded process object MUST be a valid JSON representation of the process object. This applies uniformly regardless of whether the resource object already exists.</t>
+<t>Example: a domain create request body carrying a two-year registration period as process data embedded in a <tt>createProcess</tt> process object under <tt>processes</tt>:</t>
 
 <sourcecode type="json"><![CDATA[{
     "@type": "domainName",
@@ -355,13 +355,18 @@ A Aggregation represents a relationship between two independent objects, where o
         { "@type": "host", "hostName": "ns1.example.example" },
         { "@type": "host", "hostName": "ns2.example.example" }
     ],
-    "@process": {
-        "@type": "createProcess",
-        "period": {
-            "@type": "period",
-            "value": 2,
-            "unit": "y"
-        }
+    "processes": {
+        "@type": "processes",
+        "createProcess": [
+            {
+                "@type": "createProcess",
+                "period": {
+                    "@type": "period",
+                    "value": 2,
+                    "unit": "y"
+                }
+            }
+        ]
     }
 }
 ]]></sourcecode>
@@ -833,12 +838,51 @@ A Aggregation represents a relationship between two independent objects, where o
 }
 ]]></sourcecode>
 </section>
+
+<section anchor="processes-object"><name>Processes Object</name>
+<t>The Processes Object is a read-only container grouping the Process Objects currently or recently initiated on the owning resource object, keyed by process type. Each key holds an array of the corresponding Process Object's read representation, per the Aggregation rules.</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/processes",
+  "$defs": {
+    "processes": {
+      "type": "object",
+      "properties": {
+        "@type":           { "type": "string", "const": "processes", "readOnly": true },
+        "createProcess":   {
+          "type": "array",
+          "items": { "$ref": "#/$defs/createProcess.read" },
+          "readOnly": true
+        },
+        "renewProcess":    {
+          "type": "array",
+          "items": { "$ref": "#/$defs/renewProcess.read" },
+          "readOnly": true
+        },
+        "transferProcess": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transferProcess.read" },
+          "readOnly": true
+        },
+        "restoreProcess":  {
+          "type": "array",
+          "items": { "$ref": "#/$defs/restoreProcess.read" },
+          "readOnly": true
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]></sourcecode>
+</section>
 </section>
 
 <section anchor="process-object-schemas"><name>Process Object Schemas</name>
 
 <section anchor="create-process-object"><name>Create Process Object</name>
-<t>The Create Process Object carries the process-specific inputs for a resource creation operation, such as the requested registration period. It is embedded in the create request body under <tt>&quot;@process&quot;: { &quot;@type&quot;: &quot;createProcess&quot;, ... }</tt> per Rule 18.</t>
+<t>The Create Process Object carries the process-specific inputs for a resource creation operation, such as the requested registration period. It is submitted as an element of the <tt>createProcess</tt> array under the <tt>processes</tt> data element of the owning resource object (see Processes Object), following the same Aggregation representation as the other process types.</t>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -850,6 +894,23 @@ A Aggregation represents a relationship between two independent objects, where o
       "properties": {
         "@type": { "type": "string", "const": "createProcess" },
         "period": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+]]></sourcecode>
+<t>Read response schema (read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/createProcess.read",
+  "$defs": {
+    "createProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "createProcess", "readOnly": true },
+        "period": { "$ref": "#/$defs/period", "readOnly": true }
       },
       "required": ["@type"]
     }
@@ -1100,7 +1161,18 @@ A Aggregation represents a relationship between two independent objects, where o
         },
         "dns":    { "$ref": "#/$defs/dnsData" },
         "authInfo": { "$ref": "#/$defs/authInfo" },
-        "@process": { "$ref": "#/$defs/createProcess.create" }
+        "processes": {
+          "type": "object",
+          "properties": {
+            "@type": { "type": "string", "const": "processes" },
+            "createProcess": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/createProcess.create" },
+              "maxItems": 1
+            }
+          },
+          "required": ["@type"]
+        }
       },
       "required": ["@type", "name"]
     }
@@ -1147,7 +1219,8 @@ A Aggregation represents a relationship between two independent objects, where o
           "readOnly": true
         },
         "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-        "authInfo":  { "$ref": "#/$defs/authInfo" }
+        "authInfo":  { "$ref": "#/$defs/authInfo" },
+        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
       "required": ["@type", "name", "provMetadata"]
     }
@@ -1307,7 +1380,8 @@ A Aggregation represents a relationship between two independent objects, where o
           "readOnly": true
         },
         "contactInfo":   { "$ref": "#/$defs/Card" },
-        "authInfo": { "$ref": "#/$defs/authInfo" }
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
       "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
@@ -1377,7 +1451,8 @@ A Aggregation represents a relationship between two independent objects, where o
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "dns":           { "$ref": "#/$defs/dnsData" }
+        "dns":           { "$ref": "#/$defs/dnsData" },
+        "processes":     { "$ref": "#/$defs/processes", "readOnly": true }
       },
       "required": ["@type", "hostName", "provMetadata"]
     }
@@ -1474,7 +1549,8 @@ A Aggregation represents a relationship between two independent objects, where o
                 },
                 "required": ["label", "object"]
               }
-            }
+            },
+            "processes": { "$ref": "#/$defs/processes", "readOnly": true }
           },
           "required": ["provMetadata", "status"]
         }
@@ -1600,7 +1676,8 @@ A Aggregation represents a relationship between two independent objects, where o
             "enum": ["active", "suspended", "deactivated", "pending"]
           }
         },
-        "description":  { "type": "string", "const": "user" }
+        "description":  { "type": "string", "const": "user" },
+        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
       "required": ["@type", "userId", "details", "status"]
     }
@@ -1676,13 +1753,18 @@ A Aggregation represents a relationship between two independent objects, where o
         "method": "authinfo",
         "authdata": "2fooBAR"
     },
-    "@process": {
-        "@type": "createProcess",
-        "period": {
-            "@type": "period",
-            "value": 2,
-            "unit": "y"
-        }
+    "processes": {
+        "@type": "processes",
+        "createProcess": [
+            {
+                "@type": "createProcess",
+                "period": {
+                    "@type": "period",
+                    "value": 2,
+                    "unit": "y"
+                }
+            }
+        ]
     }
 }
 ]]></sourcecode>
@@ -1708,7 +1790,7 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="create-process-data"><name>Create Process Data</name>
-<t>Example create process data for a two-year registration period:</t>
+<t>Example Create Process Object for a two-year registration period, as embedded above in <tt>processes.createProcess</tt>:</t>
 
 <sourcecode type="json"><![CDATA[{
     "@type": "createProcess",
@@ -1770,6 +1852,19 @@ A Aggregation represents a relationship between two independent objects, where o
         "@type": "authInfo",
         "method": "authinfo",
         "authdata": "2fooBAR"
+    },
+    "processes": {
+        "@type": "processes",
+        "createProcess": [
+            {
+                "@type": "createProcess",
+                "period": {
+                    "@type": "period",
+                    "value": 2,
+                    "unit": "y"
+                }
+            }
+        ]
     }
 }
 ]]></sourcecode>
