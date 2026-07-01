@@ -1530,7 +1530,7 @@ Read response schema (read-write and read-only properties):
         "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1554,7 +1554,7 @@ Update request schema (read-write properties):
         "authInfo": { "$ref": "#/$defs/authInfo" },
         "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -3236,6 +3236,8 @@ TODO
 - Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
 - Add representation for embedding of process data in uniform interface operations (especially create). (Issue #60)
+- define rules for External Type Embedding.
+- Add JSContact as External Type Embedding (Issue #43).
 
 ## Version 01 to 02
 

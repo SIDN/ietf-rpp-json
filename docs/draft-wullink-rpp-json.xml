@@ -1455,7 +1455,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1478,7 +1478,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "authInfo": { "$ref": "#/$defs/authInfo" },
         "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -3064,6 +3064,8 @@ A Aggregation represents a relationship between two independent objects, where o
 <li>Added Organisation and User Object JSON schemas and examples. (Issue #57)</li>
 <li>Added schema and examples for the Renew Process Object. (Issue #45)</li>
 <li>Add representation for embedding of process data in uniform interface operations (especially create). (Issue #60)</li>
+<li>define rules for External Type Embedding.</li>
+<li>Add JSContact as External Type Embedding (Issue #43).</li>
 </ul>
 </section>
 

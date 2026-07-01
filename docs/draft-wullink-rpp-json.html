@@ -3501,7 +3501,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -3529,7 +3529,7 @@ A Aggregation represents a relationship between two independent objects, where o
         "authInfo": { "$ref": "#/$defs/authInfo" },
         "processes": { "$ref": "#/$defs/processes", "readOnly": true }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -5434,6 +5434,10 @@ A Aggregation represents a relationship between two independent objects, where o
           <li class="compact" id="section-11.1-1.3">Added schema and examples for the Renew Process Object. (Issue #45)<a href="#section-11.1-1.3" class="pilcrow">¶</a>
 </li>
           <li class="compact" id="section-11.1-1.4">Add representation for embedding of process data in uniform interface operations (especially create). (Issue #60)<a href="#section-11.1-1.4" class="pilcrow">¶</a>
+</li>
+          <li class="compact" id="section-11.1-1.5">define rules for External Type Embedding.<a href="#section-11.1-1.5" class="pilcrow">¶</a>
+</li>
+          <li class="compact" id="section-11.1-1.6">Add JSContact as External Type Embedding (Issue #43).<a href="#section-11.1-1.6" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
