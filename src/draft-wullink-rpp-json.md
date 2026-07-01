@@ -1,5 +1,5 @@
 %%%
-title = "JSON for Restful Provisioning Protocol (RPP)"
+title = "JSON for RESTful Provisioning Protocol (RPP)"
 abbrev = "JSON for RPP"
 ipr = "trust200902"
 area = "Internet"
@@ -10,7 +10,7 @@ TocDepth = 4
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-wullink-rpp-json-02"
+value = "draft-wullink-rpp-json-03"
 stream = "IETF"
 status = "standard"
 
@@ -58,11 +58,11 @@ JSON's syntax, known for its straightforwardness and minimal verbosity, signific
 
 The lightweight nature of JSON can result in faster processing and data transfers, a critical aspect in high-volume transaction environments such as domain registration. Enhanced API response times can lead to more efficient domain lookups, registrations, and updates. JSON parsing is typically fast and well-supported by standard libraries, contributing to improved system performance amid frequent interactions between RPP clients and servers.
 
-However, the absence of a standardised JSON format for domain provisioning has led to the emergence of TLD-specific implementations that lack interoperability, increasing the development effort required for integration. Similarly, at the registrar level, the absence of standards has resulted in numerous incompatible API implementations provided to clients and resellers. Standardising a JSON format for domain provisioning within the RPP framework could mitigate these challenges, reducing fragmentation and simplifying integration efforts across the domain registration industry.
+However, the absence of a standardized JSON format for domain provisioning has led to the emergence of TLD-specific implementations that lack interoperability, increasing the development effort required for integration. Similarly, at the registrar level, the absence of standards has resulted in numerous incompatible API implementations provided to clients and resellers. Standardizing a JSON format for domain provisioning within the RPP framework could mitigate these challenges, reducing fragmentation and simplifying integration efforts across the domain registration industry.
 
 # Terminology
 
-In this document the following terminology is used.
+In this document, the following terminology is used.
 
 RPP Data Objects - The abstract data model definitions for domain name, contact, and host resources, as specified in [@!I-D.kowalik-rpp-data-objects].
 
@@ -188,7 +188,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 ### Labelled associations
 
-Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included  alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
+Some associations between objects carry a string label that provides additional context for the relationship. The label is not an identifier of the target object, but rather a descriptor of the association itself. Labelled associations can occur in both aggregations and compositions. When representing labelled associations in JSON, the property `label` MUST be included alongside the reference to the target object. A property with the name `object` MUST be used to contain the reference to the target object, which can be either limited representation containing at minimum the primary object identifier for aggregations or an embedded object for compositions.
 
 <!-- TODO: update text to clarify what data objects attribute must be used for unique object identifier in aggregation examples -->
 
@@ -198,7 +198,7 @@ An `Aggregation[Type]` represents a relationship between two independent objects
 
 Rule 8: `Aggregation[Type]` with cardinality `0+` or `1+` MUST be represented as a JSON array of embedded objects. Each object in the array MUST include the data elements of the referenced object type that are relevant to the context (at minimum the primary identifier field). Other data elements of the referenced object type MAY be included as needed to provide additional context for the client, but are not required. The JSON Schema MUST allow for the presence of these additional fields.
 
-Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation, only cvontaining the primary identifier field `hostName`:
+Example: domain nameservers (Aggregation[Host Data Object]) in a read response, returning a limited object representation containing only the primary identifier field `hostName`:
 
 ```json
 {
@@ -647,12 +647,12 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-### Authorisation Information Object
+### Authorization Information Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
-- `method` MUST be one of the values registered in the IANA RPP Authorisation Method Registry as defined in [@!I-D.wullink-rpp-core]. In EPP Compatibility Profile, this value MUST be "authinfo" for standard password-based authorisation.
-- The Authorisation Information Object is immutable. When authorisation information changes, a new instance MUST be created rather than modifying the existing one. The value of `authdata` MAY not be returned in read responses, depending on the method and server policy.
+- `method` MUST be one of the values registered in the IANA RPP Authorization Method Registry as defined in [@!I-D.wullink-rpp-core]. In EPP Compatibility Profile, this value MUST be "authinfo" for standard password-based authorization.
+- The Authorization Information Object is immutable. When authorization information changes, a new instance MUST be created rather than modifying the existing one. The value of `authdata` MAY be omitted from read responses, depending on the method and server policy.
 
 ```json
 {
@@ -2900,6 +2900,7 @@ TODO
 
 ## Version 02 to 03
 
+- Added JSContact support for contact objects. (Issue #43)
 - Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
 
