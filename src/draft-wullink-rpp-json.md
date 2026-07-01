@@ -419,7 +419,19 @@ This section defines shared data types that are based on the primitive data type
 
 Identifiers are character strings with a specified minimum length, a specified maximum length, and a specified format outlined in [@!RFC5730, section 2.8]. Identifiers for certain object types MAY have additional constraints imposed either by server policy, object-specific specifications, or both.
 
-<!-- TODO: Add required identifiers -->
+In JSON, an Identifier MUST be represented as a `string` value conforming to the `roidType` syntax defined in [@!RFC5730, section 2.8]: one to eight word characters optionally preceded by an underscore, followed by a hyphen and one or more word characters, with a maximum total length of 89 characters.
+
+```json
+{
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^(\\w|_){1,8}-\\w{1,}$",
+      "maxLength": 89
+    }
+  }
+}
+```
 
 ### Client Identifier
 
@@ -660,7 +672,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ### JSContact Card Object
 
-The Contact Data Object uses version 2.0 of JSContact [@!RFC9982] to represent contact information.  The `contact` component object is defined below according to the RPP JSContact profile described in the Contact Data Object section.
+The Contact Data Object uses version 2.0 of JSContact [@!RFC9982] to represent contact information. The `Contact` object is defined below according to the RPP JSContact Profile [TODO Add Ref].
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
@@ -770,7 +782,6 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
-
 ### Restore Report Object
 
 The Restore Report Object contains the redemption grace period restore report submitted by the sponsoring client as required by the RGP process ([@!RFC3915]).
@@ -808,7 +819,76 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 }
 ```
 
+### Organisation Role Object
+
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `type` MUST only use values registered in the IANA "EPP Organization Role Values" registry ([@!RFC8543]).
+
+```json
+{
+  "$defs": {
+    "organisationRole": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "organisationRole" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ok", "linked", "clientLinkProhibited", "serverLinkProhibited"]
+          }
+        },
+        "roleId": { "type": "string" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
 ## Process Object Schemas
+
+### Renew Process Object
+
+Renew request schema (create-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.create",
+  "$defs": {
+    "renewProcess.create": {
+      "type": "object",
+      "properties": {
+        "@type":         { "type": "string", "const": "renewProcess" },
+        "expiryDate":    { "type": "string", "format": "date-time" },
+        "renewalPeriod": { "$ref": "#/$defs/period" }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+Renew response schema (read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/renewProcess.read",
+  "$defs": {
+    "renewProcess.read": {
+      "type": "object",
+      "properties": {
+        "@type":      { "type": "string", "const": "renewProcess", "readOnly": true },
+        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
 
 ### Transfer Process Object
 
@@ -1126,18 +1206,14 @@ Update request schema (read-write properties):
 
 Renew minimal response schema (only expire date):
 
+
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/domainObject.renewResponse",
+  "$ref": "#/$defs/renewProcess.create.domain",
   "$defs": {
-    "domainObject.renewResponse": {
-      "type": "object",
-      "properties": {
-        "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-        "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
-      },
-      "required": ["@type", "expiryDate"]
+    "renewProcess.create.domain": {
+       "$ref": "#/$defs/renewProcess.create"
     }
   }
 }
@@ -1268,7 +1344,7 @@ Reference schema (identifier only):
 
 ## Contact Data Object
 
-This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `card` property of the contact JSON object.
+This document uses version 2.0 of JSContact [@!RFC9982] for the JSON representation of Contact Data Object contact information. The contact's name, postal address, phone numbers, email addresses, and other contact details are encapsulated in a JSContact `Card` object embedded in the `contactInfo` property.
 
 ### JSContact Profile for RPP
 
@@ -1295,10 +1371,10 @@ Create request schema (create-only and read-write properties):
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
         "id":     { "type": "string" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "card"],
+      "required": ["@type", "id", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1325,7 +1401,7 @@ Read response schema (read-write and read-only properties):
           "items": { "$ref": "#/$defs/status" },
           "readOnly": true
         },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
       "required": ["@type", "id", "provMetadata", "card"],
@@ -1348,7 +1424,7 @@ Update request schema (read-write properties):
       "type": "object",
       "properties": {
         "@type":  { "type": "string", "const": "contact" },
-        "card":   { "$ref": "#/$defs/Card" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
       "required": ["@type", "card"],
@@ -1661,14 +1737,14 @@ Example domain delete response (minimal, server may return full representation):
 
 ### Renew
 
-The renew operation accepts a transient `currentExpiryDate` parameter for validation and an optional `renewalPeriod`.
+The renew operation creates a Renew Process Object. The optional `expiryDate` in the request is the *current* expiry date, sent by the client for server-side validation to prevent duplicate renewals. The response returns a Renew Process Object containing the *new* expiry date.
 
 Example domain renew request:
 
 ```json
 {
-    "@type": "domainName.renew",
-    "currentExpiryDate": "2005-04-03T22:00:00.0Z",
+    "@type": "renewProcess",
+    "expiryDate": "2005-04-03T22:00:00.0Z",
     "renewalPeriod": {
         "@type": "period",
         "value": 5,
@@ -1681,7 +1757,7 @@ Example domain renew response:
 
 ```json
 {
-    "@type": "domainName",
+    "@type": "renewProcess",
     "expiryDate": "2010-04-03T22:00:00.0Z"
 }
 ```
@@ -1891,7 +1967,7 @@ Example contact create request:
 {
     "@type": "contact",
     "id": "jd1234",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -1949,7 +2025,7 @@ Example contact create response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -2006,7 +2082,7 @@ Example contact read response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -2049,7 +2125,7 @@ Example contact update request:
 ```json
 {
     "@type": "contact",
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "addresses": {
@@ -2092,7 +2168,7 @@ Example contact update response:
     "status": [
         { "@type": "status", "label": "ok" }
     ],
-    "card": {
+    "contactInfo": {
         "@type": "Card",
         "version": "2.0",
         "kind": "individual",
@@ -2451,6 +2527,275 @@ Example host restore query response (Restore Process Object, object restored):
 }
 ```
 
+## Organisation
+
+### Create
+
+Example organisation create request:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "roles": { "registrar": 
+        {
+            "@type": "organisationRole",
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ]
+}
+```
+
+Example organisation create response:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+               "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+```
+
+### Read
+
+Example organisation read response:
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "ORG12345-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "2025-03-15T10:00:00.0Z",
+        "upClientId": "ClientX",
+        "upDate": "2025-06-01T08:30:00.0Z"
+    },
+    "status": [
+        { "@type": "status", "label": "linked" }
+    ],
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["ok"],
+            "roleId": "1234"
+        }
+    },
+    "parent": { "@type": "organisation", "id": "ORG-9999" },
+    "contactInfo": {
+        "@type": "Card",
+        "version": "2.0",
+        "kind": "org",
+        "name": {
+            "full": "Example Registrar Inc."
+        },
+        "addresses": {
+            "addr": {
+                "components": [
+                    { "kind": "name",     "value": "Meander 501" },
+                    { "kind": "locality", "value": "Arnhem" },
+                    { "kind": "region",   "value": "Gelderland" },
+                    { "kind": "postcode", "value": "6825MD" },
+                    { "kind": "country",  "value": "Netherlands" }
+                ],
+                "countryCode": "NL"
+            }
+        },
+        "emails": {
+            "email": { "address": "registrar@example.example" }
+        }
+    },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+    ],
+    "users": [
+        { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+}
+```
+
+### Update
+
+Example organisation update request:
+
+```json
+{
+    "@type": "organisation",
+    "roles": { "registrar":
+        {
+            "@type": "organisationRole",
+            "status": ["clientLinkProhibited"],
+            "roleId": "1234"
+        }
+    },
+    "status": [
+        { "@type": "status", "label": "clientLinkProhibited" }
+    ],
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "CID-2001" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "CID-2002" } }
+    ]
+}
+```
+
+### Delete
+
+The organisation delete operation takes the organisation identifier as the resource identifier. No request body is required. The server MUST reject the request if the organisation object is associated with any other objects.
+
+### Reference
+
+Example organisation reference (used when referencing an organisation from another object):
+
+```json
+{
+    "@type": "organisation",
+    "id": "ORG-12345"
+}
+```
+
+## User
+
+### Create
+
+Example user create request:
+
+```json
+{
+    "@type": "user",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+Example user create response:
+
+```json
+{
+    "@type": "user",
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+### Read
+
+Example user read response:
+
+```json
+{
+    "@type": "user",
+    "organisationId": { "@type": "organisation", "id": "ORG-12345" },
+    "userId": "UID-5001",
+    "details": { "@type": "contact", "id": "USER-1234" },
+    "status": ["active"]
+}
+```
+
+### Update
+
+Example user update request (suspend the user):
+
+```json
+{
+    "@type": "user",
+    "status": ["suspended"]
+}
+```
+
+### Delete
+
+The user delete operation takes the user identifier as the resource identifier in the context of the owning organisation. No request body is required.
+
+### Reference
+
+Example user reference (used when referencing a user from an organisation object):
+
+```json
+{
+    "@type": "user",
+    "id": "UID-5001"
+}
+```
+
 # IANA Considerations
 
 TODO
@@ -2472,6 +2817,8 @@ TODO
 ## Version 02 to 03
 
 - Added schema and examples for Transfer approve/reject/cancel operations (Issue #28)
+- Added Organisation and User Object JSON schemas and examples. (Issue #57)
+- Added schema and examples for the Renew Process Object. (Issue #45)
 
 ## Version 01 to 02
 
