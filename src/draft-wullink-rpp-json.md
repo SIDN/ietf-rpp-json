@@ -1006,6 +1006,8 @@ Renew response schema (read-only properties):
 
 ### Transfer Process Object
 
+#### Create
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -1047,26 +1049,7 @@ Create request schema (create-only and read-write properties):
 }
 ```
 
-Create request for Domain Object schema (create-only and read-write properties):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.create.domain",
-  "$defs": {
-    "transferProcess.create.domain": {
-      "allOf": [
-        { "$ref": "#/$defs/transferProcess.create" },
-        {
-          "properties": {
-            "transferPeriod": { "$ref": "#/$defs/period" }
-          }
-        }
-      ]
-    }
-  }
-}
-```
+#### Read
 
 Read response schema (read-write and read-only properties):
 
@@ -1105,26 +1088,40 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
-Read response for Domain Object schema (read-write and read-only properties):
+#### Approve
+
+The Approve operation MUST always have a request body, which may be an empty JSON object. The server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions. There is no Approve request schema defined in this specification.
+
+The Approve response schema MUST equal the read response schema.
+
+#### Cancel
+
+The Cancel operation, which is similar to a delete operation, has no request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions. Because the Cancel operation has no request body, it is not possible to extend the request schema with additional properties.
+
+The Cancel response schema MUST equal the read response schema or an empty response.
+
+#### Reject
+
+Reject request schema:
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.read.domain",
+  "$ref": "#/$defs/transferProcess.reject",
   "$defs": {
-    "transferProcess.read.domain": {
-      "allOf": [
-        { "$ref": "#/$defs/transferProcess.read" },
-        {
-          "properties": {
-            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
-          }
-        }
-      ]
+    "transferProcess.reject": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "transferProcess" },
+        "reason": { "type": "string" }
+      },
+      "required": ["@type"]
     }
   }
 }
 ```
+
+Reject response schema MUST equal the read response schema.
 
 ### Restore Process Object
 
@@ -1190,6 +1187,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 - `name` MUST be a fully qualified domain name conforming to the syntax described in [@!RFC1035]. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.
 
+### Create
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -1238,6 +1237,8 @@ Create request schema (create-only and read-write properties):
   }
 }
 ```
+
+### Read
 
 Read response schema (read-write and read-only properties):
 
@@ -1289,6 +1290,8 @@ Read response schema (read-write and read-only properties):
 }
 ```
 
+### Update
+
 Update request schema (read-write properties):
 
 ```json
@@ -1327,7 +1330,8 @@ Update request schema (read-write properties):
 
 ### Renew
 
-Renew request schema (create-only properties):
+Renew minimal response schema (only expire date):
+
 
 ```json
 {
@@ -1341,15 +1345,103 @@ Renew request schema (create-only properties):
 }
 ```
 
-Renew response schema (read-only properties):
+### Transfer
+
+Create request for Domain Transfer Process Object schema (create-only and read-write properties):
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/renewProcess.read.domain",
+  "$ref": "#/$defs/transferProcess.create.domain",
   "$defs": {
-    "renewProcess.read.domain": {
-      "$ref": "#/$defs/renewProcess.read"
+    "transferProcess.create.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.create" },
+        {
+          "properties": {
+            "transferPeriod": { "$ref": "#/$defs/period" }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Read response for Domain Transfer Process Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read.domain",
+  "$defs": {
+    "transferProcess.read.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.read" },
+        {
+          "properties": {
+            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Both Approve and Delete (Cancel) operations have no request body, the server can identify the transfer process to be approved or cancelled based on the request URL and the authenticated client's permissions.
+
+Delete (Cancel) response Domain Transfer Process Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.delete.domain",
+  "$defs": {
+    "transferProcess.delete.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
+    }
+  }
+}
+```
+
+Approve response Domain Transfer Process Object schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.approve.domain",
+  "$defs": {
+    "transferProcess.approve.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
+    }
+  }
+}
+```
+
+Reject request Domain Object schema:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.reject.domain",
+  "$defs": {
+    "transferProcess.reject.domain": {
+      "$ref": "#/$defs/transferProcess.reject"
+    }
+  }
+}
+```
+
+Reject response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.reject.domain",
+  "$defs": {
+    "transferProcess.reject.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
     }
   }
 }
@@ -1391,6 +1483,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 - `card.emails.email.address` MUST be provided in EPP Compatibility Profile.
 - `card.addresses[*].countryCode` MUST be a valid two-character ISO 3166-1 [@!ISO3166-1] alpha-2 code when present.
 
+### Create
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -1413,27 +1507,7 @@ Create request schema (create-only and read-write properties):
 }
 ```
 
-Update request schema (read-write properties):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/contactObject.update",
-  "$defs": {
-    "contactObject.update": {
-      "type": "object",
-      "properties": {
-        "@type":  { "type": "string", "const": "contact" },
-        "contactInfo":   { "$ref": "#/$defs/Card" },
-        "authInfo": { "$ref": "#/$defs/authInfo" }
-      },
-      "required": ["@type", "contactInfo"],
-      "unevaluatedProperties": false
-    }
-  }
-}
-```
-
+### Read
 
 Read response schema (read-write and read-only properties):
 
@@ -1454,15 +1528,56 @@ Read response schema (read-write and read-only properties):
           "readOnly": true
         },
         "contactInfo":   { "$ref": "#/$defs/Card" },
-        "authInfo": { "$ref": "#/$defs/authInfo" },
-        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+        "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "contactInfo"],
+      "required": ["@type", "id", "provMetadata", "card"],
       "unevaluatedProperties": false
     }
   }
 }
 ```
+
+### Update
+
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.update",
+  "$defs": {
+    "contactObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "contact" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+      },
+      "required": ["@type", "card"],
+      "unevaluatedProperties": false
+    }
+  }
+}
+```
+
+### Transfer
+
+Transfer create request for Contact Object schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create.contact",
+  "$defs": {
+    "transferProcess.create.contact": {
+      "$ref": "#/$defs/transferProcess.create"
+    }
+  }
+}
+```
+
+### Reference 
 
 Reference schema (identifier only):
 
@@ -1483,13 +1598,14 @@ Reference schema (identifier only):
 }
 ```
 
-
 ## Host Data Object
 
 The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
 
 - `hostName` MUST be a syntactically valid fully qualified host name.
 - If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.
+
+### Create
 
 Create request schema (create-only and read-write properties):
 
@@ -1510,6 +1626,8 @@ Create request schema (create-only and read-write properties):
   }
 }
 ```
+
+### Read
 
 Read response schema (read-write and read-only properties):
 
@@ -1537,6 +1655,12 @@ Read response schema (read-write and read-only properties):
   }
 }
 ```
+
+### Update
+
+TODO
+
+### Reference
 
 Reference schema (identifier only):
 
@@ -2104,9 +2228,39 @@ Example domain transfer query response (Transfer Process Object):
 }
 ```
 
-### Transfer Cancel / Reject / Approve
+### Transfer Approve
 
-Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The `trStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+The Transfer approve operation has request body with an empty JSON object, the server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions.
+
+Example domain transfer approve request with empty JSON object:
+
+```json
+{ 
+  "@type": "transferProcess"
+}
+```
+<!-- Is this an empty response? or should we use "{}"? then validation script complains-->
+
+The response is the Transfer Process Object, similar to the transfer create and query responses.
+
+### Transfer Cancel
+
+The Transfer cancel operation has an empty request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions.
+
+The response is the Transfer Process Object, similar to the transfer create and query responses.
+
+### Transfer Reject
+
+Example domain transfer reject request
+
+```json
+{
+    "@type": "transferProcess",
+    "reason": "Client rejected the transfer request."
+}
+```
+
+The transfer reject response is the Transfer Process Object, similar to the transfer create and query responses.
 
 ### Restore Request
 
@@ -2513,11 +2667,22 @@ Example contact transfer query response (Transfer Process Object):
 }
 ```
 
-### Transfer Cancel / Reject / Approve
+### Transfer Cancel / Approve
 
-Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The `trStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
+Transfer cancel and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The `trStatus` value reflects the outcome of the operation (e.g. `"clientCancelled"`, `"clientRejected"`, or `"clientApproved"`).
 
-Note: Unlike domain transfers, contact transfers do not include an `expiryDate` field in the Transfer Process Object, as contacts do not have registration periods.
+### Transfer Reject
+
+Example Contact Transfer Reject request
+
+```json
+{
+    "@type": "transferProcess",
+    "reason": "Client rejected the transfer request."
+}
+```
+
+The transfer reject response is the Transfer Process Object, similar to the transfer create and query responses.
 
 ## Host
 
@@ -3067,6 +3232,7 @@ TODO
 
 ## Version 02 to 03
 
+- Added schema and examples for Transfer approve/reject/cancel operations (Issue #28)
 - Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
 - Add representation for embedding of process data in uniform interface operations (especially create). (Issue #60)

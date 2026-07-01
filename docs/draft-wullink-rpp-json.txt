@@ -65,47 +65,47 @@ Internet-Draft                JSON for RPP                     July 2026
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-     1.1.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   4
-   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   5
+     1.1.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   5
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   6
    3.  Conventions Used in This Document . . . . . . . . . . . . . .   6
-   4.  JSON Representation Rules . . . . . . . . . . . . . . . . . .   6
-     4.1.  Primitive Type Mappings . . . . . . . . . . . . . . . . .   6
-     4.2.  Cardinality Rules . . . . . . . . . . . . . . . . . . . .   7
+   4.  JSON Representation Rules . . . . . . . . . . . . . . . . . .   7
+     4.1.  Primitive Type Mappings . . . . . . . . . . . . . . . . .   7
+     4.2.  Cardinality Rules . . . . . . . . . . . . . . . . . . . .   8
      4.3.  Mutability Rules  . . . . . . . . . . . . . . . . . . . .   9
-     4.4.  Association Rules . . . . . . . . . . . . . . . . . . . .   9
-       4.4.1.  Labelled associations . . . . . . . . . . . . . . . .   9
+     4.4.  Association Rules . . . . . . . . . . . . . . . . . . . .  10
+       4.4.1.  Labelled associations . . . . . . . . . . . . . . . .  10
        4.4.2.  Aggregation . . . . . . . . . . . . . . . . . . . . .  10
-       4.4.3.  Composition . . . . . . . . . . . . . . . . . . . . .  10
-       4.4.4.  Labelled Aggregation  . . . . . . . . . . . . . . . .  11
-       4.4.5.  Dictionary Aggregation  . . . . . . . . . . . . . . .  12
-       4.4.6.  Labelled Composition  . . . . . . . . . . . . . . . .  13
-       4.4.7.  Dictionary Composition  . . . . . . . . . . . . . . .  13
-     4.5.  Object Identifier Rules . . . . . . . . . . . . . . . . .  14
-     4.6.  External Type Embedding Rules . . . . . . . . . . . . . .  14
-     4.7.  Process Data Embedding Rules  . . . . . . . . . . . . . .  15
-     4.8.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  15
-       4.8.1.  RPP Profiles and Validation . . . . . . . . . . . . .  17
-   5.  JSON Schema Definitions . . . . . . . . . . . . . . . . . . .  17
-     5.1.  Common Data Types Schemas . . . . . . . . . . . . . . . .  17
-       5.1.1.  Identifier  . . . . . . . . . . . . . . . . . . . . .  17
-       5.1.2.  Client Identifier . . . . . . . . . . . . . . . . . .  18
-       5.1.3.  Phone Number  . . . . . . . . . . . . . . . . . . . .  18
-     5.2.  Component Objects Schemas . . . . . . . . . . . . . . . .  19
-       5.2.1.  Period Object . . . . . . . . . . . . . . . . . . . .  19
-       5.2.2.  Provisioning Metadata Object  . . . . . . . . . . . .  19
-       5.2.3.  Status Object . . . . . . . . . . . . . . . . . . . .  20
-       5.2.4.  DNS Resource Record Object  . . . . . . . . . . . . .  21
-       5.2.5.  DNS Operational Controls Object . . . . . . . . . . .  22
-       5.2.6.  DNS Data Object . . . . . . . . . . . . . . . . . . .  23
-       5.2.7.  Authorisation Information Object  . . . . . . . . . .  24
-       5.2.8.  JSContact Card Object . . . . . . . . . . . . . . . .  25
-       5.2.9.  Restore Report Object . . . . . . . . . . . . . . . .  27
-       5.2.10. Organisation Role Object  . . . . . . . . . . . . . .  28
-       5.2.11. Processes Object  . . . . . . . . . . . . . . . . . .  29
-     5.3.  Process Object Schemas  . . . . . . . . . . . . . . . . .  30
-       5.3.1.  Create Process Object . . . . . . . . . . . . . . . .  30
-       5.3.2.  Renew Process Object  . . . . . . . . . . . . . . . .  31
-       5.3.3.  Transfer Process Object . . . . . . . . . . . . . . .  32
+       4.4.3.  Composition . . . . . . . . . . . . . . . . . . . . .  11
+       4.4.4.  Labelled Aggregation  . . . . . . . . . . . . . . . .  12
+       4.4.5.  Dictionary Aggregation  . . . . . . . . . . . . . . .  13
+       4.4.6.  Labelled Composition  . . . . . . . . . . . . . . . .  14
+       4.4.7.  Dictionary Composition  . . . . . . . . . . . . . . .  14
+     4.5.  Object Identifier Rules . . . . . . . . . . . . . . . . .  15
+     4.6.  External Type Embedding Rules . . . . . . . . . . . . . .  15
+     4.7.  Process Data Embedding Rules  . . . . . . . . . . . . . .  16
+     4.8.  JSON Schema Definition Rules  . . . . . . . . . . . . . .  16
+       4.8.1.  RPP Profiles and Validation . . . . . . . . . . . . .  18
+   5.  JSON Schema Definitions . . . . . . . . . . . . . . . . . . .  18
+     5.1.  Common Data Types Schemas . . . . . . . . . . . . . . . .  18
+       5.1.1.  Identifier  . . . . . . . . . . . . . . . . . . . . .  18
+       5.1.2.  Client Identifier . . . . . . . . . . . . . . . . . .  19
+       5.1.3.  Phone Number  . . . . . . . . . . . . . . . . . . . .  19
+     5.2.  Component Objects Schemas . . . . . . . . . . . . . . . .  20
+       5.2.1.  Period Object . . . . . . . . . . . . . . . . . . . .  20
+       5.2.2.  Provisioning Metadata Object  . . . . . . . . . . . .  20
+       5.2.3.  Status Object . . . . . . . . . . . . . . . . . . . .  21
+       5.2.4.  DNS Resource Record Object  . . . . . . . . . . . . .  22
+       5.2.5.  DNS Operational Controls Object . . . . . . . . . . .  23
+       5.2.6.  DNS Data Object . . . . . . . . . . . . . . . . . . .  24
+       5.2.7.  Authorisation Information Object  . . . . . . . . . .  25
+       5.2.8.  JSContact Card Object . . . . . . . . . . . . . . . .  26
+       5.2.9.  Restore Report Object . . . . . . . . . . . . . . . .  28
+       5.2.10. Organisation Role Object  . . . . . . . . . . . . . .  29
+       5.2.11. Processes Object  . . . . . . . . . . . . . . . . . .  30
+     5.3.  Process Object Schemas  . . . . . . . . . . . . . . . . .  31
+       5.3.1.  Create Process Object . . . . . . . . . . . . . . . .  31
+       5.3.2.  Renew Process Object  . . . . . . . . . . . . . . . .  32
+       5.3.3.  Transfer Process Object . . . . . . . . . . . . . . .  33
 
 
 
@@ -114,54 +114,54 @@ Wullink & Kowalik        Expires 2 January 2027                 [Page 2]
 Internet-Draft                JSON for RPP                     July 2026
 
 
+         5.3.3.1.  Create  . . . . . . . . . . . . . . . . . . . . .  33
+         5.3.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . .  34
+         5.3.3.3.  Approve . . . . . . . . . . . . . . . . . . . . .  35
+         5.3.3.4.  Cancel  . . . . . . . . . . . . . . . . . . . . .  36
+         5.3.3.5.  Reject  . . . . . . . . . . . . . . . . . . . . .  36
        5.3.4.  Restore Process Object  . . . . . . . . . . . . . . .  36
      5.4.  Domain Name Data Object . . . . . . . . . . . . . . . . .  37
-       5.4.1.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  41
-       5.4.2.  Reference . . . . . . . . . . . . . . . . . . . . . .  42
-     5.5.  Contact Data Object . . . . . . . . . . . . . . . . . . .  42
-       5.5.1.  JSContact Profile for RPP . . . . . . . . . . . . . .  42
-     5.6.  Host Data Object  . . . . . . . . . . . . . . . . . . . .  44
-     5.7.  Organisation Data Object  . . . . . . . . . . . . . . . .  46
-     5.8.  User Data Object  . . . . . . . . . . . . . . . . . . . .  50
-   6.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  52
-     6.1.  Domain Name . . . . . . . . . . . . . . . . . . . . . . .  52
-       6.1.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  53
-       6.1.2.  Create Process Data . . . . . . . . . . . . . . . . .  54
-       6.1.3.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  54
-       6.1.4.  Update  . . . . . . . . . . . . . . . . . . . . . . .  56
-       6.1.5.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  56
-       6.1.6.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  57
-       6.1.7.  Transfer Request  . . . . . . . . . . . . . . . . . .  57
-       6.1.8.  Transfer Query  . . . . . . . . . . . . . . . . . . .  58
-       6.1.9.  Transfer Cancel / Reject / Approve  . . . . . . . . .  58
-       6.1.10. Restore Request . . . . . . . . . . . . . . . . . . .  59
-       6.1.11. Restore Report  . . . . . . . . . . . . . . . . . . .  60
-       6.1.12. Restore Query . . . . . . . . . . . . . . . . . . . .  60
-     6.2.  Contact . . . . . . . . . . . . . . . . . . . . . . . . .  61
-       6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  61
-       6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  64
-       6.2.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  65
-       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  66
-       6.2.5.  Transfer Request  . . . . . . . . . . . . . . . . . .  67
-       6.2.6.  Transfer Query  . . . . . . . . . . . . . . . . . . .  67
-       6.2.7.  Transfer Cancel / Reject / Approve  . . . . . . . . .  67
-     6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  68
-       6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  68
-       6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  69
-       6.3.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  70
-       6.3.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  71
-       6.3.5.  Restore Request . . . . . . . . . . . . . . . . . . .  71
-       6.3.6.  Restore Report  . . . . . . . . . . . . . . . . . . .  72
-       6.3.7.  Restore Query . . . . . . . . . . . . . . . . . . . .  73
-     6.4.  Organisation  . . . . . . . . . . . . . . . . . . . . . .  73
-       6.4.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  73
-       6.4.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  76
-       6.4.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  77
-       6.4.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  77
-       6.4.5.  Reference . . . . . . . . . . . . . . . . . . . . . .  77
-     6.5.  User  . . . . . . . . . . . . . . . . . . . . . . . . . .  78
-       6.5.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  78
-       6.5.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  78
+       5.4.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  38
+       5.4.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  40
+       5.4.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  42
+       5.4.4.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  42
+       5.4.5.  Transfer  . . . . . . . . . . . . . . . . . . . . . .  43
+       5.4.6.  Reference . . . . . . . . . . . . . . . . . . . . . .  45
+     5.5.  Contact Data Object . . . . . . . . . . . . . . . . . . .  45
+       5.5.1.  JSContact Profile for RPP . . . . . . . . . . . . . .  46
+       5.5.2.  Create  . . . . . . . . . . . . . . . . . . . . . . .  46
+       5.5.3.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  46
+       5.5.4.  Update  . . . . . . . . . . . . . . . . . . . . . . .  47
+       5.5.5.  Transfer  . . . . . . . . . . . . . . . . . . . . . .  48
+       5.5.6.  Reference . . . . . . . . . . . . . . . . . . . . . .  48
+     5.6.  Host Data Object  . . . . . . . . . . . . . . . . . . . .  48
+       5.6.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  48
+       5.6.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  49
+       5.6.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  49
+       5.6.4.  Reference . . . . . . . . . . . . . . . . . . . . . .  50
+     5.7.  Organisation Data Object  . . . . . . . . . . . . . . . .  50
+     5.8.  User Data Object  . . . . . . . . . . . . . . . . . . . .  54
+   6.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  56
+     6.1.  Domain Name . . . . . . . . . . . . . . . . . . . . . . .  56
+       6.1.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  57
+       6.1.2.  Create Process Data . . . . . . . . . . . . . . . . .  58
+       6.1.3.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  58
+       6.1.4.  Update  . . . . . . . . . . . . . . . . . . . . . . .  60
+       6.1.5.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  60
+       6.1.6.  Renew . . . . . . . . . . . . . . . . . . . . . . . .  61
+       6.1.7.  Transfer Request  . . . . . . . . . . . . . . . . . .  61
+       6.1.8.  Transfer Query  . . . . . . . . . . . . . . . . . . .  62
+       6.1.9.  Transfer Approve  . . . . . . . . . . . . . . . . . .  62
+       6.1.10. Transfer Cancel . . . . . . . . . . . . . . . . . . .  63
+       6.1.11. Transfer Reject . . . . . . . . . . . . . . . . . . .  63
+       6.1.12. Restore Request . . . . . . . . . . . . . . . . . . .  63
+       6.1.13. Restore Report  . . . . . . . . . . . . . . . . . . .  64
+       6.1.14. Restore Query . . . . . . . . . . . . . . . . . . . .  65
+     6.2.  Contact . . . . . . . . . . . . . . . . . . . . . . . . .  65
+       6.2.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  65
+       6.2.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  68
+       6.2.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  69
+       6.2.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  70
 
 
 
@@ -170,21 +170,42 @@ Wullink & Kowalik        Expires 2 January 2027                 [Page 3]
 Internet-Draft                JSON for RPP                     July 2026
 
 
-       6.5.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  78
-       6.5.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  79
-       6.5.5.  Reference . . . . . . . . . . . . . . . . . . . . . .  79
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  79
-   8.  Internationalization Considerations . . . . . . . . . . . . .  79
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  79
-   10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  79
-   11. Change History  . . . . . . . . . . . . . . . . . . . . . . .  79
-     11.1.  Version 02 to 03 . . . . . . . . . . . . . . . . . . . .  79
-     11.2.  Version 01 to 02 . . . . . . . . . . . . . . . . . . . .  79
-     11.3.  Version 00 to 01 . . . . . . . . . . . . . . . . . . . .  80
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  80
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  80
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  81
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  82
+       6.2.5.  Transfer Request  . . . . . . . . . . . . . . . . . .  71
+       6.2.6.  Transfer Query  . . . . . . . . . . . . . . . . . . .  71
+       6.2.7.  Transfer Cancel / Approve . . . . . . . . . . . . . .  71
+       6.2.8.  Transfer Reject . . . . . . . . . . . . . . . . . . .  72
+     6.3.  Host  . . . . . . . . . . . . . . . . . . . . . . . . . .  72
+       6.3.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  72
+       6.3.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  73
+       6.3.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  74
+       6.3.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  75
+       6.3.5.  Restore Request . . . . . . . . . . . . . . . . . . .  75
+       6.3.6.  Restore Report  . . . . . . . . . . . . . . . . . . .  76
+       6.3.7.  Restore Query . . . . . . . . . . . . . . . . . . . .  77
+     6.4.  Organisation  . . . . . . . . . . . . . . . . . . . . . .  77
+       6.4.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  77
+       6.4.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  80
+       6.4.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  81
+       6.4.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  81
+       6.4.5.  Reference . . . . . . . . . . . . . . . . . . . . . .  81
+     6.5.  User  . . . . . . . . . . . . . . . . . . . . . . . . . .  82
+       6.5.1.  Create  . . . . . . . . . . . . . . . . . . . . . . .  82
+       6.5.2.  Read  . . . . . . . . . . . . . . . . . . . . . . . .  82
+       6.5.3.  Update  . . . . . . . . . . . . . . . . . . . . . . .  82
+       6.5.4.  Delete  . . . . . . . . . . . . . . . . . . . . . . .  83
+       6.5.5.  Reference . . . . . . . . . . . . . . . . . . . . . .  83
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  83
+   8.  Internationalization Considerations . . . . . . . . . . . . .  83
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  83
+   10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  83
+   11. Change History  . . . . . . . . . . . . . . . . . . . . . . .  83
+     11.1.  Version 02 to 03 . . . . . . . . . . . . . . . . . . . .  83
+     11.2.  Version 01 to 02 . . . . . . . . . . . . . . . . . . . .  84
+     11.3.  Version 00 to 01 . . . . . . . . . . . . . . . . . . . .  84
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  84
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  84
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  86
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  86
 
 1.  Introduction
 
@@ -194,6 +215,16 @@ Internet-Draft                JSON for RPP                     July 2026
    [I-D.kowalik-rpp-data-objects] independently of any particular
    representation format.  This document defines the JSON [RFC8259]
    representation of those data objects.
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 4]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    JSON has emerged as the de facto standard data format for modern
    RESTful APIs.  Its widespread adoption across tools, libraries, and
@@ -218,14 +249,6 @@ Internet-Draft                JSON for RPP                     July 2026
    increasing availability of tools, software libraries, and a skilled
    workforce has led several registries to adopt JSON for data exchange
    within their API ecosystems.  Registries supporting JSON can offer a
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 4]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
    unified API ecosystem that extends beyond domain name and IP address
    provisioning, maintaining a consistent technology stack, data
    formats, and developer experience.
@@ -242,6 +265,22 @@ Internet-Draft                JSON for RPP                     July 2026
    updates.  JSON parsing is typically fast and well-supported by
    standard libraries, contributing to improved system performance amid
    frequent interactions between RPP clients and servers.
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 5]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    However, the absence of a standardised JSON format for domain
    provisioning has led to the emergence of TLD-specific implementations
@@ -271,17 +310,6 @@ Internet-Draft                JSON for RPP                     July 2026
    in [I-D.kowalik-rpp-data-objects] that a server MUST adhere to when
    supporting both RPP and EPP concurrently.
 
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 5]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
 3.  Conventions Used in This Document
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -302,6 +330,14 @@ Internet-Draft                JSON for RPP                     July 2026
 
      "$schema": "https://json-schema.org/draft/2020-12/schema"
 
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 6]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
 4.  JSON Representation Rules
 
    This section defines the normative rules for representing the RPP
@@ -315,28 +351,6 @@ Internet-Draft                JSON for RPP                     July 2026
 4.1.  Primitive Type Mappings
 
    RPP primitive types MUST be represented in JSON as follows:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 6]
-
-Internet-Draft                JSON for RPP                     July 2026
-
 
       +===========+=========+======================================+
       | RPP       | JSON    | Notes                                |
@@ -369,6 +383,17 @@ Internet-Draft                JSON for RPP                     July 2026
 
                                  Table 1
 
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 7]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
 4.2.  Cardinality Rules
 
    The cardinality of each data element in the RPP data model MUST be
@@ -386,13 +411,6 @@ Internet-Draft                JSON for RPP                     July 2026
      },
      "required": ["name"]
    }
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 7]
-
-Internet-Draft                JSON for RPP                     July 2026
-
 
    Rule 2: A data element with cardinality 0-1 (zero or one) MUST be
    represented as an optional JSON property.  The element MUST NOT be
@@ -421,6 +439,17 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 8]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
    Rule 4: A data element with cardinality 1+ (one or more) MUST be
    represented as a required JSON array with "minItems": 1 and the
    element MUST be listed under required in the corresponding JSON
@@ -437,18 +466,6 @@ Internet-Draft                JSON for RPP                     July 2026
      },
      "required": ["records"]
    }
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 8]
-
-Internet-Draft                JSON for RPP                     July 2026
-
 
 4.3.  Mutability Rules
 
@@ -477,6 +494,18 @@ Internet-Draft                JSON for RPP                     July 2026
    Rule 7: Data elements with mutability read-write have no additional
    annotation.  They MAY appear in both request and response bodies.
 
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                 [Page 9]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
 4.4.  Association Rules
 
    The RPP data model defines several association types between objects,
@@ -498,14 +527,6 @@ Internet-Draft                JSON for RPP                     July 2026
    MUST be used to contain the reference to the target object, which can
    be either limited representation containing at minimum the primary
    object identifier for aggregations or an embedded object for
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                 [Page 9]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
    compositions.
 
 4.4.2.  Aggregation
@@ -527,6 +548,19 @@ Internet-Draft                JSON for RPP                     July 2026
    Example: domain nameservers (Aggregation[Host Data Object]) in a read
    response, returning a limited object representation, only cvontaining
    the primary identifier field hostName:
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 10]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    {
        "@type": "domainName",
@@ -557,7 +591,29 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 10]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 11]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -613,7 +669,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 11]
+Wullink & Kowalik        Expires 2 January 2027                [Page 12]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -669,7 +725,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 12]
+Wullink & Kowalik        Expires 2 January 2027                [Page 13]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -725,7 +781,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 13]
+Wullink & Kowalik        Expires 2 January 2027                [Page 14]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -781,7 +837,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 14]
+Wullink & Kowalik        Expires 2 January 2027                [Page 15]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -837,7 +893,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 15]
+Wullink & Kowalik        Expires 2 January 2027                [Page 16]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -893,7 +949,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 16]
+Wullink & Kowalik        Expires 2 January 2027                [Page 17]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -949,7 +1005,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 17]
+Wullink & Kowalik        Expires 2 January 2027                [Page 18]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1005,7 +1061,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 18]
+Wullink & Kowalik        Expires 2 January 2027                [Page 19]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1061,7 +1117,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 19]
+Wullink & Kowalik        Expires 2 January 2027                [Page 20]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1117,7 +1173,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 20]
+Wullink & Kowalik        Expires 2 January 2027                [Page 21]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1173,7 +1229,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 21]
+Wullink & Kowalik        Expires 2 January 2027                [Page 22]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1229,7 +1285,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 22]
+Wullink & Kowalik        Expires 2 January 2027                [Page 23]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1285,7 +1341,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 23]
+Wullink & Kowalik        Expires 2 January 2027                [Page 24]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1341,7 +1397,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 24]
+Wullink & Kowalik        Expires 2 January 2027                [Page 25]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1397,7 +1453,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 25]
+Wullink & Kowalik        Expires 2 January 2027                [Page 26]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1453,7 +1509,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 26]
+Wullink & Kowalik        Expires 2 January 2027                [Page 27]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1509,7 +1565,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 27]
+Wullink & Kowalik        Expires 2 January 2027                [Page 28]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1565,7 +1621,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 28]
+Wullink & Kowalik        Expires 2 January 2027                [Page 29]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1621,7 +1677,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 29]
+Wullink & Kowalik        Expires 2 January 2027                [Page 30]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1677,7 +1733,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 30]
+Wullink & Kowalik        Expires 2 January 2027                [Page 31]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1733,7 +1789,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 31]
+Wullink & Kowalik        Expires 2 January 2027                [Page 32]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1773,6 +1829,8 @@ Internet-Draft                JSON for RPP                     July 2026
 
 5.3.3.  Transfer Process Object
 
+5.3.3.1.  Create
+
    Create request schema (create-only and read-write properties):
 
 
@@ -1787,9 +1845,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 32]
+Wullink & Kowalik        Expires 2 January 2027                [Page 33]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -1831,65 +1887,9 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Create request for Domain Object schema (create-only and read-write
-   properties):
-
-
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 33]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
-   {
-     "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/transferProcess.create.domain",
-     "$defs": {
-       "transferProcess.create.domain": {
-         "allOf": [
-           { "$ref": "#/$defs/transferProcess.create" },
-           {
-             "properties": {
-               "transferPeriod": { "$ref": "#/$defs/period" }
-             }
-           }
-         ]
-       }
-     }
-   }
+5.3.3.2.  Read
 
    Read response schema (read-write and read-only properties):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1939,15 +1939,15 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Read response for Domain Object schema (read-write and read-only
-   properties):
+5.3.3.3.  Approve
 
+   The Approve operation MUST always have a request body, which may be
+   an empty JSON object.  The server can identify the transfer process
+   to be approved based on the request URL and the authenticated
+   client's permissions.  There is no Approve request schema defined in
+   this specification.
 
-
-
-
-
-
+   The Approve response schema MUST equal the read response schema.
 
 
 
@@ -1962,22 +1962,37 @@ Wullink & Kowalik        Expires 2 January 2027                [Page 35]
 Internet-Draft                JSON for RPP                     July 2026
 
 
+5.3.3.4.  Cancel
+
+   The Cancel operation, which is similar to a delete operation, has no
+   request body, the server can identify the transfer process to be
+   cancelled based on the request URL and the authenticated client's
+   permissions.  Because the Cancel operation has no request body, it is
+   not possible to extend the request schema with additional properties.
+
+   The Cancel response schema MUST equal the read response schema or an
+   empty response.
+
+5.3.3.5.  Reject
+
+   Reject request schema:
+
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/transferProcess.read.domain",
+     "$ref": "#/$defs/transferProcess.reject",
      "$defs": {
-       "transferProcess.read.domain": {
-         "allOf": [
-           { "$ref": "#/$defs/transferProcess.read" },
-           {
-             "properties": {
-               "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
-             }
-           }
-         ]
+       "transferProcess.reject": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "transferProcess" },
+           "reason": { "type": "string" }
+         },
+         "required": ["@type"]
        }
      }
    }
+
+   Reject response schema MUST equal the read response schema.
 
 5.3.4.  Restore Process Object
 
@@ -1995,21 +2010,6 @@ Internet-Draft                JSON for RPP                     July 2026
    -  reportDueDate MUST NOT be present when restoreStatus is not
       "pendingRestore".
 
-   Create request schema (create-only and read-write properties):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2017,6 +2017,8 @@ Wullink & Kowalik        Expires 2 January 2027                [Page 36]
 
 Internet-Draft                JSON for RPP                     July 2026
 
+
+   Create request schema (create-only and read-write properties):
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2067,8 +2069,6 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-
-
 Wullink & Kowalik        Expires 2 January 2027                [Page 37]
 
 Internet-Draft                JSON for RPP                     July 2026
@@ -2079,9 +2079,9 @@ Internet-Draft                JSON for RPP                     July 2026
       domain names to a specific namespace for which they are
       authoritative.  The implicit trailing dot MUST NOT be included.
 
+5.4.1.  Create
+
    Create request schema (create-only and read-write properties):
-
-
 
 
 
@@ -2175,13 +2175,69 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Read response schema (read-write and read-only properties):
+
 
 
 
 
 
 Wullink & Kowalik        Expires 2 January 2027                [Page 39]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
+5.4.2.  Read
+
+   Read response schema (read-write and read-only properties):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 40]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2232,15 +2288,19 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Update request schema (read-write properties):
 
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 40]
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 41]
 
 Internet-Draft                JSON for RPP                     July 2026
 
+
+5.4.3.  Update
+
+   Update request schema (read-write properties):
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2274,9 +2334,25 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-5.4.1.  Renew
+5.4.4.  Renew
 
-   Renew request schema (create-only properties):
+   Renew minimal response schema (only expire date):
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 42]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2288,27 +2364,131 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Renew response schema (read-only properties):
+5.4.5.  Transfer
+
+   Create request for Domain Transfer Process Object schema (create-only
+   and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.create.domain",
+     "$defs": {
+       "transferProcess.create.domain": {
+         "allOf": [
+           { "$ref": "#/$defs/transferProcess.create" },
+           {
+             "properties": {
+               "transferPeriod": { "$ref": "#/$defs/period" }
+             }
+           }
+         ]
+       }
+     }
+   }
+
+   Read response for Domain Transfer Process Object schema (read-write
+   and read-only properties):
 
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 41]
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 43]
 
 Internet-Draft                JSON for RPP                     July 2026
 
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/renewProcess.read.domain",
+     "$ref": "#/$defs/transferProcess.read.domain",
      "$defs": {
-       "renewProcess.read.domain": {
-         "$ref": "#/$defs/renewProcess.read"
+       "transferProcess.read.domain": {
+         "allOf": [
+           { "$ref": "#/$defs/transferProcess.read" },
+           {
+             "properties": {
+               "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+             }
+           }
+         ]
        }
      }
    }
 
-5.4.2.  Reference
+   Both Approve and Delete (Cancel) operations have no request body, the
+   server can identify the transfer process to be approved or cancelled
+   based on the request URL and the authenticated client's permissions.
+
+   Delete (Cancel) response Domain Transfer Process Object schema (read-
+   write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.delete.domain",
+     "$defs": {
+       "transferProcess.delete.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+   Approve response Domain Transfer Process Object schema (read-write
+   and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.approve.domain",
+     "$defs": {
+       "transferProcess.approve.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+   Reject request Domain Object schema:
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 44]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.reject.domain",
+     "$defs": {
+       "transferProcess.reject.domain": {
+         "$ref": "#/$defs/transferProcess.reject"
+       }
+     }
+   }
+
+   Reject response schema (read-write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.reject.domain",
+     "$defs": {
+       "transferProcess.reject.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+5.4.6.  Reference
 
    Reference schema (identifier only):
 
@@ -2335,6 +2515,13 @@ Internet-Draft                JSON for RPP                     July 2026
    other contact details are encapsulated in a JSContact Card object
    embedded in the contactInfo property.
 
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 45]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
 5.5.1.  JSContact Profile for RPP
 
    Since JSContact is a general-purpose representation of contact data,
@@ -2346,14 +2533,6 @@ Internet-Draft                JSON for RPP                     July 2026
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
 
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 42]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
    -  card.name.full MUST be provided in EPP Compatibility Profile.
    -  card.addresses.addr MUST be provided in EPP Compatibility Profile,
       containing at least countryCode and a "locality" kind component.
@@ -2361,6 +2540,8 @@ Internet-Draft                JSON for RPP                     July 2026
       Profile.
    -  card.addresses[*].countryCode MUST be a valid two-character ISO
       3166-1 [ISO3166-1] alpha-2 code when present.
+
+5.5.2.  Create
 
    Create request schema (create-only and read-write properties):
 
@@ -2382,30 +2563,17 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Update request schema (read-write properties):
-
-   {
-     "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/contactObject.update",
-     "$defs": {
-       "contactObject.update": {
-         "type": "object",
-         "properties": {
-           "@type":  { "type": "string", "const": "contact" },
-           "contactInfo":   { "$ref": "#/$defs/Card" },
-           "authInfo": { "$ref": "#/$defs/authInfo" }
-         },
-         "required": ["@type", "contactInfo"],
-         "unevaluatedProperties": false
-       }
-     }
-   }
+5.5.3.  Read
 
    Read response schema (read-write and read-only properties):
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 43]
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 46]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2426,14 +2594,62 @@ Internet-Draft                JSON for RPP                     July 2026
              "readOnly": true
            },
            "contactInfo":   { "$ref": "#/$defs/Card" },
-           "authInfo": { "$ref": "#/$defs/authInfo" },
-           "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+           "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "provMetadata", "contactInfo"],
+         "required": ["@type", "id", "provMetadata", "card"],
          "unevaluatedProperties": false
        }
      }
    }
+
+5.5.4.  Update
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/contactObject.update",
+     "$defs": {
+       "contactObject.update": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" },
+           "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+         },
+         "required": ["@type", "card"],
+         "unevaluatedProperties": false
+       }
+     }
+   }
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 47]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
+5.5.5.  Transfer
+
+   Transfer create request for Contact Object schema (create-only and
+   read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.create.contact",
+     "$defs": {
+       "transferProcess.create.contact": {
+         "$ref": "#/$defs/transferProcess.create"
+       }
+     }
+   }
+
+5.5.6.  Reference
 
    Reference schema (identifier only):
 
@@ -2458,19 +2674,21 @@ Internet-Draft                JSON for RPP                     July 2026
    be enforced by implementations:
 
    -  hostName MUST be a syntactically valid fully qualified host name.
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 44]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
    -  If the host name is subordinate to a domain for which the server
       is authoritative, the superordinate domain MUST already exist in
       the server.
 
+5.6.1.  Create
+
    Create request schema (create-only and read-write properties):
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 48]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2487,6 +2705,8 @@ Internet-Draft                JSON for RPP                     July 2026
        }
      }
    }
+
+5.6.2.  Read
 
    Read response schema (read-write and read-only properties):
 
@@ -2513,14 +2733,22 @@ Internet-Draft                JSON for RPP                     July 2026
      }
    }
 
-   Reference schema (identifier only):
+5.6.3.  Update
+
+   TODO
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 45]
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 49]
 
 Internet-Draft                JSON for RPP                     July 2026
 
+
+5.6.4.  Reference
+
+   Reference schema (identifier only):
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2569,11 +2797,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 46]
+Wullink & Kowalik        Expires 2 January 2027                [Page 50]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2629,7 +2853,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 47]
+Wullink & Kowalik        Expires 2 January 2027                [Page 51]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2685,7 +2909,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 48]
+Wullink & Kowalik        Expires 2 January 2027                [Page 52]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2741,7 +2965,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 49]
+Wullink & Kowalik        Expires 2 January 2027                [Page 53]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2797,7 +3021,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 50]
+Wullink & Kowalik        Expires 2 January 2027                [Page 54]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2853,7 +3077,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 51]
+Wullink & Kowalik        Expires 2 January 2027                [Page 55]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2909,7 +3133,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 52]
+Wullink & Kowalik        Expires 2 January 2027                [Page 56]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -2965,7 +3189,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 53]
+Wullink & Kowalik        Expires 2 January 2027                [Page 57]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3021,7 +3245,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 54]
+Wullink & Kowalik        Expires 2 January 2027                [Page 58]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3077,7 +3301,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 55]
+Wullink & Kowalik        Expires 2 January 2027                [Page 59]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3133,7 +3357,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 56]
+Wullink & Kowalik        Expires 2 January 2027                [Page 60]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3189,7 +3413,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 57]
+Wullink & Kowalik        Expires 2 January 2027                [Page 61]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3232,25 +3456,53 @@ Internet-Draft                JSON for RPP                     July 2026
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
 
-6.1.9.  Transfer Cancel / Reject / Approve
+6.1.9.  Transfer Approve
 
-   Transfer cancel, reject, and approve responses return the Transfer
-   Process Object.  The response structure is the same as the Transfer
-   Query response above.  The trStatus value reflects the outcome of the
-   operation (e.g. "clientCancelled", "clientRejected", or
-   "clientApproved").
+   The Transfer approve operation has request body with an empty JSON
+   object, the server can identify the transfer process to be approved
+   based on the request URL and the authenticated client's permissions.
 
-
+   Example domain transfer approve request with empty JSON object:
 
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 58]
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 62]
 
 Internet-Draft                JSON for RPP                     July 2026
 
 
-6.1.10.  Restore Request
+   {
+     "@type": "transferProcess"
+   }
+
+   The response is the Transfer Process Object, similar to the transfer
+   create and query responses.
+
+6.1.10.  Transfer Cancel
+
+   The Transfer cancel operation has an empty request body, the server
+   can identify the transfer process to be cancelled based on the
+   request URL and the authenticated client's permissions.
+
+   The response is the Transfer Process Object, similar to the transfer
+   create and query responses.
+
+6.1.11.  Transfer Reject
+
+   Example domain transfer reject request
+
+   {
+       "@type": "transferProcess",
+       "reason": "Client rejected the transfer request."
+   }
+
+   The transfer reject response is the Transfer Process Object, similar
+   to the transfer create and query responses.
+
+6.1.12.  Restore Request
 
    Example domain restore request (without inline report; object
    transitions to pendingRestore state):
@@ -3268,6 +3520,15 @@ Internet-Draft                JSON for RPP                     July 2026
        "requestDate": "2025-01-20T15:30:00.0Z",
        "reportDueDate": "2025-01-27T15:30:00.0Z"
    }
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 63]
+
+Internet-Draft                JSON for RPP                     July 2026
+
 
    Example domain restore request with inline restore report (single-
    step; object restored immediately):
@@ -3298,15 +3559,7 @@ Internet-Draft                JSON for RPP                     July 2026
        "reportDate": "2025-01-20T15:30:00.0Z"
    }
 
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 59]
-
-Internet-Draft                JSON for RPP                     July 2026
-
-
-6.1.11.  Restore Report
+6.1.13.  Restore Report
 
    Example domain restore report request:
 
@@ -3326,6 +3579,13 @@ Internet-Draft                JSON for RPP                     July 2026
        }
    }
 
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 64]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
    Example domain restore report response (Restore Process Object):
 
    {
@@ -3335,7 +3595,7 @@ Internet-Draft                JSON for RPP                     July 2026
        "reportDate": "2025-01-22T09:15:00.0Z"
    }
 
-6.1.12.  Restore Query
+6.1.14.  Restore Query
 
    The Restore Query operation takes no request body (Parameters: None).
 
@@ -3351,16 +3611,6 @@ Internet-Draft                JSON for RPP                     July 2026
 
    Example domain restore query response (Restore Process Object, object
    restored):
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 60]
-
-Internet-Draft                JSON for RPP                     July 2026
-
 
    {
        "@type": "restoreProcess",
@@ -3387,33 +3637,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 61]
+Wullink & Kowalik        Expires 2 January 2027                [Page 65]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3469,7 +3693,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 62]
+Wullink & Kowalik        Expires 2 January 2027                [Page 66]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3525,7 +3749,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 63]
+Wullink & Kowalik        Expires 2 January 2027                [Page 67]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3581,7 +3805,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 64]
+Wullink & Kowalik        Expires 2 January 2027                [Page 68]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3637,7 +3861,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 65]
+Wullink & Kowalik        Expires 2 January 2027                [Page 69]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3693,7 +3917,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 66]
+Wullink & Kowalik        Expires 2 January 2027                [Page 70]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3737,11 +3961,11 @@ Internet-Draft                JSON for RPP                     July 2026
        "actionDate": "2000-06-11T22:00:00.0Z"
    }
 
-6.2.7.  Transfer Cancel / Reject / Approve
+6.2.7.  Transfer Cancel / Approve
 
-   Transfer cancel, reject, and approve responses return the Transfer
-   Process Object.  The response structure is the same as the Transfer
-   Query response above.  The trStatus value reflects the outcome of the
+   Transfer cancel and approve responses return the Transfer Process
+   Object.  The response structure is the same as the Transfer Query
+   response above.  The trStatus value reflects the outcome of the
    operation (e.g. "clientCancelled", "clientRejected", or
    "clientApproved").
 
@@ -3749,14 +3973,22 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 67]
+Wullink & Kowalik        Expires 2 January 2027                [Page 71]
 
 Internet-Draft                JSON for RPP                     July 2026
 
 
-   Note: Unlike domain transfers, contact transfers do not include an
-   expiryDate field in the Transfer Process Object, as contacts do not
-   have registration periods.
+6.2.8.  Transfer Reject
+
+   Example Contact Transfer Reject request
+
+   {
+       "@type": "transferProcess",
+       "reason": "Client rejected the transfer request."
+   }
+
+   The transfer reject response is the Transfer Process Object, similar
+   to the transfer create and query responses.
 
 6.3.  Host
 
@@ -3797,15 +4029,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 68]
+Wullink & Kowalik        Expires 2 January 2027                [Page 72]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3861,7 +4085,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 69]
+Wullink & Kowalik        Expires 2 January 2027                [Page 73]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3917,7 +4141,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 70]
+Wullink & Kowalik        Expires 2 January 2027                [Page 74]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -3973,7 +4197,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 71]
+Wullink & Kowalik        Expires 2 January 2027                [Page 75]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4029,7 +4253,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 72]
+Wullink & Kowalik        Expires 2 January 2027                [Page 76]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4085,7 +4309,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 73]
+Wullink & Kowalik        Expires 2 January 2027                [Page 77]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4141,7 +4365,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 74]
+Wullink & Kowalik        Expires 2 January 2027                [Page 78]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4197,7 +4421,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 75]
+Wullink & Kowalik        Expires 2 January 2027                [Page 79]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4253,7 +4477,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 76]
+Wullink & Kowalik        Expires 2 January 2027                [Page 80]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4309,7 +4533,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 77]
+Wullink & Kowalik        Expires 2 January 2027                [Page 81]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4365,7 +4589,7 @@ Internet-Draft                JSON for RPP                     July 2026
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 78]
+Wullink & Kowalik        Expires 2 January 2027                [Page 82]
 
 Internet-Draft                JSON for RPP                     July 2026
 
@@ -4406,6 +4630,8 @@ Internet-Draft                JSON for RPP                     July 2026
 
 11.1.  Version 02 to 03
 
+   -  Added schema and examples for Transfer approve/reject/cancel
+      operations (Issue #28)
    -  Added Organisation and User Object JSON schemas and examples.
       (Issue #57)
    -  Added schema and examples for the Renew Process Object.  (Issue
@@ -4413,18 +4639,20 @@ Internet-Draft                JSON for RPP                     July 2026
    -  Add representation for embedding of process data in uniform
       interface operations (especially create).  (Issue #60)
 
-11.2.  Version 01 to 02
-
-   -  Adjust rule 19 and all schemas to match it.
 
 
 
 
 
-Wullink & Kowalik        Expires 2 January 2027                [Page 79]
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 83]
 
 Internet-Draft                JSON for RPP                     July 2026
 
+
+11.2.  Version 01 to 02
+
+   -  Adjust rule 19 and all schemas to match it.
 
 11.3.  Version 00 to 01
 
@@ -4469,18 +4697,18 @@ Internet-Draft                JSON for RPP                     July 2026
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <https://www.rfc-editor.org/info/rfc1035>.
 
-   [RFC1738]  Berners-Lee, T., Masinter, L., and M. McCahill, "Uniform
-              Resource Locators (URL)", RFC 1738, DOI 10.17487/RFC1738,
-              December 1994, <https://www.rfc-editor.org/info/rfc1738>.
 
 
 
 
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 80]
+Wullink & Kowalik        Expires 2 January 2027                [Page 84]
 
 Internet-Draft                JSON for RPP                     July 2026
 
+
+   [RFC1738]  Berners-Lee, T., Masinter, L., and M. McCahill, "Uniform
+              Resource Locators (URL)", RFC 1738, DOI 10.17487/RFC1738,
+              December 1994, <https://www.rfc-editor.org/info/rfc1738>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -4523,20 +4751,23 @@ Internet-Draft                JSON for RPP                     July 2026
               DOI 10.17487/RFC9553, May 2024,
               <https://www.rfc-editor.org/info/rfc9553>.
 
+
+
+
+
+
+
+Wullink & Kowalik        Expires 2 January 2027                [Page 85]
+
+Internet-Draft                JSON for RPP                     July 2026
+
+
    [RFC9982]  Stepanek, R., "JSContact Version 2.0: A JSON
               Representation of Contact Data", RFC 9982,
               DOI 10.17487/RFC9982, May 2026,
               <https://www.rfc-editor.org/info/rfc9982>.
 
 12.2.  Informative References
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 81]
-
-Internet-Draft                JSON for RPP                     July 2026
-
 
    [I-D.simmen-rpp-dns-data]
               Simmen, C. and P. Kowalik, "DNS data representation for
@@ -4582,11 +4813,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-
-
-Wullink & Kowalik        Expires 2 January 2027                [Page 82]
+Wullink & Kowalik        Expires 2 January 2027                [Page 86]

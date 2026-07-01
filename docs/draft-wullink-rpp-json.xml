@@ -958,6 +958,8 @@ A Aggregation represents a relationship between two independent objects, where o
 </section>
 
 <section anchor="transfer-process-object"><name>Transfer Process Object</name>
+
+<section anchor="create"><name>Create</name>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -997,25 +999,9 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
-<t>Create request for Domain Object schema (create-only and read-write properties):</t>
+</section>
 
-<sourcecode type="json"><![CDATA[{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.create.domain",
-  "$defs": {
-    "transferProcess.create.domain": {
-      "allOf": [
-        { "$ref": "#/$defs/transferProcess.create" },
-        {
-          "properties": {
-            "transferPeriod": { "$ref": "#/$defs/period" }
-          }
-        }
-      ]
-    }
-  }
-}
-]]></sourcecode>
+<section anchor="read"><name>Read</name>
 <t>Read response schema (read-write and read-only properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1051,25 +1037,38 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
-<t>Read response for Domain Object schema (read-write and read-only properties):</t>
+</section>
+
+<section anchor="approve"><name>Approve</name>
+<t>The Approve operation MUST always have a request body, which may be an empty JSON object. The server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions. There is no Approve request schema defined in this specification.</t>
+<t>The Approve response schema MUST equal the read response schema.</t>
+</section>
+
+<section anchor="cancel"><name>Cancel</name>
+<t>The Cancel operation, which is similar to a delete operation, has no request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions. Because the Cancel operation has no request body, it is not possible to extend the request schema with additional properties.</t>
+<t>The Cancel response schema MUST equal the read response schema or an empty response.</t>
+</section>
+
+<section anchor="reject"><name>Reject</name>
+<t>Reject request schema:</t>
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/transferProcess.read.domain",
+  "$ref": "#/$defs/transferProcess.reject",
   "$defs": {
-    "transferProcess.read.domain": {
-      "allOf": [
-        { "$ref": "#/$defs/transferProcess.read" },
-        {
-          "properties": {
-            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
-          }
-        }
-      ]
+    "transferProcess.reject": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "transferProcess" },
+        "reason": { "type": "string" }
+      },
+      "required": ["@type"]
     }
   }
 }
 ]]></sourcecode>
+<t>Reject response schema MUST equal the read response schema.</t>
+</section>
 </section>
 
 <section anchor="restore-process-object"><name>Restore Process Object</name>
@@ -1132,6 +1131,8 @@ A Aggregation represents a relationship between two independent objects, where o
 <ul spacing="compact">
 <li><tt>name</tt> MUST be a fully qualified domain name conforming to the syntax described in <xref target="RFC1035"></xref>. Servers MAY restrict allowable domain names to a specific namespace for which they are authoritative. The implicit trailing dot MUST NOT be included.</li>
 </ul>
+
+<section anchor="create-1"><name>Create</name>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1179,6 +1180,9 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
+
+<section anchor="read-1"><name>Read</name>
 <t>Read response schema (read-write and read-only properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1227,6 +1231,9 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
+
+<section anchor="update"><name>Update</name>
 <t>Update request schema (read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1261,9 +1268,10 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
 
 <section anchor="renew"><name>Renew</name>
-<t>Renew request schema (create-only properties):</t>
+<t>Renew minimal response schema (only expire date):</t>
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1275,14 +1283,92 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
-<t>Renew response schema (read-only properties):</t>
+</section>
+
+<section anchor="transfer"><name>Transfer</name>
+<t>Create request for Domain Transfer Process Object schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/renewProcess.read.domain",
+  "$ref": "#/$defs/transferProcess.create.domain",
   "$defs": {
-    "renewProcess.read.domain": {
-      "$ref": "#/$defs/renewProcess.read"
+    "transferProcess.create.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.create" },
+        {
+          "properties": {
+            "transferPeriod": { "$ref": "#/$defs/period" }
+          }
+        }
+      ]
+    }
+  }
+}
+]]></sourcecode>
+<t>Read response for Domain Transfer Process Object schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.read.domain",
+  "$defs": {
+    "transferProcess.read.domain": {
+      "allOf": [
+        { "$ref": "#/$defs/transferProcess.read" },
+        {
+          "properties": {
+            "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+          }
+        }
+      ]
+    }
+  }
+}
+]]></sourcecode>
+<t>Both Approve and Delete (Cancel) operations have no request body, the server can identify the transfer process to be approved or cancelled based on the request URL and the authenticated client's permissions.</t>
+<t>Delete (Cancel) response Domain Transfer Process Object schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.delete.domain",
+  "$defs": {
+    "transferProcess.delete.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
+    }
+  }
+}
+]]></sourcecode>
+<t>Approve response Domain Transfer Process Object schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.approve.domain",
+  "$defs": {
+    "transferProcess.approve.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
+    }
+  }
+}
+]]></sourcecode>
+<t>Reject request Domain Object schema:</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.reject.domain",
+  "$defs": {
+    "transferProcess.reject.domain": {
+      "$ref": "#/$defs/transferProcess.reject"
+    }
+  }
+}
+]]></sourcecode>
+<t>Reject response schema (read-write and read-only properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.reject.domain",
+  "$defs": {
+    "transferProcess.reject.domain": {
+      "$ref": "#/$defs/transferProcess.read.domain"
     }
   }
 }
@@ -1323,6 +1409,9 @@ A Aggregation represents a relationship between two independent objects, where o
 <li><tt>card.emails.email.address</tt> MUST be provided in EPP Compatibility Profile.</li>
 <li><tt>card.addresses[*].countryCode</tt> MUST be a valid two-character ISO 3166-1 <xref target="ISO3166-1"></xref> alpha-2 code when present.</li>
 </ul>
+</section>
+
+<section anchor="create-2"><name>Create</name>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1343,25 +1432,9 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
-<t>Update request schema (read-write properties):</t>
+</section>
 
-<sourcecode type="json"><![CDATA[{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$ref": "#/$defs/contactObject.update",
-  "$defs": {
-    "contactObject.update": {
-      "type": "object",
-      "properties": {
-        "@type":  { "type": "string", "const": "contact" },
-        "contactInfo":   { "$ref": "#/$defs/Card" },
-        "authInfo": { "$ref": "#/$defs/authInfo" }
-      },
-      "required": ["@type", "contactInfo"],
-      "unevaluatedProperties": false
-    }
-  }
-}
-]]></sourcecode>
+<section anchor="read-2"><name>Read</name>
 <t>Read response schema (read-write and read-only properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1380,15 +1453,55 @@ A Aggregation represents a relationship between two independent objects, where o
           "readOnly": true
         },
         "contactInfo":   { "$ref": "#/$defs/Card" },
-        "authInfo": { "$ref": "#/$defs/authInfo" },
-        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+        "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "contactInfo"],
+      "required": ["@type", "id", "provMetadata", "card"],
       "unevaluatedProperties": false
     }
   }
 }
 ]]></sourcecode>
+</section>
+
+<section anchor="update-1"><name>Update</name>
+<t>Update request schema (read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/contactObject.update",
+  "$defs": {
+    "contactObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "contact" },
+        "contactInfo":   { "$ref": "#/$defs/Card" },
+        "authInfo": { "$ref": "#/$defs/authInfo" },
+        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+      },
+      "required": ["@type", "card"],
+      "unevaluatedProperties": false
+    }
+  }
+}
+]]></sourcecode>
+</section>
+
+<section anchor="transfer-1"><name>Transfer</name>
+<t>Transfer create request for Contact Object schema (create-only and read-write properties):</t>
+
+<sourcecode type="json"><![CDATA[{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/transferProcess.create.contact",
+  "$defs": {
+    "transferProcess.create.contact": {
+      "$ref": "#/$defs/transferProcess.create"
+    }
+  }
+}
+]]></sourcecode>
+</section>
+
+<section anchor="reference-1"><name>Reference</name>
 <t>Reference schema (identifier only):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1416,6 +1529,8 @@ A Aggregation represents a relationship between two independent objects, where o
 <li><tt>hostName</tt> MUST be a syntactically valid fully qualified host name.</li>
 <li>If the host name is subordinate to a domain for which the server is authoritative, the superordinate domain MUST already exist in the server.</li>
 </ul>
+
+<section anchor="create-3"><name>Create</name>
 <t>Create request schema (create-only and read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1434,6 +1549,9 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
+
+<section anchor="read-3"><name>Read</name>
 <t>Read response schema (read-write and read-only properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1459,6 +1577,13 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
+
+<section anchor="update-2"><name>Update</name>
+<t>TODO</t>
+</section>
+
+<section anchor="reference-2"><name>Reference</name>
 <t>Reference schema (identifier only):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1476,6 +1601,7 @@ A Aggregation represents a relationship between two independent objects, where o
   }
 }
 ]]></sourcecode>
+</section>
 </section>
 
 <section anchor="organisation-data-object"><name>Organisation Data Object</name>
@@ -1733,7 +1859,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="domain-name"><name>Domain Name</name>
 
-<section anchor="create"><name>Create</name>
+<section anchor="create-4"><name>Create</name>
 <t>Example domain create request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1803,7 +1929,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="read"><name>Read</name>
+<section anchor="read-4"><name>Read</name>
 <t>Example domain read response:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1870,7 +1996,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="update"><name>Update</name>
+<section anchor="update-3"><name>Update</name>
 <t>Example domain update request (read-write properties):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -1989,8 +2115,31 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="transfer-cancel-reject-approve"><name>Transfer Cancel / Reject / Approve</name>
-<t>Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <tt>trStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+<section anchor="transfer-approve"><name>Transfer Approve</name>
+<t>The Transfer approve operation has request body with an empty JSON object, the server can identify the transfer process to be approved based on the request URL and the authenticated client's permissions.</t>
+<t>Example domain transfer approve request with empty JSON object:</t>
+
+<sourcecode type="json"><![CDATA[{ 
+  "@type": "transferProcess"
+}
+]]></sourcecode>
+<t>The response is the Transfer Process Object, similar to the transfer create and query responses.</t>
+</section>
+
+<section anchor="transfer-cancel"><name>Transfer Cancel</name>
+<t>The Transfer cancel operation has an empty request body, the server can identify the transfer process to be cancelled based on the request URL and the authenticated client's permissions.</t>
+<t>The response is the Transfer Process Object, similar to the transfer create and query responses.</t>
+</section>
+
+<section anchor="transfer-reject"><name>Transfer Reject</name>
+<t>Example domain transfer reject request</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferProcess",
+    "reason": "Client rejected the transfer request."
+}
+]]></sourcecode>
+<t>The transfer reject response is the Transfer Process Object, similar to the transfer create and query responses.</t>
 </section>
 
 <section anchor="restore-request"><name>Restore Request</name>
@@ -2093,7 +2242,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="contact"><name>Contact</name>
 
-<section anchor="create-1"><name>Create</name>
+<section anchor="create-5"><name>Create</name>
 <t>Example contact create request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2193,7 +2342,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="read-1"><name>Read</name>
+<section anchor="read-5"><name>Read</name>
 <t>Example contact read response:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2248,7 +2397,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="update-1"><name>Update</name>
+<section anchor="update-4"><name>Update</name>
 <t>Example contact update request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2373,15 +2522,25 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="transfer-cancel-reject-approve-1"><name>Transfer Cancel / Reject / Approve</name>
-<t>Transfer cancel, reject, and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <tt>trStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
-<t>Note: Unlike domain transfers, contact transfers do not include an <tt>expiryDate</tt> field in the Transfer Process Object, as contacts do not have registration periods.</t>
+<section anchor="transfer-cancel-approve"><name>Transfer Cancel / Approve</name>
+<t>Transfer cancel and approve responses return the Transfer Process Object. The response structure is the same as the Transfer Query response above. The <tt>trStatus</tt> value reflects the outcome of the operation (e.g. <tt>&quot;clientCancelled&quot;</tt>, <tt>&quot;clientRejected&quot;</tt>, or <tt>&quot;clientApproved&quot;</tt>).</t>
+</section>
+
+<section anchor="transfer-reject-1"><name>Transfer Reject</name>
+<t>Example Contact Transfer Reject request</t>
+
+<sourcecode type="json"><![CDATA[{
+    "@type": "transferProcess",
+    "reason": "Client rejected the transfer request."
+}
+]]></sourcecode>
+<t>The transfer reject response is the Transfer Process Object, similar to the transfer create and query responses.</t>
 </section>
 </section>
 
 <section anchor="host"><name>Host</name>
 
-<section anchor="create-2"><name>Create</name>
+<section anchor="create-6"><name>Create</name>
 <t>Example host create request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2454,7 +2613,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="read-2"><name>Read</name>
+<section anchor="read-6"><name>Read</name>
 <t>Example host read response:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2491,7 +2650,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="update-2"><name>Update</name>
+<section anchor="update-5"><name>Update</name>
 <t>Example host update request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2622,7 +2781,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="organisation"><name>Organisation</name>
 
-<section anchor="create-3"><name>Create</name>
+<section anchor="create-7"><name>Create</name>
 <t>Example organisation create request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2721,7 +2880,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="read-3"><name>Read</name>
+<section anchor="read-7"><name>Read</name>
 <t>Example organisation read response:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2781,7 +2940,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="update-3"><name>Update</name>
+<section anchor="update-6"><name>Update</name>
 <t>Example organisation update request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2808,7 +2967,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>The organisation delete operation takes the organisation identifier as the resource identifier. No request body is required. The server MUST reject the request if the organisation object is associated with any other objects.</t>
 </section>
 
-<section anchor="reference-1"><name>Reference</name>
+<section anchor="reference-3"><name>Reference</name>
 <t>Example organisation reference (used when referencing an organisation from another object):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2821,7 +2980,7 @@ A Aggregation represents a relationship between two independent objects, where o
 
 <section anchor="user"><name>User</name>
 
-<section anchor="create-4"><name>Create</name>
+<section anchor="create-8"><name>Create</name>
 <t>Example user create request:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2841,7 +3000,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="read-4"><name>Read</name>
+<section anchor="read-8"><name>Read</name>
 <t>Example user read response:</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2854,7 +3013,7 @@ A Aggregation represents a relationship between two independent objects, where o
 ]]></sourcecode>
 </section>
 
-<section anchor="update-4"><name>Update</name>
+<section anchor="update-7"><name>Update</name>
 <t>Example user update request (suspend the user):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2868,7 +3027,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <t>The user delete operation takes the user identifier as the resource identifier in the context of the owning organisation. No request body is required.</t>
 </section>
 
-<section anchor="reference-2"><name>Reference</name>
+<section anchor="reference-4"><name>Reference</name>
 <t>Example user reference (used when referencing a user from an organisation object):</t>
 
 <sourcecode type="json"><![CDATA[{
@@ -2901,6 +3060,7 @@ A Aggregation represents a relationship between two independent objects, where o
 <section anchor="version-02-to-03"><name>Version 02 to 03</name>
 
 <ul spacing="compact">
+<li>Added schema and examples for Transfer approve/reject/cancel operations (Issue #28)</li>
 <li>Added Organisation and User Object JSON schemas and examples. (Issue #57)</li>
 <li>Added schema and examples for the Renew Process Object. (Issue #45)</li>
 <li>Add representation for embedding of process data in uniform interface operations (especially create). (Issue #60)</li>
