@@ -449,7 +449,7 @@ Example `match` object for matching the array element with the "tech" label and 
 }
 ```
 
-Every match MUST result in either zero or one matching element. If multiple elements match the criteria specified in the `match` property, the server MUST reject the request with an appropriate error response.
+For the `remove` operation, if multiple matched elements are found, then the sever MUST remove all matched elements. For the `replace` operation, if multiple matched elements are found, then the server MUST return an error response indicating that the operation is ambiguous and cannot be performed. If a match does not have any results, then the server MUST return an error response indicating that the specified element could not be found.
 
 The following rules apply for partial updates:
 
