@@ -405,6 +405,214 @@ Rule 24: When a transfer request or other operation requires authorization infor
 
 RPP profiles, such as the EPP Compatibility Profile defined in [@!I-D.kowalik-rpp-data-objects], may impose additional constraints on top of the base RPP data model. These additional constraints MUST be enforced by implementations through validation rules that go beyond what can be expressed in JSON Schema. Such validation rules MUST be clearly documented in the profile specification and implemented by both clients and servers when operating under that profile. For example, the EPP Compatibility Profile requires that certain fields be present in specific object types, and that certain identifier fields conform to EPP syntax rules. These constraints cannot be fully captured in JSON Schema and therefore require additional validation logic in implementations.
 
+# Update Rules
+
+**NOTE**: The update rules in this section are still under discussion and may be subject to change. Feedback from the community is welcome.
+
+## Full
+
+A full update operation replaces the entire state of a resource object with the new representation provided in the request, all required properties MUST be included in the new representation.
+
+## Partial
+
+A partial update operation allows clients to update specific properties of a resource object, while leaving other properties unchanged.
+A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support the "match" property for matching of array elements, the following rules apply:
+
+- Rule 25: JSON Patch operations other than "add", "remove" and "replace" MUST NOT be used.
+- Rule 26: If a JSONPointer path points to field using a JSON simple data type (e.g. string or number) then the "value" property MUST be provided and its type MUST match the type of the target field.
+- Rule 27: If a JSONPointer path points to an object, then the "value" property MUST be provided and contain a valid object, the new object's "@type" property MUST match the "@type" of the target object.
+- Rule 28: If a JSONPointer path points to an array, the "match" property MUST be provided to identify the specific element to be updated.
+- Rule 29: If a JSONPointer path points to an array, then "match" property MUST only be used for matching array elements of a similar type, and the rules 26 and 27 apply.
+- Rule 30: If a JSONPointer path points to an array, the value of the "op" property determines the action to be taken on the matched element:
+
+  - For the "add" operation, the new value will be appended to the array.
+  - For the "remove" operation, the specified value will be removed from the array.
+  - For the "replace" operation, the specified value will replace the existing value at the given index.
+
+- Rule 31: If the JSONPointer path points to an array, the value of the "op" property is "replace", and there is a matching element, then the element MUST be fully replaced with the new value provided in the "value" property. The new value MUST include all required fields for the object type.
+- Rule 32: If anyt of the JSONPointer paths in the request fail to match an existing field or element in the target resource object, the server MUST reject the complete request with an appropriate error response.
+
+<!--Question: Partial update of object element is not supported? -->
+<!--Question: Traversing document stops at first array:  array->object->array... is not possible? -->
+<!--Question: How handle nested arrays?, is this even used in any of the data objects?  -->
+
+## Schema
+
+A partial update request body MUST be a JSON array of patch operation objects. Each operation MUST include an `op` and a `path` property. The `value` property MUST be present for `add` and `replace` operations. The `match` property MUST be present when the `path` points to an array property and is used to identify the specific array element to operate on.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/partialUpdate",
+  "$defs": {
+    "partialUpdate": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/patchOperation" },
+      "minItems": 1
+    },
+    "patchOperation": {
+      "oneOf": [
+        { "$ref": "#/$defs/patchAdd" },
+        { "$ref": "#/$defs/patchRemove" },
+        { "$ref": "#/$defs/patchReplace" }
+      ]
+    },
+    "patchAdd": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "add" },
+        "path":  { "type": "string" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    },
+    "patchRemove": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "remove" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" }
+      },
+      "required": ["op", "path"],
+      "additionalProperties": false
+    },
+    "patchReplace": {
+      "type": "object",
+      "properties": {
+        "op":    { "type": "string", "const": "replace" },
+        "path":  { "type": "string" },
+        "match": { "type": "object" },
+        "value": {}
+      },
+      "required": ["op", "path", "value"],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+### Examples
+
+Example JSON document used by partial update examples below:
+
+```json
+{
+    "@type": "domainName",
+    "name": "example.example",
+    "provMetadata": {
+        "@type": "provMetadata",
+        "repositoryId": "EXAMPLE1-REP",
+        "spClientId": "ClientX",
+        "crClientId": "ClientX",
+        "crDate": "1999-04-03T22:00:00.0Z"
+    },
+    "nameservers": [
+        { "@type": "host", "hostName": "ns1.example.example" },
+        { "@type": "host", "hostName": "ns2.example.example" }
+    ],
+    "registrant": { "@type": "contact", "id": "jd1234" },
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "sh8013" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "sh8013" } }
+    ],
+    "status": [
+        { "@type": "status", "label": "ok" }
+    ],
+    "expiryDate": "2027-01-01T00:00:00.0Z"
+}
+```
+
+Example of a partial update request to change the registrant of a domain name from "jd1234" to "jd1234-new":
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/registrant",
+    "value": {
+      "@type": "contact",
+      "id": "jd1234-new"
+    }
+  }
+]
+```
+
+Example of a partial update request to change the status of a domain name from "ok" to "clientProhibited":
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/status",
+    "match": {
+      "label": "ok"
+    },
+    "value": {
+      "@type": "status",
+      "label": "clientProhibited"
+    }
+  }
+]
+```
+
+Example of a partial update request for adding a additional tech contact to a domain name:
+
+```json
+[
+  {
+    "op": "add",
+    "path": "/contacts",
+    "value": {
+      "label": "tech",
+      "object": {
+        "@type": "contact",
+        "id": "sh8014"
+      }
+    }
+  }
+]
+```
+
+<!--
+The JSON representation of a partial update MUST use the following toplevel properties to indicate the intended modifications:
+
+- remove: An object containing the fields to be removed from the resource. Each property in this object corresponds to a field in the resource that should be deleted. The value of each property is ignored and can be set to `null` or any placeholder value. The following constraints apply to the `remove` object: 
+  * Items MUST be read-write
+  * Elements MUST have a cardinality different than 1 (no mandatory properties)
+  * Arrays MUST be valid after removal of element(s)
+- add: An object containing the fields to be added to the resource. Each property in this object corresponds to a field in the resource that should be added. The value of each property is the new value to be assigned to that field. The following constraints apply to the `add` object:
+  * Items MUST be read-write
+  * Elements MUST have a cardinality different than 1 (no mandatory properties)
+  * Arrays MUST be valid after addition of element(s)
+- change: An object containing the fields to be modified in the resource. Each property in this object corresponds to a field in the resource that should be updated. The value of each property is the new value to be assigned to that field. The following constraints apply to the `change` object:
+  * Items MUST be read-write
+  * items MUST be identified by a label (labelled dictionary) othwise use remove/add operations
+
+Example of a partial update request for a organisation object to add status "linked" and remove status "ok", also changing the admin contact and user:
+
+```json
+{
+  "remove": {
+    "status": [
+       { "@type": "status", "label": "ok" }
+    ]
+  },
+  "add": {
+    "status": [
+       { "@type": "status", "label": "linked" }
+    ]
+  },
+  "change": {
+    "contactInfo": { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+    "users": [
+      { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+    ]
+  }
+}
+```
+-->
+
 # JSON Schema Definitions
 
 This section provides normative JSON Schema definitions for RPP component objects and resource objects. All schemas use JSON Schema draft 2020-12 [@?JSON-SCHEMA].
@@ -3080,6 +3288,7 @@ TODO
 
 ## Version 02 to 03
 
+- Added "Update Rules" section, describing update requests (Issue #54)
 - Added schema and examples for Transfer approve/reject/cancel operations (Issue #28)
 - Added Organisation and User Object JSON schemas and examples. (Issue #57)
 - Added schema and examples for the Renew Process Object. (Issue #45)
