@@ -1690,6 +1690,8 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 - `parent`, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.
 - `contacts` keys MUST be contact type values registered in the IANA "EPP Organisation Contact Types" registry ([@!RFC8543]).
 
+### Create
+
 Create request schema (create-only and read-write properties):
 
 ```json
@@ -1727,6 +1729,8 @@ Create request schema (create-only and read-write properties):
 }
 ```
 
+### Read
+
 Read response schema (read-write and read-only properties):
 
 ```json
@@ -1755,8 +1759,7 @@ Read response schema (read-write and read-only properties):
                 },
                 "required": ["label", "object"]
               }
-            },
-            "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+            }
           },
           "required": ["provMetadata", "status"]
         }
@@ -1765,6 +1768,8 @@ Read response schema (read-write and read-only properties):
   }
 }
 ```
+
+### Update
 
 Update request schema (read-write properties):
 
@@ -1817,6 +1822,8 @@ Update request schema (read-write properties):
 }
 ```
 
+### Reference
+
 Reference schema (identifier only):
 
 ```json
@@ -1841,6 +1848,8 @@ Reference schema (identifier only):
 The User Data Object represents a user linked to an Organisation Object. The lifecycle of a User Object is bound to its owning Organisation Object.
 
 Note: User status values are plain strings, not Status Objects.
+
+### Create
 
 Create request schema (create-only and read-write properties):
 
@@ -1870,6 +1879,8 @@ Create request schema (create-only and read-write properties):
 }
 ```
 
+### Read
+
 Read response schema (read-write and read-only properties):
 
 ```json
@@ -1891,14 +1902,15 @@ Read response schema (read-write and read-only properties):
             "enum": ["active", "suspended", "deactivated", "pending"]
           }
         },
-        "description":  { "type": "string", "const": "user" },
-        "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+        "description":  { "type": "string", "const": "user" }
       },
       "required": ["@type", "userId", "details", "status"]
     }
   }
 }
 ```
+
+### Update
 
 Update request schema (read-write properties):
 
@@ -1926,6 +1938,8 @@ Update request schema (read-write properties):
 }
 ```
 
+### Reference
+
 Reference schema (identifier only):
 
 ```json
@@ -1944,7 +1958,6 @@ Reference schema (identifier only):
   }
 }
 ```
-
 
 # Examples
 
