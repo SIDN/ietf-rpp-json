@@ -1815,7 +1815,6 @@ Reference schema (identifier only):
 }
 ```
 
-
 # Examples
 
 This section provides examples that follow the JSON representation rules and JSON Schema definitions specified in the previous sections. The examples illustrate typical request and response messages for domain name, contact, and host resources.
