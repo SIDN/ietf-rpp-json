@@ -416,21 +416,34 @@ A full update operation replaces the entire state of a resource object with the 
 ## Partial
 
 A partial update operation allows clients to update specific properties of a resource object, while leaving other properties unchanged.
-A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support the "match" property for matching of array elements, the following rules apply:
+A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support the "match" property for matching of array elements.
+
+The "match" property is used to identify a specific element in an array, it is a JSON object that contains key-value pairs corresponding to the properties of the array elements. The server uses the "match" property to locate the specific element in the array that should be updated, removed, or replaced. The server MUST compare every key and corresponding value in the "match" object against the properties of each element in the array. If an element matches all key-value pairs in the "match" object, it is considered a match.
+
+Example "match" object for matching an array element with a specific key-value pair:
+
+```json
+{
+"match": {
+      "key-to-match": "value-to-match"
+    }
+}
+```
+
+The following rules apply for partial updates:
 
 - Rule 25: JSON Patch operations other than "add", "remove" and "replace" MUST NOT be used.
 - Rule 26: If a JSONPointer path points to field using a JSON simple data type (e.g. string or number) then the "value" property MUST be provided and its type MUST match the type of the target field.
 - Rule 27: If a JSONPointer path points to an object, then the "value" property MUST be provided and contain a valid object, the new object's "@type" property MUST match the "@type" of the target object.
-- Rule 28: If a JSONPointer path points to an array, the "match" property MUST be provided to identify the specific element to be updated.
-- Rule 29: If a JSONPointer path points to an array, then "match" property MUST only be used for matching array elements of a similar type, and the rules 26 and 27 apply.
-- Rule 30: If a JSONPointer path points to an array, the value of the "op" property determines the action to be taken on the matched element:
-
-  - For the "add" operation, the new value will be appended to the array.
-  - For the "remove" operation, the specified value will be removed from the array.
-  - For the "replace" operation, the specified value will replace the existing value at the given index.
-
-- Rule 31: If the JSONPointer path points to an array, the value of the "op" property is "replace", and there is a matching element, then the element MUST be fully replaced with the new value provided in the "value" property. The new value MUST include all required fields for the object type.
-- Rule 32: If anyt of the JSONPointer paths in the request fail to match an existing field or element in the target resource object, the server MUST reject the complete request with an appropriate error response.
+- Rule 28: If a JSONPointer path points to an array, then:
+  - The "match" property MUST be provided to identify the specific element to be updated.
+  - The "match" property MUST only be used for matching array elements of the same type, and the rules 26 and 27 apply.
+  - The value of the "op" property determines the action to be taken on the matched element:
+    - The "add" operation, appends the new value to the array.
+    - The "remove" operation, removes the specified value from the array.
+    - The "replace" operation, replaces the existing value at the matching array element with the specified value.
+  - If the value of the "op" property is "replace", and there is a matching element, then the element MUST be fully replaced with the new value provided in the "value" property. The new value MUST include all required fields for the object type.
+- Rule 29: If any of the JSONPointer paths in the request fail to match an existing field or element in the target resource object, the server MUST reject the complete request with an appropriate error response.
 
 <!--Question: Partial update of object element is not supported? -->
 <!--Question: Traversing document stops at first array:  array->object->array... is not possible? -->
