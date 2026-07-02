@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 2 January 2027                                            DENIC
-                                                             1 July 2026
+Expires: 3 January 2027                                            DENIC
+                                                             2 July 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 January 2027.
+   This Internet-Draft will expire on 3 January 2027.
 
 Copyright Notice
 
@@ -124,7 +124,15 @@ Table of Contents
        5.6.3.  Update
        5.6.4.  Reference
      5.7.  Organisation Data Object
+       5.7.1.  Create
+       5.7.2.  Read
+       5.7.3.  Update
+       5.7.4.  Reference
      5.8.  User Data Object
+       5.8.1.  Create
+       5.8.2.  Read
+       5.8.3.  Update
+       5.8.4.  Reference
    6.  Examples
      6.1.  Domain Name
        6.1.1.  Create
@@ -1273,11 +1281,10 @@ Table of Contents
 
 5.2.11.  Processes Object
 
-   The Processes Object is a read-only container grouping the Process
-   Objects currently or recently initiated on the owning resource
-   object, keyed by process type.  Each key holds an array of the
-   corresponding Process Object's read representation, per the
-   Aggregation rules.
+   The Processes Object is a read-only container grouping the currently
+   active Process Objects on the owning resource object, keyed by
+   process type.  Each key holds an array of the corresponding Process
+   Object's read representation, per the Aggregation rules.
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2079,6 +2086,8 @@ Table of Contents
    -  contacts keys MUST be contact type values registered in the IANA
       "EPP Organisation Contact Types" registry ([RFC8543]).
 
+5.7.1.  Create
+
    Create request schema (create-only and read-write properties):
 
    {
@@ -2114,6 +2123,8 @@ Table of Contents
      }
    }
 
+5.7.2.  Read
+
    Read response schema (read-write and read-only properties):
 
    {
@@ -2141,8 +2152,7 @@ Table of Contents
                    },
                    "required": ["label", "object"]
                  }
-               },
-               "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+               }
              },
              "required": ["provMetadata", "status"]
            }
@@ -2150,6 +2160,8 @@ Table of Contents
        }
      }
    }
+
+5.7.3.  Update
 
    Update request schema (read-write properties):
 
@@ -2200,6 +2212,8 @@ Table of Contents
      }
    }
 
+5.7.4.  Reference
+
    Reference schema (identifier only):
 
    {
@@ -2224,6 +2238,8 @@ Table of Contents
    Organisation Object.
 
    Note: User status values are plain strings, not Status Objects.
+
+5.8.1.  Create
 
    Create request schema (create-only and read-write properties):
 
@@ -2251,6 +2267,8 @@ Table of Contents
      }
    }
 
+5.8.2.  Read
+
    Read response schema (read-write and read-only properties):
 
    {
@@ -2271,13 +2289,14 @@ Table of Contents
                "enum": ["active", "suspended", "deactivated", "pending"]
              }
            },
-           "description":  { "type": "string", "const": "user" },
-           "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+           "description":  { "type": "string", "const": "user" }
          },
          "required": ["@type", "userId", "details", "status"]
        }
      }
    }
+
+5.8.3.  Update
 
    Update request schema (read-write properties):
 
@@ -2302,6 +2321,8 @@ Table of Contents
        }
      }
    }
+
+5.8.4.  Reference
 
    Reference schema (identifier only):
 

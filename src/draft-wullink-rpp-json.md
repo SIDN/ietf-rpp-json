@@ -881,7 +881,7 @@ The following constraints cannot be expressed in JSON Schema and MUST be enforce
 
 ### Processes Object
 
-The Processes Object is a read-only container grouping the Process Objects currently or recently initiated on the owning resource object, keyed by process type. Each key holds an array of the corresponding Process Object's read representation, per the Aggregation rules.
+The Processes Object is a read-only container grouping the currently active Process Objects on the owning resource object, keyed by process type. Each key holds an array of the corresponding Process Object's read representation, per the Aggregation rules.
 
 ```json
 {
