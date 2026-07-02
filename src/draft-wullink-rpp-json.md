@@ -1404,7 +1404,7 @@ Read response schema (read-write and read-only properties):
         "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "id", "provMetadata", "card"],
+      "required": ["@type", "id", "provMetadata", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1427,7 +1427,7 @@ Update request schema (read-write properties):
         "contactInfo":   { "$ref": "#/$defs/Card" },
         "authInfo": { "$ref": "#/$defs/authInfo" }
       },
-      "required": ["@type", "card"],
+      "required": ["@type", "contactInfo"],
       "unevaluatedProperties": false
     }
   }
@@ -1555,17 +1555,281 @@ Reference schema (identifier only):
 
 ## Organisation Data Object
 
+The following constraints cannot be expressed in JSON Schema and MUST be enforced by implementations:
+
+- `id` MUST be a server-unique identifier conforming to the Identifier syntax.
+- `status` MUST always contain at least one value. `pendingCreate`, `ok`, `hold`, and `terminated` are mutually exclusive. `ok` MAY only be combined with `linked`.
+- `parent`, if present, MUST reference a known Organisation Object. Circular parent references MUST be rejected.
+- `contacts` keys MUST be contact type values registered in the IANA "EPP Organisation Contact Types" registry ([@!RFC8543]).
+
 ### Create
 
-TODO
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.create",
+  "$defs": {
+    "organisationObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "id":          { "$ref": "#/$defs/identifier" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" },
+          "minProperties": 1
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/contactObject.reference" }
+            },
+            "required": ["label", "object"]
+           }
+        }
+      },
+      "required": ["@type", "id", "roles"]      
+    }
+  }
+}
+```
 
 ### Read
 
-TODO
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.read",
+  "$defs": {
+    "organisationObject.read": {
+      "allOf": [
+        { "$ref": "#/$defs/organisationObject.create" },
+        {
+          "properties": {
+            "provMetadata": { "$ref": "#/$defs/provMetadata", "readOnly": true },
+            "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+            },
+            "users": {
+              "type": "array",
+              "items": { 
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "object": { "$ref": "#/$defs/userObject.reference" }
+                },
+                "required": ["label", "object"]
+              }
+            }
+          },
+          "required": ["provMetadata", "status"]
+        }
+      ]
+    }
+  }
+}
+```
 
 ### Update
 
-TODO
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.update",
+  "$defs": {
+    "organisationObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":       { "type": "string", "const": "organisation" },
+        "roles":       {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/organisationRole" }
+        },
+        "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+        "contactInfo": { "$ref": "#/$defs/Card" },
+        "contacts": {
+            "type": "array",
+            "items": { 
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "object": { "$ref": "#/$defs/contactObject.reference" }
+              },
+              "required": ["label", "object"]
+            }
+        },
+        "status": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/status" },
+              "readOnly": true
+        },
+        "users":       {
+          "type": "array",
+          "items": { 
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "object": { "$ref": "#/$defs/userObject.reference" }
+            },
+            "required": ["label", "object"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+### Reference
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/organisationObject.reference",
+  "$defs": {
+    "organisationObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type": { "type": "string", "const": "organisation", "readOnly": true },
+        "id":    { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
+
+## User Data Object
+
+The User Data Object represents a user linked to an Organisation Object. The lifecycle of a User Object is bound to its owning Organisation Object.
+
+Note: User status values are plain strings, not Status Objects.
+
+### Create
+
+Create request schema (create-only and read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.create",
+  "$defs": {
+    "userObject.create": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "organisationId", "details"]
+    }
+  }
+}
+```
+
+### Read
+
+Read response schema (read-write and read-only properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.read",
+  "$defs": {
+    "userObject.read": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+        "userId": { "$ref": "#/$defs/identifier", "readOnly": true },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        },
+        "description":  { "type": "string", "const": "user" }
+      },
+      "required": ["@type", "userId", "details", "status"]
+    }
+  }
+}
+```
+
+### Update
+
+Update request schema (read-write properties):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.update",
+  "$defs": {
+    "userObject.update": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user" },
+        "details": { "$ref": "#/$defs/contactObject.reference" },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["active", "suspended", "deactivated", "pending"]
+          }
+        }
+      },
+      "required": ["@type"]
+    }
+  }
+}
+```
+
+### Reference
+
+Reference schema (identifier only):
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/userObject.reference",
+  "$defs": {
+    "userObject.reference": {
+      "type": "object",
+      "properties": {
+        "@type":  { "type": "string", "const": "user", "readOnly": true },
+        "id": { "$ref": "#/$defs/identifier", "readOnly": true }
+      },
+      "required": ["@type", "id"]
+    }
+  }
+}
+```
 
 # Examples
 
