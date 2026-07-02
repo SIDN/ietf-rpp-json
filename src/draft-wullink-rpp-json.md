@@ -416,19 +416,40 @@ A full update operation replaces the entire state of a resource object with the 
 ## Partial
 
 A partial update operation allows clients to update specific properties of a resource object, while leaving other properties unchanged.
-A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support the "match" property for matching of array elements.
+A partial update MUST use JSON Patch [@!RFC6902] and an RPP extension to support the `match` property for matching of array elements.
 
-The "match" property is used to identify a specific element in an array, it is a JSON object that contains key-value pairs corresponding to the properties of the array elements. The server uses the "match" property to locate the specific element in the array that should be updated, removed, or replaced. The server MUST compare every key and corresponding value in the "match" object against the properties of each element in the array. If an element matches all key-value pairs in the "match" object, it is considered a match.
+The `match` property is used to identify a specific element in an array, it is a JSON object that contains key-value pairs corresponding to the properties of the array elements. The server uses the `match` property to locate the specific element in the array that should be updated, removed, or replaced. The server MUST compare every key and corresponding value in the `match` object against the properties of each element in the array. If an element matches all key-value pairs in the `match` object, it is considered a match.
 
-Example "match" object for matching an array element with a specific key-value pair:
+If the righthand side of the `match` property contains a complex datatype (object or array), the `match` property MUST contain a key named `object`, the value of which is a JSON object that contains the properties to be matched against. The server MUST compare the properties of the nested object against the corresponding properties of the array element. If all properties match, the element is considered a match.
+
+The server MUST NOT allow recursive matching of nested data structures. The `match` property is only used for matching elements in the immediate array specified by the `path` property of the JSON Patch operation. If the array elements contain nested objects or arrays, the server MUST NOT attempt to match against those nested structures.
+
+Example domain object for matching an array element with a specific key-value pair:
+
+```json
+{
+    "@type": "domainName",
+    "name": "example.example",
+    "contacts": [
+        { "label": "admin", "object": { "@type": "contact", "id": "REG-100" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "REG-200" } },
+        { "label": "tech", "object": { "@type": "contact", "id": "REG-300" } }
+    ]
+}
+```
+
+Example `match` object for matching the array element with the "tech" label and the contact ID "REG-200" in the `contacts` array of the domain object above:
 
 ```json
 {
 "match": {
-      "key-to-match": "value-to-match"
+      "label": "tech",
+      "object": { "@type": "contact", "id": "REG-200" }
     }
 }
 ```
+
+Every match MUST result in either zero or one matching element. If multiple elements match the criteria specified in the `match` property, the server MUST reject the request with an appropriate error response.
 
 The following rules apply for partial updates:
 
