@@ -5,8 +5,8 @@
 Network Working Group                                         M. Wullink
 Internet-Draft                                                 SIDN Labs
 Intended status: Standards Track                              P. Kowalik
-Expires: 19 December 2026                                          DENIC
-                                                            17 June 2026
+Expires: 3 January 2027                                            DENIC
+                                                             2 July 2026
 
 
               JSON for Restful Provisioning Protocol (RPP)
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 December 2026.
+   This Internet-Draft will expire on 3 January 2027.
 
 Copyright Notice
 
@@ -74,8 +74,9 @@ Table of Contents
        4.4.7.  Dictionary Composition
      4.5.  Object Identifier Rules
      4.6.  External Type Embedding Rules
-     4.7.  JSON Schema Definition Rules
-       4.7.1.  RPP Profiles and Validation
+     4.7.  Process Data Embedding Rules
+     4.8.  JSON Schema Definition Rules
+       4.8.1.  RPP Profiles and Validation
    5.  JSON Schema Definitions
      5.1.  Common Data Types Schemas
        5.1.1.  Identifier
@@ -91,27 +92,63 @@ Table of Contents
        5.2.7.  Authorisation Information Object
        5.2.8.  JSContact Card Object
        5.2.9.  Restore Report Object
+       5.2.10. Organisation Role Object
+       5.2.11. Processes Object
      5.3.  Process Object Schemas
-       5.3.1.  Transfer Process Object
-       5.3.2.  Restore Process Object
+       5.3.1.  Create Process Object
+       5.3.2.  Renew Process Object
+       5.3.3.  Transfer Process Object
+         5.3.3.1.  Create
+         5.3.3.2.  Read
+         5.3.3.3.  Approve
+         5.3.3.4.  Cancel
+         5.3.3.5.  Reject
+       5.3.4.  Restore Process Object
      5.4.  Domain Name Data Object
+       5.4.1.  Create
+       5.4.2.  Read
+       5.4.3.  Update
+       5.4.4.  Renew
+       5.4.5.  Transfer
+       5.4.6.  Reference
      5.5.  Contact Data Object
        5.5.1.  JSContact Profile for RPP
+       5.5.2.  Create
+       5.5.3.  Read
+       5.5.4.  Update
+       5.5.5.  Transfer
+       5.5.6.  Reference
      5.6.  Host Data Object
+       5.6.1.  Create
+       5.6.2.  Read
+       5.6.3.  Update
+       5.6.4.  Reference
      5.7.  Organisation Data Object
+       5.7.1.  Create
+       5.7.2.  Read
+       5.7.3.  Update
+       5.7.4.  Reference
+     5.8.  User Data Object
+       5.8.1.  Create
+       5.8.2.  Read
+       5.8.3.  Update
+       5.8.4.  Reference
    6.  Examples
      6.1.  Domain Name
        6.1.1.  Create
-       6.1.2.  Read
-       6.1.3.  Update
-       6.1.4.  Delete
-       6.1.5.  Renew
-       6.1.6.  Transfer Request
-       6.1.7.  Transfer Query
-       6.1.8.  Transfer Cancel / Reject / Approve
-       6.1.9.  Restore Request
-       6.1.10. Restore Report
-       6.1.11. Restore Query
+       6.1.2.  Create Process Data
+       6.1.3.  Read
+       6.1.4.  Update
+       6.1.5.  Delete
+       6.1.6.  Renew
+       6.1.7.  Transfer Request
+       6.1.8.  Transfer Query
+       6.1.9.  Transfer Approve
+       6.1.10. Transfer Cancel
+       6.1.11. Transfer Reject
+       6.1.12. Restore Request
+       6.1.13. Restore Report
+       6.1.14. Restore Query
      6.2.  Contact
        6.2.1.  Create
        6.2.2.  Read
@@ -119,7 +156,8 @@ Table of Contents
        6.2.4.  Delete
        6.2.5.  Transfer Request
        6.2.6.  Transfer Query
-       6.2.7.  Transfer Cancel / Reject / Approve
+       6.2.7.  Transfer Cancel / Approve
+       6.2.8.  Transfer Reject
      6.3.  Host
        6.3.1.  Create
        6.3.2.  Read
@@ -128,13 +166,26 @@ Table of Contents
        6.3.5.  Restore Request
        6.3.6.  Restore Report
        6.3.7.  Restore Query
+     6.4.  Organisation
+       6.4.1.  Create
+       6.4.2.  Read
+       6.4.3.  Update
+       6.4.4.  Delete
+       6.4.5.  Reference
+     6.5.  User
+       6.5.1.  Create
+       6.5.2.  Read
+       6.5.3.  Update
+       6.5.4.  Delete
+       6.5.5.  Reference
    7.  IANA Considerations
    8.  Internationalization Considerations
    9.  Security Considerations
    10. Acknowledgments
    11. Change History
-     11.1.  Version 01 to 02
-     11.2.  Version 00 to 01
+     11.1.  Version 02 to 03
+     11.2.  Version 01 to 02
+     11.3.  Version 00 to 01
    12. References
      12.1.  Normative References
      12.2.  Informative References
@@ -614,15 +665,57 @@ Table of Contents
    MUST be Base64-encoded ([RFC4648], Section 4) and embedded as a JSON
    string.
 
-4.7.  JSON Schema Definition Rules
+4.7.  Process Data Embedding Rules
 
-   Rule 18: Each RPP component object and resource object MUST have a
+   As defined in [I-D.wullink-rpp-core], a uniform interface operation
+   MAY require process data in addition to the object representation
+   data.  This section defines how such process data MUST be represented
+   in JSON when transmitted together with the object representation in a
+   single request body.
+
+   Rule 18: Process data accompanying a uniform interface operation MUST
+   be represented using the processes data element of the owning
+   resource object (see Processes Object), following the Aggregation
+   rules for the corresponding process type (for example createProcess
+   for creation-specific inputs).  Each embedded process object MUST be
+   a valid JSON representation of the process object.  This applies
+   uniformly regardless of whether the resource object already exists.
+
+   Example: a domain create request body carrying a two-year
+   registration period as process data embedded in a createProcess
+   process object under processes:
+
+   {
+       "@type": "domainName",
+       "name": "example.example",
+       "nameservers": [
+           { "@type": "host", "hostName": "ns1.example.example" },
+           { "@type": "host", "hostName": "ns2.example.example" }
+       ],
+       "processes": {
+           "@type": "processes",
+           "createProcess": [
+               {
+                   "@type": "createProcess",
+                   "period": {
+                       "@type": "period",
+                       "value": 2,
+                       "unit": "y"
+                   }
+               }
+           ]
+       }
+   }
+
+4.8.  JSON Schema Definition Rules
+
+   Rule 20: Each RPP component object and resource object MUST have a
    corresponding JSON Schema definition.  Object definitions MUST be
    placed in the $defs keyword of the JSON Schema document.
 
-   Rule 19: Identifier fields MUST use "type": "string" in JSON Schema.
+   Rule 21: Identifier fields MUST use "type": "string" in JSON Schema.
 
-   Rule 20: Enumeration constraints on string fields MUST be expressed
+   Rule 22: Enumeration constraints on string fields MUST be expressed
    using the "enum" keyword in JSON Schema.
 
    Example (Transfer Status enum):
@@ -633,10 +726,10 @@ Table of Contents
                 "clientRejected", "serverApproved", "serverCancelled"]
    }
 
-   Rule 21: Each JSON Schema definition for an RPP object MUST include a
+   Rule 23: Each JSON Schema definition for an RPP object MUST include a
    "required" array listing all data elements with cardinality 1 or 1+.
 
-   Rule 22: JSON Schema definitions for extendible RPP objects MUST NOT
+   Rule 24: JSON Schema definitions for extendible RPP objects MUST NOT
    use "additionalProperties": false or "unevaluatedProperties": false.
    However, before validation, schemas on every property level MUST be
    enriched with "unevaluatedProperties": false property to prevent the
@@ -644,7 +737,7 @@ Table of Contents
    for Object type MAY use "additionalProperties": true to allow for
    free key definition.
 
-   Rule 23: Every RPP object representation MUST include a "@type"
+   Rule 25: Every RPP object representation MUST include a "@type"
    property whose value is the object's identifier as registered in the
    IANA RPP Data Object Registry.  This property enables identification
    and allows clients and servers to unambiguously determine the type of
@@ -661,7 +754,7 @@ Table of Contents
        "name": "example.example"
    }
 
-   Rule 24: When a transfer request or other operation requires
+   Rule 26: When a transfer request or other operation requires
    authorization information (e.g., EPP-style authinfo), the client MUST
    NOT include the authInfo object in the JSON request body.  Instead,
    the client MUST convey the authorization information using the RPP-
@@ -670,7 +763,7 @@ Table of Contents
    includes an authInfo object in the JSON body with an appropriate
    error response.
 
-4.7.1.  RPP Profiles and Validation
+4.8.1.  RPP Profiles and Validation
 
    RPP profiles, such as the EPP Compatibility Profile defined in
    [I-D.kowalik-rpp-data-objects], may impose additional constraints on
@@ -704,6 +797,22 @@ Table of Contents
    Section 2.8 of [RFC5730].  Identifiers for certain object types MAY
    have additional constraints imposed either by server policy, object-
    specific specifications, or both.
+
+   In JSON, an Identifier MUST be represented as a string value
+   conforming to the roidType syntax defined in Section 2.8 of
+   [RFC5730]: one to eight word characters optionally preceded by an
+   underscore, followed by a hyphen and one or more word characters,
+   with a maximum total length of 89 characters.
+
+   {
+     "$defs": {
+       "identifier": {
+         "type": "string",
+         "pattern": "^(\\w|_){1,8}-\\w{1,}$",
+         "maxLength": 89
+       }
+     }
+   }
 
 5.1.2.  Client Identifier
 
@@ -988,9 +1097,8 @@ Table of Contents
 5.2.8.  JSContact Card Object
 
    The Contact Data Object uses version 2.0 of JSContact [RFC9982] to
-   represent contact information.  The contact component object is
-   defined below according to the RPP JSContact profile described in the
-   Contact Data Object section.
+   represent contact information.  The Contact object is defined below
+   according to the RPP JSContact Profile [TODO Add Ref].
 
    The following constraints cannot be expressed in JSON Schema and MUST
    be enforced by implementations:
@@ -1143,9 +1251,160 @@ Table of Contents
      }
    }
 
+5.2.10.  Organisation Role Object
+
+   The following constraints cannot be expressed in JSON Schema and MUST
+   be enforced by implementations:
+
+   -  type MUST only use values registered in the IANA "EPP Organization
+      Role Values" registry ([RFC8543]).
+
+   {
+     "$defs": {
+       "organisationRole": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "organisationRole" },
+           "status": {
+             "type": "array",
+             "items": {
+               "type": "string",
+               "enum": ["ok", "linked", "clientLinkProhibited", "serverLinkProhibited"]
+             }
+           },
+           "roleId": { "type": "string" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.2.11.  Processes Object
+
+   The Processes Object is a read-only container grouping the currently
+   active Process Objects on the owning resource object, keyed by
+   process type.  Each key holds an array of the corresponding Process
+   Object's read representation, per the Aggregation rules.
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/processes",
+     "$defs": {
+       "processes": {
+         "type": "object",
+         "properties": {
+           "@type":           { "type": "string", "const": "processes", "readOnly": true },
+           "createProcess":   {
+             "type": "array",
+             "items": { "$ref": "#/$defs/createProcess.read" },
+             "readOnly": true
+           },
+           "renewProcess":    {
+             "type": "array",
+             "items": { "$ref": "#/$defs/renewProcess.read" },
+             "readOnly": true
+           },
+           "transferProcess": {
+             "type": "array",
+             "items": { "$ref": "#/$defs/transferProcess.read" },
+             "readOnly": true
+           },
+           "restoreProcess":  {
+             "type": "array",
+             "items": { "$ref": "#/$defs/restoreProcess.read" },
+             "readOnly": true
+           }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
 5.3.  Process Object Schemas
 
-5.3.1.  Transfer Process Object
+5.3.1.  Create Process Object
+
+   The Create Process Object carries the process-specific inputs for a
+   resource creation operation, such as the requested registration
+   period.  It is submitted as an element of the createProcess array
+   under the processes data element of the owning resource object (see
+   Processes Object), following the same Aggregation representation as
+   the other process types.
+
+   Create request schema (create-only and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/createProcess.create",
+     "$defs": {
+       "createProcess.create": {
+         "type": "object",
+         "properties": {
+           "@type": { "type": "string", "const": "createProcess" },
+           "period": { "$ref": "#/$defs/period" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+   Read response schema (read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/createProcess.read",
+     "$defs": {
+       "createProcess.read": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "createProcess", "readOnly": true },
+           "period": { "$ref": "#/$defs/period", "readOnly": true }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.3.2.  Renew Process Object
+
+   Renew request schema (create-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/renewProcess.create",
+     "$defs": {
+       "renewProcess.create": {
+         "type": "object",
+         "properties": {
+           "@type":         { "type": "string", "const": "renewProcess" },
+           "expiryDate":    { "type": "string", "format": "date-time" },
+           "renewalPeriod": { "$ref": "#/$defs/period" }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+   Renew response schema (read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/renewProcess.read",
+     "$defs": {
+       "renewProcess.read": {
+         "type": "object",
+         "properties": {
+           "@type":      { "type": "string", "const": "renewProcess", "readOnly": true },
+           "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.3.3.  Transfer Process Object
+
+5.3.3.1.  Create
 
    Create request schema (create-only and read-write properties):
 
@@ -1186,25 +1445,7 @@ Table of Contents
      }
    }
 
-   Create request for Domain Object schema (create-only and read-write
-   properties):
-
-   {
-     "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/transferProcess.create.domain",
-     "$defs": {
-       "transferProcess.create.domain": {
-         "allOf": [
-           { "$ref": "#/$defs/transferProcess.create" },
-           {
-             "properties": {
-               "transferPeriod": { "$ref": "#/$defs/period" }
-             }
-           }
-         ]
-       }
-     }
-   }
+5.3.3.2.  Read
 
    Read response schema (read-write and read-only properties):
 
@@ -1241,27 +1482,49 @@ Table of Contents
      }
    }
 
-   Read response for Domain Object schema (read-write and read-only
-   properties):
+5.3.3.3.  Approve
+
+   The Approve operation MUST always have a request body, which may be
+   an empty JSON object.  The server can identify the transfer process
+   to be approved based on the request URL and the authenticated
+   client's permissions.  There is no Approve request schema defined in
+   this specification.
+
+   The Approve response schema MUST equal the read response schema.
+
+5.3.3.4.  Cancel
+
+   The Cancel operation, which is similar to a delete operation, has no
+   request body, the server can identify the transfer process to be
+   cancelled based on the request URL and the authenticated client's
+   permissions.  Because the Cancel operation has no request body, it is
+   not possible to extend the request schema with additional properties.
+
+   The Cancel response schema MUST equal the read response schema or an
+   empty response.
+
+5.3.3.5.  Reject
+
+   Reject request schema:
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/transferProcess.read.domain",
+     "$ref": "#/$defs/transferProcess.reject",
      "$defs": {
-       "transferProcess.read.domain": {
-         "allOf": [
-           { "$ref": "#/$defs/transferProcess.read" },
-           {
-             "properties": {
-               "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
-             }
-           }
-         ]
+       "transferProcess.reject": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "transferProcess" },
+           "reason": { "type": "string" }
+         },
+         "required": ["@type"]
        }
      }
    }
 
-5.3.2.  Restore Process Object
+   Reject response schema MUST equal the read response schema.
+
+5.3.4.  Restore Process Object
 
    The Restore Process Object represents the current state of a restore
    request for an object that has entered the Redemption Grace Period
@@ -1331,6 +1594,8 @@ Table of Contents
       domain names to a specific namespace for which they are
       authoritative.  The implicit trailing dot MUST NOT be included.
 
+5.4.1.  Create
+
    Create request schema (create-only and read-write properties):
 
    {
@@ -1360,12 +1625,25 @@ Table of Contents
            },
            "dns":    { "$ref": "#/$defs/dnsData" },
            "authInfo": { "$ref": "#/$defs/authInfo" },
-           "period": { "$ref": "#/$defs/period" }
+           "processes": {
+             "type": "object",
+             "properties": {
+               "@type": { "type": "string", "const": "processes" },
+               "createProcess": {
+                 "type": "array",
+                 "items": { "$ref": "#/$defs/createProcess.create" },
+                 "maxItems": 1
+               }
+             },
+             "required": ["@type"]
+           }
          },
          "required": ["@type", "name"]
        }
      }
    }
+
+5.4.2.  Read
 
    Read response schema (read-write and read-only properties):
 
@@ -1407,12 +1685,15 @@ Table of Contents
              "readOnly": true
            },
            "expiryDate": { "type": "string", "format": "date-time", "readOnly": true },
-           "authInfo":  { "$ref": "#/$defs/authInfo" }
+           "authInfo":  { "$ref": "#/$defs/authInfo" },
+           "processes": { "$ref": "#/$defs/processes", "readOnly": true }
          },
          "required": ["@type", "name", "provMetadata"]
        }
      }
    }
+
+5.4.3.  Update
 
    Update request schema (read-write properties):
 
@@ -1448,22 +1729,117 @@ Table of Contents
      }
    }
 
+5.4.4.  Renew
+
    Renew minimal response schema (only expire date):
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/domainObject.renewResponse",
+     "$ref": "#/$defs/renewProcess.create.domain",
      "$defs": {
-       "domainObject.renewResponse": {
-         "type": "object",
-         "properties": {
-           "@type":       { "type": "string", "const": "domainName", "readOnly": true },
-           "expiryDate": { "type": "string", "format": "date-time", "readOnly": true }
-         },
-         "required": ["@type", "expiryDate"]
+       "renewProcess.create.domain": {
+          "$ref": "#/$defs/renewProcess.create"
        }
      }
    }
+
+5.4.5.  Transfer
+
+   Create request for Domain Transfer Process Object schema (create-only
+   and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.create.domain",
+     "$defs": {
+       "transferProcess.create.domain": {
+         "allOf": [
+           { "$ref": "#/$defs/transferProcess.create" },
+           {
+             "properties": {
+               "transferPeriod": { "$ref": "#/$defs/period" }
+             }
+           }
+         ]
+       }
+     }
+   }
+
+   Read response for Domain Transfer Process Object schema (read-write
+   and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.read.domain",
+     "$defs": {
+       "transferProcess.read.domain": {
+         "allOf": [
+           { "$ref": "#/$defs/transferProcess.read" },
+           {
+             "properties": {
+               "expiryDate":  { "type": "string", "format": "date-time", "readOnly": true }
+             }
+           }
+         ]
+       }
+     }
+   }
+
+   Both Approve and Delete (Cancel) operations have no request body, the
+   server can identify the transfer process to be approved or cancelled
+   based on the request URL and the authenticated client's permissions.
+
+   Delete (Cancel) response Domain Transfer Process Object schema (read-
+   write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.delete.domain",
+     "$defs": {
+       "transferProcess.delete.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+   Approve response Domain Transfer Process Object schema (read-write
+   and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.approve.domain",
+     "$defs": {
+       "transferProcess.approve.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+   Reject request Domain Object schema:
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.reject.domain",
+     "$defs": {
+       "transferProcess.reject.domain": {
+         "$ref": "#/$defs/transferProcess.reject"
+       }
+     }
+   }
+
+   Reject response schema (read-write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.reject.domain",
+     "$defs": {
+       "transferProcess.reject.domain": {
+         "$ref": "#/$defs/transferProcess.read.domain"
+       }
+     }
+   }
+
+5.4.6.  Reference
 
    Reference schema (identifier only):
 
@@ -1488,7 +1864,7 @@ Table of Contents
    representation of Contact Data Object contact information.  The
    contact's name, postal address, phone numbers, email addresses, and
    other contact details are encapsulated in a JSContact Card object
-   embedded in the card property of the contact JSON object.
+   embedded in the contactInfo property.
 
 5.5.1.  JSContact Profile for RPP
 
@@ -1509,6 +1885,8 @@ Table of Contents
    -  card.addresses[*].countryCode MUST be a valid two-character ISO
       3166-1 [ISO3166-1] alpha-2 code when present.
 
+5.5.2.  Create
+
    Create request schema (create-only and read-write properties):
 
    {
@@ -1520,33 +1898,16 @@ Table of Contents
          "properties": {
            "@type":  { "type": "string", "const": "contact" },
            "id":     { "type": "string" },
-           "card":   { "$ref": "#/$defs/Card" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
            "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "card"],
+         "required": ["@type", "id", "contactInfo"],
          "unevaluatedProperties": false
        }
      }
    }
 
-   Update request schema (read-write properties):
-
-   {
-     "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$ref": "#/$defs/contactObject.update",
-     "$defs": {
-       "contactObject.update": {
-         "type": "object",
-         "properties": {
-           "@type":  { "type": "string", "const": "contact" },
-           "card":   { "$ref": "#/$defs/Card" },
-           "authInfo": { "$ref": "#/$defs/authInfo" }
-         },
-         "required": ["@type", "card"],
-         "unevaluatedProperties": false
-       }
-     }
-   }
+5.5.3.  Read
 
    Read response schema (read-write and read-only properties):
 
@@ -1565,14 +1926,53 @@ Table of Contents
              "items": { "$ref": "#/$defs/status" },
              "readOnly": true
            },
-           "card":   { "$ref": "#/$defs/Card" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
            "authInfo": { "$ref": "#/$defs/authInfo" }
          },
-         "required": ["@type", "id", "provMetadata", "card"],
+         "required": ["@type", "id", "provMetadata", "contactInfo"],
          "unevaluatedProperties": false
        }
      }
    }
+
+5.5.4.  Update
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/contactObject.update",
+     "$defs": {
+       "contactObject.update": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "contact" },
+           "contactInfo":   { "$ref": "#/$defs/Card" },
+           "authInfo": { "$ref": "#/$defs/authInfo" },
+           "processes": { "$ref": "#/$defs/processes", "readOnly": true }
+         },
+         "required": ["@type", "contactInfo"],
+         "unevaluatedProperties": false
+       }
+     }
+   }
+
+5.5.5.  Transfer
+
+   Transfer create request for Contact Object schema (create-only and
+   read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/transferProcess.create.contact",
+     "$defs": {
+       "transferProcess.create.contact": {
+         "$ref": "#/$defs/transferProcess.create"
+       }
+     }
+   }
+
+5.5.6.  Reference
 
    Reference schema (identifier only):
 
@@ -1601,6 +2001,8 @@ Table of Contents
       is authoritative, the superordinate domain MUST already exist in
       the server.
 
+5.6.1.  Create
+
    Create request schema (create-only and read-write properties):
 
    {
@@ -1619,6 +2021,8 @@ Table of Contents
      }
    }
 
+5.6.2.  Read
+
    Read response schema (read-write and read-only properties):
 
    {
@@ -1636,12 +2040,19 @@ Table of Contents
              "items": { "$ref": "#/$defs/status" },
              "readOnly": true
            },
-           "dns":           { "$ref": "#/$defs/dnsData" }
+           "dns":           { "$ref": "#/$defs/dnsData" },
+           "processes":     { "$ref": "#/$defs/processes", "readOnly": true }
          },
          "required": ["@type", "hostName", "provMetadata"]
        }
      }
    }
+
+5.6.3.  Update
+
+   TODO
+
+5.6.4.  Reference
 
    Reference schema (identifier only):
 
@@ -1662,7 +2073,273 @@ Table of Contents
 
 5.7.  Organisation Data Object
 
-   TBD
+   The following constraints cannot be expressed in JSON Schema and MUST
+   be enforced by implementations:
+
+   -  id MUST be a server-unique identifier conforming to the Identifier
+      syntax.
+   -  status MUST always contain at least one value. pendingCreate, ok,
+      hold, and terminated are mutually exclusive. ok MAY only be
+      combined with linked.
+   -  parent, if present, MUST reference a known Organisation Object.
+      Circular parent references MUST be rejected.
+   -  contacts keys MUST be contact type values registered in the IANA
+      "EPP Organisation Contact Types" registry ([RFC8543]).
+
+5.7.1.  Create
+
+   Create request schema (create-only and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/organisationObject.create",
+     "$defs": {
+       "organisationObject.create": {
+         "type": "object",
+         "properties": {
+           "@type":       { "type": "string", "const": "organisation" },
+           "id":          { "$ref": "#/$defs/identifier" },
+           "roles":       {
+             "type": "object",
+             "additionalProperties": { "$ref": "#/$defs/organisationRole" },
+             "minProperties": 1
+           },
+           "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+           "contactInfo": { "$ref": "#/$defs/Card" },
+           "contacts": {
+             "type": "array",
+             "items": {
+               "type": "object",
+               "properties": {
+                 "label": { "type": "string" },
+                 "object": { "$ref": "#/$defs/contactObject.reference" }
+               },
+               "required": ["label", "object"]
+              }
+           }
+         },
+         "required": ["@type", "id", "roles"]
+       }
+     }
+   }
+
+5.7.2.  Read
+
+   Read response schema (read-write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/organisationObject.read",
+     "$defs": {
+       "organisationObject.read": {
+         "allOf": [
+           { "$ref": "#/$defs/organisationObject.create" },
+           {
+             "properties": {
+               "provMetadata": { "$ref": "#/$defs/provMetadata", "readOnly": true },
+               "status": {
+                 "type": "array",
+                 "items": { "$ref": "#/$defs/status" },
+                 "readOnly": true
+               },
+               "users": {
+                 "type": "array",
+                 "items": {
+                   "type": "object",
+                   "properties": {
+                     "label": { "type": "string" },
+                     "object": { "$ref": "#/$defs/userObject.reference" }
+                   },
+                   "required": ["label", "object"]
+                 }
+               }
+             },
+             "required": ["provMetadata", "status"]
+           }
+         ]
+       }
+     }
+   }
+
+5.7.3.  Update
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/organisationObject.update",
+     "$defs": {
+       "organisationObject.update": {
+         "type": "object",
+         "properties": {
+           "@type":       { "type": "string", "const": "organisation" },
+           "roles":       {
+             "type": "object",
+             "additionalProperties": { "$ref": "#/$defs/organisationRole" }
+           },
+           "parent":    { "$ref": "#/$defs/organisationObject.reference" },
+           "contactInfo": { "$ref": "#/$defs/Card" },
+           "contacts": {
+               "type": "array",
+               "items": {
+                 "type": "object",
+                 "properties": {
+                   "label": { "type": "string" },
+                   "object": { "$ref": "#/$defs/contactObject.reference" }
+                 },
+                 "required": ["label", "object"]
+               }
+           },
+           "status": {
+                 "type": "array",
+                 "items": { "$ref": "#/$defs/status" },
+                 "readOnly": true
+           },
+           "users":       {
+             "type": "array",
+             "items": {
+               "type": "object",
+               "properties": {
+                 "label": { "type": "string" },
+                 "object": { "$ref": "#/$defs/userObject.reference" }
+               },
+               "required": ["label", "object"]
+             }
+           }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.7.4.  Reference
+
+   Reference schema (identifier only):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/organisationObject.reference",
+     "$defs": {
+       "organisationObject.reference": {
+         "type": "object",
+         "properties": {
+           "@type": { "type": "string", "const": "organisation", "readOnly": true },
+           "id":    { "$ref": "#/$defs/identifier", "readOnly": true }
+         },
+         "required": ["@type", "id"]
+       }
+     }
+   }
+
+5.8.  User Data Object
+
+   The User Data Object represents a user linked to an Organisation
+   Object.  The lifecycle of a User Object is bound to its owning
+   Organisation Object.
+
+   Note: User status values are plain strings, not Status Objects.
+
+5.8.1.  Create
+
+   Create request schema (create-only and read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/userObject.create",
+     "$defs": {
+       "userObject.create": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "user" },
+           "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+           "details": { "$ref": "#/$defs/contactObject.reference" },
+           "status": {
+             "type": "array",
+             "items": {
+               "type": "string",
+               "enum": ["active", "suspended", "deactivated", "pending"]
+             }
+           },
+           "description":  { "type": "string", "const": "user" }
+         },
+         "required": ["@type", "organisationId", "details"]
+       }
+     }
+   }
+
+5.8.2.  Read
+
+   Read response schema (read-write and read-only properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/userObject.read",
+     "$defs": {
+       "userObject.read": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "user", "readOnly": true },
+           "organisationId": { "$ref": "#/$defs/organisationObject.reference" },
+           "userId": { "$ref": "#/$defs/identifier", "readOnly": true },
+           "details": { "$ref": "#/$defs/contactObject.reference" },
+           "status": {
+             "type": "array",
+             "items": {
+               "type": "string",
+               "enum": ["active", "suspended", "deactivated", "pending"]
+             }
+           },
+           "description":  { "type": "string", "const": "user" }
+         },
+         "required": ["@type", "userId", "details", "status"]
+       }
+     }
+   }
+
+5.8.3.  Update
+
+   Update request schema (read-write properties):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/userObject.update",
+     "$defs": {
+       "userObject.update": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "user" },
+           "details": { "$ref": "#/$defs/contactObject.reference" },
+           "status": {
+             "type": "array",
+             "items": {
+               "type": "string",
+               "enum": ["active", "suspended", "deactivated", "pending"]
+             }
+           }
+         },
+         "required": ["@type"]
+       }
+     }
+   }
+
+5.8.4.  Reference
+
+   Reference schema (identifier only):
+
+   {
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$ref": "#/$defs/userObject.reference",
+     "$defs": {
+       "userObject.reference": {
+         "type": "object",
+         "properties": {
+           "@type":  { "type": "string", "const": "user", "readOnly": true },
+           "id": { "$ref": "#/$defs/identifier", "readOnly": true }
+         },
+         "required": ["@type", "id"]
+       }
+     }
+   }
 
 6.  Examples
 
@@ -1680,11 +2357,6 @@ Table of Contents
    {
        "@type": "domainName",
        "name": "example.example",
-       "period": {
-           "@type": "period",
-           "value": 2,
-           "unit": "y"
-       },
        "nameservers": [
            { "@type": "host", "hostName": "ns1.example.example" },
            { "@type": "host", "hostName": "ns2.example.example" }
@@ -1698,6 +2370,19 @@ Table of Contents
            "@type": "authInfo",
            "method": "authinfo",
            "authdata": "2fooBAR"
+       },
+       "processes": {
+           "@type": "processes",
+           "createProcess": [
+               {
+                   "@type": "createProcess",
+                   "period": {
+                       "@type": "period",
+                       "value": 2,
+                       "unit": "y"
+                   }
+               }
+           ]
        }
    }
 
@@ -1720,7 +2405,21 @@ Table of Contents
        "expiryDate": "2001-04-03T22:00:00.0Z"
    }
 
-6.1.2.  Read
+6.1.2.  Create Process Data
+
+   Example Create Process Object for a two-year registration period, as
+   embedded above in processes.createProcess:
+
+   {
+       "@type": "createProcess",
+       "period": {
+           "@type": "period",
+           "value": 2,
+           "unit": "y"
+       }
+   }
+
+6.1.3.  Read
 
    Example domain read response:
 
@@ -1770,10 +2469,23 @@ Table of Contents
            "@type": "authInfo",
            "method": "authinfo",
            "authdata": "2fooBAR"
+       },
+       "processes": {
+           "@type": "processes",
+           "createProcess": [
+               {
+                   "@type": "createProcess",
+                   "period": {
+                       "@type": "period",
+                       "value": 2,
+                       "unit": "y"
+                   }
+               }
+           ]
        }
    }
 
-6.1.3.  Update
+6.1.4.  Update
 
    Example domain update request (read-write properties):
 
@@ -1807,7 +2519,7 @@ Table of Contents
        "registrant": { "@type": "contact", "id": "sh8013" }
    }
 
-6.1.4.  Delete
+6.1.5.  Delete
 
    The domain delete operation takes the domain name as the resource
    identifier in the request.  No request body is required.
@@ -1825,16 +2537,19 @@ Table of Contents
        }
    }
 
-6.1.5.  Renew
+6.1.6.  Renew
 
-   The renew operation accepts a transient currentExpiryDate parameter
-   for validation and an optional renewalPeriod.
+   The renew operation creates a Renew Process Object.  The optional
+   expiryDate in the request is the _current_ expiry date, sent by the
+   client for server-side validation to prevent duplicate renewals.  The
+   response returns a Renew Process Object containing the _new_ expiry
+   date.
 
    Example domain renew request:
 
    {
-       "@type": "domainName.renew",
-       "currentExpiryDate": "2005-04-03T22:00:00.0Z",
+       "@type": "renewProcess",
+       "expiryDate": "2005-04-03T22:00:00.0Z",
        "renewalPeriod": {
            "@type": "period",
            "value": 5,
@@ -1845,11 +2560,11 @@ Table of Contents
    Example domain renew response:
 
    {
-       "@type": "domainName",
+       "@type": "renewProcess",
        "expiryDate": "2010-04-03T22:00:00.0Z"
    }
 
-6.1.6.  Transfer Request
+6.1.7.  Transfer Request
 
    Authorization information for the transfer MUST be conveyed using the
    RPP-Authorization HTTP header (see Rule 21), not in the JSON request
@@ -1880,7 +2595,7 @@ Table of Contents
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
 
-6.1.7.  Transfer Query
+6.1.8.  Transfer Query
 
    Example domain transfer query response (Transfer Process Object):
 
@@ -1895,15 +2610,43 @@ Table of Contents
        "expiryDate": "2002-09-08T22:00:00.0Z"
    }
 
-6.1.8.  Transfer Cancel / Reject / Approve
+6.1.9.  Transfer Approve
 
-   Transfer cancel, reject, and approve responses return the Transfer
-   Process Object.  The response structure is the same as the Transfer
-   Query response above.  The trStatus value reflects the outcome of the
-   operation (e.g. "clientCancelled", "clientRejected", or
-   "clientApproved").
+   The Transfer approve operation has request body with an empty JSON
+   object, the server can identify the transfer process to be approved
+   based on the request URL and the authenticated client's permissions.
 
-6.1.9.  Restore Request
+   Example domain transfer approve request with empty JSON object:
+
+   {
+     "@type": "transferProcess"
+   }
+
+   The response is the Transfer Process Object, similar to the transfer
+   create and query responses.
+
+6.1.10.  Transfer Cancel
+
+   The Transfer cancel operation has an empty request body, the server
+   can identify the transfer process to be cancelled based on the
+   request URL and the authenticated client's permissions.
+
+   The response is the Transfer Process Object, similar to the transfer
+   create and query responses.
+
+6.1.11.  Transfer Reject
+
+   Example domain transfer reject request
+
+   {
+       "@type": "transferProcess",
+       "reason": "Client rejected the transfer request."
+   }
+
+   The transfer reject response is the Transfer Process Object, similar
+   to the transfer create and query responses.
+
+6.1.12.  Restore Request
 
    Example domain restore request (without inline report; object
    transitions to pendingRestore state):
@@ -1951,7 +2694,7 @@ Table of Contents
        "reportDate": "2025-01-20T15:30:00.0Z"
    }
 
-6.1.10.  Restore Report
+6.1.13.  Restore Report
 
    Example domain restore report request:
 
@@ -1980,7 +2723,7 @@ Table of Contents
        "reportDate": "2025-01-22T09:15:00.0Z"
    }
 
-6.1.11.  Restore Query
+6.1.14.  Restore Query
 
    The Restore Query operation takes no request body (Parameters: None).
 
@@ -2013,7 +2756,7 @@ Table of Contents
    {
        "@type": "contact",
        "id": "jd1234",
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2069,7 +2812,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2124,7 +2867,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2165,7 +2908,7 @@ Table of Contents
 
    {
        "@type": "contact",
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "addresses": {
@@ -2206,7 +2949,7 @@ Table of Contents
        "status": [
            { "@type": "status", "label": "ok" }
        ],
-       "card": {
+       "contactInfo": {
            "@type": "Card",
            "version": "2.0",
            "kind": "individual",
@@ -2285,17 +3028,25 @@ Table of Contents
        "actionDate": "2000-06-11T22:00:00.0Z"
    }
 
-6.2.7.  Transfer Cancel / Reject / Approve
+6.2.7.  Transfer Cancel / Approve
 
-   Transfer cancel, reject, and approve responses return the Transfer
-   Process Object.  The response structure is the same as the Transfer
-   Query response above.  The trStatus value reflects the outcome of the
+   Transfer cancel and approve responses return the Transfer Process
+   Object.  The response structure is the same as the Transfer Query
+   response above.  The trStatus value reflects the outcome of the
    operation (e.g. "clientCancelled", "clientRejected", or
    "clientApproved").
 
-   Note: Unlike domain transfers, contact transfers do not include an
-   expiryDate field in the Transfer Process Object, as contacts do not
-   have registration periods.
+6.2.8.  Transfer Reject
+
+   Example Contact Transfer Reject request
+
+   {
+       "@type": "transferProcess",
+       "reason": "Client rejected the transfer request."
+   }
+
+   The transfer reject response is the Transfer Process Object, similar
+   to the transfer create and query responses.
 
 6.3.  Host
 
@@ -2541,6 +3292,262 @@ Table of Contents
        "reportDate": "2025-01-22T09:15:00.0Z"
    }
 
+6.4.  Organisation
+
+6.4.1.  Create
+
+   Example organisation create request:
+
+   {
+       "@type": "organisation",
+       "id": "ORG-12345",
+       "roles": { "registrar":
+           {
+               "@type": "organisationRole",
+               "roleId": "1234"
+           }
+       },
+       "parent": { "@type": "organisation", "id": "ORG-9999" },
+       "contactInfo": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "org",
+           "name": {
+               "full": "Example Registrar Inc."
+           },
+           "addresses": {
+               "addr": {
+                   "components": [
+                       { "kind": "name",     "value": "Meander 501" },
+                       { "kind": "locality", "value": "Arnhem" },
+                       { "kind": "region",   "value": "Gelderland" },
+                       { "kind": "postcode", "value": "6825MD" },
+                       { "kind": "country",  "value": "Netherlands" }
+                   ],
+                   "countryCode": "NL"
+               }
+           },
+           "emails": {
+               "email": { "address": "registrar@example.example" }
+           }
+       },
+       "contacts": [
+           { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+           { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+       ]
+   }
+
+   Example organisation create response:
+
+   {
+       "@type": "organisation",
+       "id": "ORG-12345",
+       "provMetadata": {
+           "@type": "provMetadata",
+           "repositoryId": "ORG12345-REP",
+           "spClientId": "ClientX",
+           "crClientId": "ClientX",
+           "crDate": "2025-03-15T10:00:00.0Z"
+       },
+       "status": [
+           { "@type": "status", "label": "ok" }
+       ],
+       "roles": { "registrar":
+           {
+               "@type": "organisationRole",
+               "status": ["ok"],
+               "roleId": "1234"
+           }
+       },
+       "parent": { "@type": "organisation", "id": "ORG-9999" },
+       "contactInfo": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "org",
+           "name": {
+               "full": "Example Registrar Inc."
+           },
+           "addresses": {
+               "addr": {
+                  "components": [
+                       { "kind": "name",     "value": "Meander 501" },
+                       { "kind": "locality", "value": "Arnhem" },
+                       { "kind": "region",   "value": "Gelderland" },
+                       { "kind": "postcode", "value": "6825MD" },
+                       { "kind": "country",  "value": "Netherlands" }
+                   ],
+                   "countryCode": "NL"
+               }
+           },
+           "emails": {
+               "email": { "address": "registrar@example.example" }
+           }
+       },
+       "contacts": [
+           { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+           { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+       ],
+       "users": [
+           { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+       ]
+   }
+
+6.4.2.  Read
+
+   Example organisation read response:
+
+   {
+       "@type": "organisation",
+       "id": "ORG-12345",
+       "provMetadata": {
+           "@type": "provMetadata",
+           "repositoryId": "ORG12345-REP",
+           "spClientId": "ClientX",
+           "crClientId": "ClientX",
+           "crDate": "2025-03-15T10:00:00.0Z",
+           "upClientId": "ClientX",
+           "upDate": "2025-06-01T08:30:00.0Z"
+       },
+       "status": [
+           { "@type": "status", "label": "linked" }
+       ],
+       "roles": { "registrar":
+           {
+               "@type": "organisationRole",
+               "status": ["ok"],
+               "roleId": "1234"
+           }
+       },
+       "parent": { "@type": "organisation", "id": "ORG-9999" },
+       "contactInfo": {
+           "@type": "Card",
+           "version": "2.0",
+           "kind": "org",
+           "name": {
+               "full": "Example Registrar Inc."
+           },
+           "addresses": {
+               "addr": {
+                   "components": [
+                       { "kind": "name",     "value": "Meander 501" },
+                       { "kind": "locality", "value": "Arnhem" },
+                       { "kind": "region",   "value": "Gelderland" },
+                       { "kind": "postcode", "value": "6825MD" },
+                       { "kind": "country",  "value": "Netherlands" }
+                   ],
+                   "countryCode": "NL"
+               }
+           },
+           "emails": {
+               "email": { "address": "registrar@example.example" }
+           }
+       },
+       "contacts": [
+           { "label": "admin", "object": { "@type": "contact", "id": "CID-1001" } },
+           { "label": "tech", "object": { "@type": "contact", "id": "CID-1002" } }
+       ],
+       "users": [
+           { "label": "admin", "object": { "@type": "user", "id": "UID-5001" } }
+       ]
+   }
+
+6.4.3.  Update
+
+   Example organisation update request:
+
+   {
+       "@type": "organisation",
+       "roles": { "registrar":
+           {
+               "@type": "organisationRole",
+               "status": ["clientLinkProhibited"],
+               "roleId": "1234"
+           }
+       },
+       "status": [
+           { "@type": "status", "label": "clientLinkProhibited" }
+       ],
+       "contacts": [
+           { "label": "admin", "object": { "@type": "contact", "id": "CID-2001" } },
+           { "label": "tech", "object": { "@type": "contact", "id": "CID-2002" } }
+       ]
+   }
+
+6.4.4.  Delete
+
+   The organisation delete operation takes the organisation identifier
+   as the resource identifier.  No request body is required.  The server
+   MUST reject the request if the organisation object is associated with
+   any other objects.
+
+6.4.5.  Reference
+
+   Example organisation reference (used when referencing an organisation
+   from another object):
+
+   {
+       "@type": "organisation",
+       "id": "ORG-12345"
+   }
+
+6.5.  User
+
+6.5.1.  Create
+
+   Example user create request:
+
+   {
+       "@type": "user",
+       "details": { "@type": "contact", "id": "USER-1234" },
+       "status": ["active"]
+   }
+
+   Example user create response:
+
+   {
+       "@type": "user",
+       "userId": "UID-5001",
+       "details": { "@type": "contact", "id": "USER-1234" },
+       "status": ["active"]
+   }
+
+6.5.2.  Read
+
+   Example user read response:
+
+   {
+       "@type": "user",
+       "organisationId": { "@type": "organisation", "id": "ORG-12345" },
+       "userId": "UID-5001",
+       "details": { "@type": "contact", "id": "USER-1234" },
+       "status": ["active"]
+   }
+
+6.5.3.  Update
+
+   Example user update request (suspend the user):
+
+   {
+       "@type": "user",
+       "status": ["suspended"]
+   }
+
+6.5.4.  Delete
+
+   The user delete operation takes the user identifier as the resource
+   identifier in the context of the owning organisation.  No request
+   body is required.
+
+6.5.5.  Reference
+
+   Example user reference (used when referencing a user from an
+   organisation object):
+
+   {
+       "@type": "user",
+       "id": "UID-5001"
+   }
+
 7.  IANA Considerations
 
    TODO
@@ -2559,11 +3566,24 @@ Table of Contents
 
 11.  Change History
 
-11.1.  Version 01 to 02
+11.1.  Version 02 to 03
+
+   -  Added schema and examples for Transfer approve/reject/cancel
+      operations (Issue #28)
+   -  Added Organisation and User Object JSON schemas and examples.
+      (Issue #57)
+   -  Added schema and examples for the Renew Process Object.  (Issue
+      #45)
+   -  Add representation for embedding of process data in uniform
+      interface operations (especially create).  (Issue #60)
+   -  define rules for External Type Embedding.
+   -  Add JSContact as External Type Embedding (Issue #43).
+
+11.2.  Version 01 to 02
 
    -  Adjust rule 19 and all schemas to match it.
 
-11.2.  Version 00 to 01
+11.3.  Version 00 to 01
 
    -  Updated all examples and schemas to be based on RPP Data Object
       and no longer on EPP XML schemas.  (Issue #15)
@@ -2580,9 +3600,9 @@ Table of Contents
    [I-D.kowalik-rpp-data-objects]
               Kowalik, P. and M. Wullink, "RESTful Provisioning Protocol
               (RPP) Data Objects", Work in Progress, Internet-Draft,
-              draft-kowalik-rpp-data-objects-03, 2 March 2026,
+              draft-kowalik-rpp-data-objects-04, 12 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-kowalik-rpp-
-              data-objects-03>.
+              data-objects-04>.
 
    [I-D.wullink-rpp-core]
               Wullink, M. and P. Kowalik, "RESTful Provisioning Protocol
@@ -2640,6 +3660,11 @@ Table of Contents
               Interchange Format", STD 90, RFC 8259,
               DOI 10.17487/RFC8259, December 2017,
               <https://www.rfc-editor.org/info/rfc8259>.
+
+   [RFC8543]  Zhou, L., Kong, N., Yao, J., Gould, J., and G. Zhou,
+              "Extensible Provisioning Protocol (EPP) Organization
+              Mapping", RFC 8543, DOI 10.17487/RFC8543, March 2019,
+              <https://www.rfc-editor.org/info/rfc8543>.
 
    [RFC9553]  Stepanek, R. and M. Loffredo, "JSContact: A JSON
               Representation of Contact Data", RFC 9553,
